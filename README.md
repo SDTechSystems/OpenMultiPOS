@@ -9,6 +9,7 @@ POS libre y autohospedable, diseñado como extensión de **ERPNext + Frappe + X 
 - [Matriz de requisitos y gaps](docs/requirements-matrix.md)
 - [Arquitectura](docs/architecture.md) · [Auditoría y resultados](docs/audit-report.md)
 - [Impresoras y ensayos físicos](docs/hardware-jaltech.md)
+- [GitHub: ramas, PRs, privacidad y protecciones](docs/github-workflow.md)
 
 ## Probar ahora: demo local
 

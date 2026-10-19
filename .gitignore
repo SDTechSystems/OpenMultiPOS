@@ -13,3 +13,32 @@ playwright-report/
 test-results/
 
 node_modules/
+
+# Private business material and local device/output data: never publish.
+private/
+local-data/
+business-data/
+attachments/
+exports/
+backups/
+screenshots/
+photos/
+*.pem
+*.key
+*.p12
+*.pfx
+*.db
+*.dump
+*.bak
+*.csv
+*.xlsx
+*.xls
+*.pdf
+*.png
+*.jpg
+*.jpeg
+*.pbm
+*.zip
+*.rar
+*.log
+*PROJECT_BRIEF*
