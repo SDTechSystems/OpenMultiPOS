@@ -73,7 +73,6 @@ td {{ padding:3px 0; vertical-align:top; }} td:last-child,th:last-child {{ text-
 img {{ display:block; margin:3px auto 0; width:{qr_mm:.6f}mm; height:{qr_mm:.6f}mm; image-rendering:pixelated; }}
 small {{ font-size:11px; }} footer {{ margin-top:5px; padding-bottom:2mm; }}
 tr, footer {{ break-inside:avoid; }}
-@media print {{ article {{ margin:2mm 0; }} }}
 </style></head><body data-paper-mm="{profile.paper_mm}"><article aria-label="Recibo interno de demostración">
 <header><h1>{escape(brand["name"])}</h1>
 <p class="badge">DEMO · RECIBO INTERNO<br>SIN VALIDEZ FISCAL</p></header>
