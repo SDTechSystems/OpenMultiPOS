@@ -1,0 +1,31 @@
+{
+  "review_date": "2026-10-18",
+  "status": "source-reviewed; deployment integration not executed",
+  "runtime": {
+    "python": ">=3.14,<3.15",
+    "node": ">=24"
+  },
+  "dependencies": {
+    "frappe": {
+      "repository": "https://github.com/frappe/frappe",
+      "branch": "version-16",
+      "commit": "4515014c87ece6cb20ee91d2cfb121c5cbd1ff4a",
+      "version": "16.52.0",
+      "license": "MIT"
+    },
+    "erpnext": {
+      "repository": "https://github.com/frappe/erpnext",
+      "branch": "version-16",
+      "commit": "5af6561f5aa48104559692fb4fd82f2580e8d338",
+      "version": "16.51.1",
+      "license": "GPL-3.0"
+    },
+    "xpos": {
+      "repository": "https://github.com/kodlyft/xpos",
+      "branch": "version-16",
+      "commit": "6392895a955f91b8c7d55574dc01ac5f19459dc3",
+      "version": "2.12.0",
+      "license": "MIT"
+    }
+  }
+}
