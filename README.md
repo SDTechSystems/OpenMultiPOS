@@ -48,7 +48,7 @@ La demo calcula importes ficticios con centavos enteros, registra pagos mixtos, 
 
 Perfiles JSON en `open_multi_pos/profiles/printers.json`: Jaltech de referencia (57 mm, 384 puntos), genérica 58 mm y genérica 80 mm. El layout usa ancho útil, DPI y capacidades; no requiere que la impresora sea Jaltech. Para otro modelo se añade/calibra su perfil y se prueba con el controlador instalado.
 
-El adaptador actual produce HTML/vista previa y permite imprimir mediante navegador/driver. Abrir el diálogo no confirma salida física. No hay envío USB/ESC/POS directo ni corte automático. Los ensayos y límites se registran en [hardware-jaltech.md](docs/hardware-jaltech.md). `scripts/print-diagnostic.ps1` sirve para imprimir un raster ficticio usando una cola Windows existente, sin instalar drivers ni cambiar la impresora predeterminada.
+El adaptador actual produce HTML/vista previa y permite imprimir mediante navegador/driver. El recibo calcula una página corta según contenido (ejemplo de un artículo: ~9 cm), omite pagos en cero y evita el formulario largo automático. Abrir el diálogo no confirma salida física. No hay envío USB/ESC/POS directo ni corte automático. Los ensayos y límites se registran en [hardware-jaltech.md](docs/hardware-jaltech.md). `scripts/print-diagnostic.ps1` sirve para imprimir un raster ficticio usando una cola Windows existente, sin instalar drivers ni cambiar la impresora predeterminada.
 
 ## App Frappe
 

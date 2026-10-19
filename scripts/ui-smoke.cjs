@@ -39,6 +39,19 @@ const out = process.argv[3] || "test-results";
   await page.waitForFunction(() => !document.querySelector("#print").disabled);
   assert.equal(await page.locator(".cart-row").count(), 0);
   const frame = page.frames().find((f) => f.parentFrame());
+  await frame.waitForFunction(() => window.ompReceiptReady);
+  const heightMm = await frame
+    .locator("body")
+    .getAttribute("data-receipt-height-mm");
+  assert.ok(
+    Number(heightMm) < 130,
+    `One-item receipt too long: ${heightMm} mm`,
+  );
+  assert.ok(
+    (await frame.locator("#receipt-page-size").textContent()).includes(
+      `mm ${heightMm}mm`,
+    ),
+  );
   assert.ok(
     (await frame.locator("body").textContent()).includes("SIN VALIDEZ FISCAL"),
   );

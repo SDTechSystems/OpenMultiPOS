@@ -235,8 +235,9 @@ async function previewReceipt() {
     `/api/receipt?id=${encodeURIComponent(state.lastReceipt.id)}&profile=${encodeURIComponent($("printer").value)}`,
   );
   if (version !== receiptVersion) return;
-  $("receipt").onload = () => {
-    $("print").disabled = false;
+  $("receipt").onload = async () => {
+    await $("receipt").contentWindow.ompPrepareReceipt?.();
+    if (version === receiptVersion) $("print").disabled = false;
   };
   $("receipt").srcdoc = html;
   $("receipt").hidden = false;
@@ -292,8 +293,9 @@ $("printer").addEventListener("change", () => {
 $("preview").addEventListener("click", () =>
   previewReceipt().catch((e) => notify(e.message)),
 );
-$("print").addEventListener("click", () => {
+$("print").addEventListener("click", async () => {
   try {
+    await $("receipt").contentWindow.ompPrepareReceipt?.();
     $("receipt").contentWindow.focus();
     $("receipt").contentWindow.print();
     $("print-status").textContent =

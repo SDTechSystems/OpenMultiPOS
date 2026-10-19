@@ -25,3 +25,14 @@ S/M/L expresan tamaño relativo, no fechas prometidas. Las fases 1 y 2 pueden co
 ## Próximo incremento después de la base
 
 Preparar entorno Bench reproducible sobre Linux, instalar los SHAs de `upstream.lock.json`, ejecutar pruebas de permisos con dos usuarios y confirmar hooks/contratos X POS. No conectar transacciones reales hasta probar permisos, unicidad y stock. La selección de entidad legal, logotipos y métodos bancarios se configura localmente; no bloquea la base genérica.
+
+## Seguimiento en GitHub
+
+- [Plan maestro](https://github.com/JSX2011/OpenMultiPOS/issues/2)
+- [Bench y permisos](https://github.com/JSX2011/OpenMultiPOS/issues/3)
+- [Checkout y stock nativos](https://github.com/JSX2011/OpenMultiPOS/issues/4)
+- [Impresoras y lectores](https://github.com/JSX2011/OpenMultiPOS/issues/5)
+- [Offline y ferias](https://github.com/JSX2011/OpenMultiPOS/issues/6)
+- [Operación comercial y recuperación](https://github.com/JSX2011/OpenMultiPOS/issues/7)
+
+Implementación inicial en [PR #1](https://github.com/JSX2011/OpenMultiPOS/pull/1).

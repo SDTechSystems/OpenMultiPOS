@@ -16,7 +16,7 @@ from open_multi_pos.validation import safe_qr_url
 def money(amount: int) -> str:
     whole, fraction = divmod(amount, 100)
     grouped = f"{whole:,}".replace(",", ".")
-    return f"$ {grouped},{fraction:02d}"
+    return f"$ {grouped}" + (f",{fraction:02d}" if fraction else "")
 
 
 def qr_image(url: str) -> tuple[str, int]:
@@ -44,39 +44,41 @@ def render_receipt(receipt: dict, profile: PrinterProfile) -> str:
         for line in receipt["items"]
     )
     payments = "".join(
-        f"<p>{escape(p['label'])}: {money(p['amount'])}</p>" for p in receipt["payments"]
+        f"<p>{escape(p['label'].replace('(registro demo)', '').strip())}: {money(p['amount'])}</p>"
+        for p in receipt["payments"]
+        if p["amount"] > 0
     )
     local_time = datetime.fromisoformat(receipt["created_at"]).astimezone(
         ZoneInfo("America/Bogota")
     )
     qr, modules = qr_image(brand["qr_url"])
-    module_dots = max(3, min(6, int(profile.dots * 0.7 / modules)))
+    module_dots = max(3, min(4, int(profile.dots * 0.55 / modules)))
     qr_mm = modules * module_dots / profile.dpi * 25.4
+    change = f"<p>Cambio: {money(receipt['change'])}</p>" if receipt["change"] else ""
     return f'''<!doctype html><html lang="es-CO"><head><meta charset="utf-8">
 <meta name="viewport" content="width=device-width,initial-scale=1"><title>Recibo interno demo</title>
+<script src="/receipt-print.js" defer></script>
 <style>
-@page {{ size: {profile.paper_mm}mm auto; margin: 0; }}
+@page {{ size: {profile.paper_mm}mm 150mm; margin: 0; }}
 * {{ box-sizing: border-box; }}
-body {{ margin:0; color:#111; background:#fff; font:600 14px/1.4 Arial,sans-serif; }}
-article {{ width:{profile.printable_mm}mm; margin:3mm auto; overflow-wrap:anywhere; }}
-header,footer {{ text-align:center; }} h1 {{ font-size:18px; margin:4px 0; }}
-p {{ margin:4px 0; }} .symbol {{ font-size:26px; font-weight:bold; }}
-.badge {{ border:1px solid #111; padding:4px; font-size:11px; }}
-table {{ width:100%; border-collapse:collapse; margin:12px 0; }}
-th {{ text-align:left; border-bottom:1px dashed #111; }}
-td {{ padding:5px 0; vertical-align:top; }} td:last-child,th:last-child {{ text-align:right; }}
-.total {{ border-top:1px dashed #111; padding-top:8px; font-size:17px; font-weight:bold; }}
-img {{ width:{qr_mm:.6f}mm; height:{qr_mm:.6f}mm; image-rendering:pixelated; }}
-small {{ font-size:11px; }} footer {{ margin-top:12px; padding-bottom:8mm; }}
-</style></head><body><article aria-label="Recibo interno de demostración">
-<header><div class="symbol" aria-label="Símbolo de marca demo">{escape(brand["symbol"])}</div>
-<h1>{escape(brand["name"])}</h1><p>{escape(brand["subtitle"])}</p>
-<p class="badge">DEMOSTRACIÓN · RECIBO INTERNO<br>SIN VALIDEZ FISCAL</p></header>
-<p>Operación {escape(receipt["id"])}</p><p>{local_time:%d/%m/%Y %H:%M} · America/Bogota</p>
-<p>Cajero: {escape(receipt["cashier"])}</p><p>Almacén: {escape(brand["warehouse"])}</p>
+body {{ margin:0; color:#000; background:#fff; font:600 12px/1.25 Arial,sans-serif; }}
+article {{ width:{profile.printable_mm}mm; margin:2mm auto; overflow-wrap:anywhere; }}
+header,footer {{ text-align:center; }} h1 {{ font-size:17px; margin:0 0 2px; }}
+p {{ margin:2px 0; }} .meta {{ font-size:11px; text-align:center; }}
+.badge {{ font-size:10px; margin-bottom:5px; }}
+table {{ width:100%; border-collapse:collapse; margin:6px 0; }}
+th {{ text-align:left; border-bottom:1px dashed #000; font-size:11px; }}
+td {{ padding:3px 0; vertical-align:top; }} td:last-child,th:last-child {{ text-align:right; white-space:nowrap; }}
+.total {{ border-top:1px dashed #000; padding-top:4px; font-size:16px; font-weight:bold; }}
+img {{ display:block; margin:3px auto 0; width:{qr_mm:.6f}mm; height:{qr_mm:.6f}mm; image-rendering:pixelated; }}
+small {{ font-size:11px; }} footer {{ margin-top:5px; padding-bottom:2mm; }}
+tr, footer {{ break-inside:avoid; }}
+@media print {{ article {{ margin:2mm 0; }} }}
+</style></head><body data-paper-mm="{profile.paper_mm}"><article aria-label="Recibo interno de demostración">
+<header><h1>{escape(brand["name"])}</h1>
+<p class="badge">DEMO · RECIBO INTERNO<br>SIN VALIDEZ FISCAL</p></header>
+<p class="meta">{escape(receipt["id"])}<br>{local_time:%d/%m/%Y %H:%M} · COP</p>
 <table><thead><tr><th scope="col">Artículo</th><th scope="col">COP</th></tr></thead><tbody>{rows}</tbody></table>
-<p class="total">Total {money(receipt["total"])} COP</p>
-<p>Demo sin impuestos. Valores ficticios.</p>{payments}<p>Cambio: {money(receipt["change"])}</p>
-<footer><p>{escape(brand["footer"])}</p><img src="{qr}" alt="QR comercial de demostración">
-<p><small>{escape(brand["qr_url"])}</small></p><p><small>Perfil: {escape(profile.id)} · plantilla v1</small></p>
-</footer></article></body></html>'''
+<p class="total">Total {money(receipt["total"])}</p>{payments}{change}
+<footer><small>{escape(brand["footer"])}</small><img src="{qr}" alt="QR comercial de demostración"></footer>
+</article></body></html>'''

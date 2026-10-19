@@ -13,6 +13,7 @@ from open_multi_pos.fiscal import DisabledFiscalProvider
 from open_multi_pos.hardware import BrowserPrinterAdapter, printer_profiles, profile_list
 
 STATIC = {
+    "/receipt-print.js": ("receipt-print.js", "text/javascript; charset=utf-8"),
     "/": ("index.html", "text/html; charset=utf-8"),
     "/app.js": ("app.js", "text/javascript; charset=utf-8"),
     "/style.css": ("style.css", "text/css; charset=utf-8"),
