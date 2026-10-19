@@ -1,0 +1,5 @@
+[
+  {"id":"jaltech-jal58m","name":"Jaltech JAL 58M · referencia","paper_mm":57,"printable_mm":48,"dots":384,"dpi":203,"cut":"manual","native_qr":false,"physically_verified":false},
+  {"id":"generic-58","name":"Genérica 58 mm · ajustar al modelo","paper_mm":58,"printable_mm":48,"dots":384,"dpi":203,"cut":"none","native_qr":false,"physically_verified":false},
+  {"id":"generic-80","name":"Genérica 80 mm · ajustar al modelo","paper_mm":80,"printable_mm":72,"dots":576,"dpi":203,"cut":"none","native_qr":false,"physically_verified":false}
+]

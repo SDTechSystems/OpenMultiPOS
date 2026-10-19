@@ -1,0 +1,49 @@
+name: Quality
+on:
+  push:
+  pull_request:
+permissions:
+  contents: read
+jobs:
+  python:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.14"
+      - run: python -m pip install '.[dev]'
+      - run: ruff check .
+      - run: ruff format --check .
+      - run: python -m unittest discover -s tests -v
+      - run: python -m build
+      - run: pip-audit --no-deps --disable-pip -r requirements-runtime.txt
+  browser:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.14"
+      - uses: actions/setup-node@v4
+        with:
+          node-version: "24"
+          cache: npm
+      - run: python -m pip install .
+      - run: npm ci --ignore-scripts
+      - run: npm run format:check
+      - run: npx playwright install --with-deps chromium
+      - name: Exercise demo
+        env:
+          OMP_BROWSER_CHANNEL: chromium
+          OMP_AXE_MODULE: "@axe-core/playwright"
+        run: |
+          python -m open_multi_pos.demo.server --db /tmp/ci-demo.sqlite3 > /tmp/demo.log 2>&1 &
+          trap 'kill $!' EXIT
+          for attempt in $(seq 1 30); do curl -fsS -o /dev/null http://127.0.0.1:8765/api/context && break || sleep 1; done
+          npm run test:ui
+      - uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: demo-browser-results
+          path: test-results/
