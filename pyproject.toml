@@ -13,7 +13,7 @@ dynamic = ["version"]
 dependencies = ["qrcode==8.2"]
 
 [project.optional-dependencies]
-dev = ["ruff==0.14.1", "build==1.3.0", "pip-audit==2.9.0"]
+dev = ["ruff==0.14.1", "build==1.3.0", "pip-audit==2.9.0", "pypdf==6.15.0"]
 
 [project.scripts]
 openmultipos-demo = "open_multi_pos.demo.server:main"

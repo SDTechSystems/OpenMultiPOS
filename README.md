@@ -48,7 +48,20 @@ La demo calcula importes ficticios con centavos enteros, registra pagos mixtos, 
 
 Perfiles JSON en `open_multi_pos/profiles/printers.json`: Jaltech de referencia (57 mm, 384 puntos), genérica 58 mm y genérica 80 mm. El layout usa ancho útil, DPI y capacidades; no requiere que la impresora sea Jaltech. Para otro modelo se añade/calibra su perfil y se prueba con el controlador instalado.
 
-El adaptador actual produce HTML/vista previa y permite imprimir mediante navegador/driver. El recibo calcula una página corta según contenido (ejemplo de un artículo: ~9 cm), omite pagos en cero y evita el formulario largo automático. Abrir el diálogo no confirma salida física. No hay envío USB/ESC/POS directo ni corte automático. Los ensayos y límites se registran en [hardware-jaltech.md](docs/hardware-jaltech.md). `scripts/print-diagnostic.ps1` sirve para imprimir un raster ficticio usando una cola Windows existente, sin instalar drivers ni cambiar la impresora predeterminada.
+El perfil separa **rollo físico**, **página lógica del controlador** y **ancho útil**. En la cola Windows ensayada, el rollo de 57/58 mm se anuncia como página de 48 mm; el perfil POS-58 usa 48 mm de página y 44 mm de contenido con 2 mm de margen por lado. Así no se centra un PDF de 57 mm sobre una página de 48 mm que recortaría el extremo derecho. Otros controladores requieren su propio perfil calibrado.
+
+La vista previa y el botón de la demo usan navegador/driver. El documento calcula altura según contenido, pero el diálogo físico puede imponer formularios de 210/297/3276 mm. Un PDF corto **no garantiza** que ese controlador avance solo el contenido. Para longitud variable se añadió un diagnóstico local Windows/ESC-POS: raster monocromático, ancho validado, bloques continuos y pequeño avance final, sin corte automático ni cajón. El propietario confirmó una salida compacta (~9 cm de contenido), centrada y legible usando esa vía. No es una certificación de todos los modelos.
+
+La vía nativa es un **CLI local explícito**; todavía no está conectada al botón web ni expuesta como endpoint/puente de impresión. Requiere probar el comando raster por modelo/firmware. Desde un checkout con Node/Playwright, Chrome y Python Windows disponibles:
+
+```powershell
+node scripts/render-receipt-raster.cjs 'http://127.0.0.1:8765/api/receipt?id=ID_DEMO&profile=jaltech-jal58m' test-results/receipt-native
+python -m open_multi_pos.windows_print test-results/receipt-native.pbm --printer 'NOMBRE_DE_COLA_LOCAL' --max-dots 384 --raster-command gs-v-0
+```
+
+El helper valida PBM/dimensiones y envía a una cola existente, sin instalar drivers ni cambiar políticas/defaults. Devuelve `submitted` con ID de trabajo; no reintenta automáticamente ni confirma papel. Reimpresión se decide después de revisar el estado. GS v 0 es un comando heredado, no universal. Los ensayos, limitaciones y referencias están en [hardware-jaltech.md](docs/hardware-jaltech.md) y [receipt-specification.md](docs/receipt-specification.md).
+
+El diagnóstico del lector permite activar **«Lector USB configurado con teclado US»** cuando el teclado de Windows usa otra distribución. Interpreta códigos físicos solo en los campos de escaneo/búsqueda; no reemplaza texto de URLs ya leídas ni cambia el idioma del equipo. Usar desactivado para tecleo normal local; el valor esperado opcional compara la lectura exacta. Una lectura como `httpsÑ--...` evidencia un posible desajuste de distribución, no un QR comercial válido.
 
 ## App Frappe
 
@@ -70,6 +83,7 @@ Navegador (ejecuta ventas ficticias; usar BD desechable): Node >=24 y Chrome ins
 
 ```bash
 OMP_AXE_MODULE=@axe-core/playwright npm run test:ui
+python scripts/check-receipt-pdfs.py
 ```
 
 Para Chromium administrado por Playwright: `npx playwright install chromium` y definir `OMP_BROWSER_CHANNEL=chromium`. Capturas y resultados van a `test-results/`, ignorado por Git. GitHub Actions ejecuta Python y navegador; los tests de contrato Frappe usan mocks y no reemplazan Bench. Ver resultados reales en [audit-report.md](docs/audit-report.md).

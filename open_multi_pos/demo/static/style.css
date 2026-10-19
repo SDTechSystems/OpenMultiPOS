@@ -605,3 +605,20 @@ fieldset p {
     transition: none !important;
   }
 }
+
+.scanner-setting {
+  flex-direction: row;
+  align-items: center;
+  min-height: 44px;
+  gap: 10px;
+}
+.scanner-setting input {
+  width: 24px;
+  height: 24px;
+  min-height: 24px;
+  margin: 0;
+}
+#scanner-expected {
+  margin: 8px 0 18px;
+  width: 100%;
+}

@@ -59,6 +59,7 @@ const out = process.argv[3] || "test-results";
     (await frame.locator("body").textContent()).includes("Taller Aurora"),
   );
   assert.equal(await frame.locator("img").count(), 1);
+  await require("./receipt-layout.cjs")(page, out);
   await page.locator("#printer").selectOption("generic-80");
   await page.waitForFunction(() => !document.querySelector("#print").disabled);
   await page.screenshot({
@@ -98,6 +99,52 @@ const out = process.argv[3] || "test-results";
     ),
   );
   assert.equal(page.url(), base + "/");
+  await page.locator("#scanner-us").check();
+  await page.locator("#scanner-expected").fill("https://example.com/atelier");
+  await page.locator("#scanner-code").evaluate((input) => {
+    const expected = "https://example.com/atelier";
+    const punctuation = {
+      ":": { key: "Ñ", code: "Semicolon", shiftKey: true },
+      "/": { key: "-", code: "Slash" },
+      ".": { key: ".", code: "Period" },
+    };
+    for (const character of expected) {
+      const event = punctuation[character] || {
+        key: character,
+        code: `Key${character.toUpperCase()}`,
+      };
+      input.dispatchEvent(
+        new KeyboardEvent("keydown", {
+          ...event,
+          bubbles: true,
+          cancelable: true,
+        }),
+      );
+    }
+  });
+  assert.equal(
+    await page.locator("#scanner-code").inputValue(),
+    "https://example.com/atelier",
+  );
+  await page.locator("#scanner-code").press("Enter");
+  assert.ok(
+    (await page.locator("#scanner-result").textContent()).includes(
+      "Coincide exactamente",
+    ),
+  );
+  await page.locator("#scanner-expected").fill("different-reference");
+  assert.ok(
+    (await page.locator("#scanner-result").textContent()).includes(
+      "NO coincide",
+    ),
+  );
+  await page.locator("#scanner-expected").fill(" https://example.com/atelier ");
+  assert.ok(
+    (await page.locator("#scanner-result").textContent()).includes(
+      "Coincide exactamente",
+    ),
+  );
+  await page.locator("#scanner-us").uncheck();
   await page.keyboard.press("Tab");
   assert.notEqual(
     await page.evaluate(() => document.activeElement.tagName),

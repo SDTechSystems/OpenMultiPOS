@@ -49,8 +49,8 @@ class ReceiptTests(unittest.TestCase):
         }
         for profile in printer_profiles().values():
             html = BrowserPrinterAdapter().preview(receipt, profile)
-            self.assertIn(f"size: {profile.paper_mm}mm 150mm", html)
-            self.assertIn(f"width:{profile.printable_mm}mm", html)
+            self.assertIn(f"size: {profile.driver_page_mm}mm 150mm", html)
+            self.assertIn(f"width:{profile.content_mm}mm", html)
             self.assertIn("SIN VALIDEZ FISCAL", html)
             self.assertNotIn("<script>", html)
             self.assertIn("&lt;script&gt;", html)

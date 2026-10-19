@@ -52,28 +52,30 @@ def render_receipt(receipt: dict, profile: PrinterProfile) -> str:
         ZoneInfo("America/Bogota")
     )
     qr, modules = qr_image(brand["qr_url"])
-    module_dots = max(3, min(4, int(profile.dots * 0.55 / modules)))
+    module_dots = max(3, min(4, int(profile.content_mm / 25.4 * profile.dpi * 0.55 / modules)))
     qr_mm = modules * module_dots / profile.dpi * 25.4
     change = f"<p>Cambio: {money(receipt['change'])}</p>" if receipt["change"] else ""
     return f'''<!doctype html><html lang="es-CO"><head><meta charset="utf-8">
 <meta name="viewport" content="width=device-width,initial-scale=1"><title>Recibo interno demo</title>
 <script src="/receipt-print.js" defer></script>
 <style>
-@page {{ size: {profile.paper_mm}mm 150mm; margin: 0; }}
+@page {{ size: {profile.driver_page_mm}mm 150mm; margin: 0; }}
 * {{ box-sizing: border-box; }}
-body {{ margin:0; color:#000; background:#fff; font:600 12px/1.25 Arial,sans-serif; }}
-article {{ width:{profile.printable_mm}mm; margin:2mm auto; overflow-wrap:anywhere; }}
+html {{ width:{profile.driver_page_mm}mm; margin:0 auto; }}
+body {{ width:100%; margin:0; color:#000; background:#fff; font:600 12px/1.25 Arial,sans-serif; }}
+article {{ width:{profile.content_mm}mm; margin:0 auto; padding:2mm 0; overflow-wrap:anywhere; }}
 header,footer {{ text-align:center; }} h1 {{ font-size:17px; margin:0 0 2px; }}
 p {{ margin:2px 0; }} .meta {{ font-size:11px; text-align:center; }}
 .badge {{ font-size:10px; margin-bottom:5px; }}
-table {{ width:100%; border-collapse:collapse; margin:6px 0; }}
+table {{ width:100%; table-layout:fixed; border-collapse:collapse; margin:6px 0; }}
+th:first-child {{ width:65%; }}
 th {{ text-align:left; border-bottom:1px dashed #000; font-size:11px; }}
-td {{ padding:3px 0; vertical-align:top; }} td:last-child,th:last-child {{ text-align:right; white-space:nowrap; }}
+td {{ padding:3px 0; vertical-align:top; }} td:last-child,th:last-child {{ text-align:right; overflow-wrap:anywhere; }}
 .total {{ border-top:1px dashed #000; padding-top:4px; font-size:16px; font-weight:bold; }}
 img {{ display:block; margin:3px auto 0; width:{qr_mm:.6f}mm; height:{qr_mm:.6f}mm; image-rendering:pixelated; }}
 small {{ font-size:11px; }} footer {{ margin-top:5px; padding-bottom:2mm; }}
 tr, footer {{ break-inside:avoid; }}
-</style></head><body data-paper-mm="{profile.paper_mm}"><article aria-label="Recibo interno de demostración">
+</style></head><body data-paper-mm="{profile.driver_page_mm}" data-printable-mm="{profile.printable_mm}" data-margin-mm="{profile.margin_mm}" data-dots="{profile.dots}" data-dpi="{profile.dpi}"><article aria-label="Recibo interno de demostración">
 <header><h1>{escape(brand["name"])}</h1>
 <p class="badge">DEMO · RECIBO INTERNO<br>SIN VALIDEZ FISCAL</p></header>
 <p class="meta">{escape(receipt["id"])}<br>{local_time:%d/%m/%Y %H:%M} · COP</p>

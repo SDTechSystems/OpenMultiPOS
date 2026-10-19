@@ -7,3 +7,5 @@ La demo escucha solo en 127.0.0.1. Su selector de usuario es una simulación, si
 Para reportar un riesgo, contactar al mantenedor mediante los canales privados de GitHub disponibles en el repositorio. No incluir credenciales, documentos reales, certificados o información de clientes en issues públicos. Si no hay canal privado configurado, abrir un issue mínimo solicitando contacto sin detalles explotables.
 
 Frappe aporta sesiones y permisos nativos. La extensión añade restricciones; todavía requieren integración en Bench. No hay puente de impresión abierto, pagos bancarios ni servicios DIAN.
+
+El CLI nativo de impresión es optativo y local: solo recibe PBM acotado y una cola nombrada por el operador. No hay endpoint que acepte bytes ESC/POS desde el navegador. No reintentar un envío ambiguo sin revisar la cola. El modo de teclado US se limita a inputs seleccionados y no ejecuta ni abre contenidos escaneados.

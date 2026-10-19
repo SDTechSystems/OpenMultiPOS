@@ -5,7 +5,7 @@ function sizeReceiptPage() {
   const article = document.querySelector("article");
   const width = Number(document.body.dataset.paperMm);
   const height = Math.ceil(
-    (article.getBoundingClientRect().height * 25.4) / 96 + 4,
+    (article.getBoundingClientRect().height * 25.4) / 96 + 1,
   );
   if (!Number.isFinite(width) || width < 30 || width > 120) return;
   let style = document.getElementById("receipt-page-size");
@@ -17,6 +17,7 @@ function sizeReceiptPage() {
   // Large carts paginate; never request metres of paper as a single page.
   const pageHeight = Math.max(40, Math.min(height, 280));
   style.textContent = `@page { size: ${width}mm ${pageHeight}mm; margin: 0; }`;
+  document.body.dataset.printPageHeightMm = String(pageHeight);
   document.body.dataset.receiptHeightMm = String(height);
   window.ompReceiptReady = true;
 }

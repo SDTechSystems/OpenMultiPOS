@@ -5,6 +5,7 @@
     <meta name="viewport" content="width=device-width,initial-scale=1" />
     <title>OpenMultiPOS · Caja demo</title>
     <link rel="stylesheet" href="/style.css" />
+    <script src="/scanner-input.js" defer></script>
     <script src="/app.js" defer></script>
   </head>
   <body>
@@ -141,6 +142,23 @@
           <h2 id="scanner-title">Prueba tu lector</h2>
           <span class="pill">Entrada USB / teclado</span>
         </div>
+        <label class="scanner-setting"
+          ><input type="checkbox" id="scanner-us" /> Lector USB configurado con
+          teclado US</label
+        >
+        <p class="muted">
+          Activa esta opción si «:» sale como «Ñ» o «/» como «-». Se aplica solo
+          a los campos de escaneo y búsqueda; desactívala al escribir con tu
+          teclado local.
+        </p>
+        <label for="scanner-expected"
+          >Contenido esperado (opcional, para comparar)</label
+        >
+        <input
+          id="scanner-expected"
+          placeholder="https://example.com/atelier"
+          autocomplete="off"
+        />
         <form id="scanner-form">
           <label for="scanner-code"
             >Haz clic aquí y escanea un producto o el QR del ticket</label

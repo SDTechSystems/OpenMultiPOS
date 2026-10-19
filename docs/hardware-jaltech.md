@@ -38,3 +38,13 @@ Lector de referencia JAL-PLUS 01 / 40213: confirmar modo HID y terminador Enter/
 - Ninguna foto, controlador binario, identificador de dispositivo o dato del propietario se añadió al repositorio.
 
 - Corrección posterior por solicitud del propietario: la vista previa mostraba papel excesivamente largo. Se compactó el contenido y se reemplazó altura CSS inválida/automática por tamaño finito calculado. El diagnóstico de un artículo mide 89 mm y su PDF tiene una página; comparación física de esa versión pendiente. Cancelar cualquier diálogo antiguo y recargar el recibo para usar el formato nuevo.
+
+## Resultado final de calibración de esta sesión
+
+La captura del diálogo mostró formularios `58(48) x 210/297/3276 mm`: el ancho lógico era 48 mm, no el rollo de 57 mm usado por el PDF anterior. Se separaron `page_mm`, `paper_mm`, `printable_mm` y margen. Perfil POS-58: página 48 mm, contenido 44 mm, margen 2 mm. El cambio está aplicado tanto en pantalla como al entrar en print; el formato físico seleccionado en el diálogo aún puede imponer longitud fija.
+
+Se añadió un diagnóstico CLI nativo, sin puente HTTP: raster PBM a 384 puntos, validación y trabajo RAW Windows con comando ESC/POS GS v 0 seleccionado explícitamente. Trabajo 3: **384 × 711 puntos (~89 mm de contenido)** y un avance final pequeño. El propietario respondió **«looks perfect»** y compartió foto. **PASÓ**: texto reforzado legible, precio completo, márgenes equilibrados, recibo compacto y sin cola larga. La foto no se publica. Modelo/firmware exacto, otras impresoras y matriz de cinco códigos permanecen pendientes.
+
+La primera lectura del QR comercial devolvió 27 caracteres pero sustituyó `:` por `Ñ` y `/` por `-`, consistente con un lector US sobre teclado Windows español. El código impreso era la URL HTTPS de example.com/atelier. Se añadió modo US opcional en los campos de escaneo/búsqueda y comparación exacta; no se corrigen URLs mediante reemplazos ni se cambia el sistema/firmware. Test sintético y físico **PASARON**: propietario confirmó URL exacta, 27 caracteres, Enter, ~215 ms.
+
+Lectura QR física posterior con modo US: el propietario confirmó `https://example.com/atelier` exacta; captura inspeccionada con 27 caracteres y Enter (~215 ms). Se mejoró comparación opcional de referencia: refresca al editar, ignora espacios exteriores solo en el valor humano y muestra ambos textos/longitudes si difieren. No se modifica el payload escaneado.

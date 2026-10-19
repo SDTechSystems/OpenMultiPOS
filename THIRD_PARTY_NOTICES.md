@@ -8,6 +8,7 @@ Código original OpenMultiPOS: GPL-3.0-only, según LICENSE. Las referencias a o
 | ERPNext | GNU GPL v3 | Dependencia externa; sin copia ni modificación del core. Ver license.txt upstream y conservar sus avisos al redistribuirlo. |
 | X POS, Ali Raza | MIT | Integración prevista, código inspeccionado, no copiado ni distribuido. SHA en upstream.lock.json. |
 | python-qrcode 8.2, Lincoln Loop y colaboradores | BSD-3-Clause | Dependencia runtime para QR SVG; su distribución conserva LICENSE. |
+| pypdf | BSD-3-Clause | Verificación de PDFs, solo desarrollo. |
 | Ruff | MIT | Herramienta de desarrollo. |
 | build / flit_core | MIT | Herramientas de empaquetado. |
 | pip-audit | Apache-2.0 | Auditoría de dependencia propia; no prueba seguridad completa upstream. |

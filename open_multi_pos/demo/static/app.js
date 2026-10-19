@@ -224,7 +224,7 @@ function printerDetails() {
     (profile) => profile.id === $("printer").value,
   );
   $("printer-detail").textContent =
-    `Papel ${p.paper_mm} mm · área útil ${p.printable_mm} mm · ${p.dots} puntos · prueba física pendiente. Ajusta tamaño y márgenes en el controlador.`;
+    `Papel ${p.paper_mm} mm · área útil ${p.printable_mm} mm · página del controlador ${p.page_mm || p.paper_mm} mm · ${p.dots} puntos · prueba física pendiente. Ajusta tamaño y márgenes en el controlador.`;
 }
 let receiptVersion = 0;
 async function previewReceipt() {
@@ -358,17 +358,46 @@ $("payment-form").addEventListener("submit", async (event) => {
   }
 });
 loadContext().catch((e) => notify(`No se pudo cargar la demo: ${e.message}`));
+$("scanner-us").checked = sessionStorage.getItem("omp-scanner-layout") === "us";
+$("scanner-us").addEventListener("change", () =>
+  sessionStorage.setItem(
+    "omp-scanner-layout",
+    $("scanner-us").checked ? "us" : "native",
+  ),
+);
+for (const id of ["scanner-code", "search"])
+  window.OMPScanner.attach($(id), () => $("scanner-us").checked);
 let scanStarted = null;
 $("scanner-code").addEventListener("input", () => {
   if (scanStarted === null) scanStarted = performance.now();
 });
-function showScan(terminator) {
-  const code = $("scanner-code").value;
-  const duration =
-    scanStarted === null ? 0 : Math.round(performance.now() - scanStarted);
+let lastScan = null;
+function renderScanResult() {
+  if (!lastScan) return;
+  const { code, terminator, duration } = lastScan;
   $("scanner-result").textContent = code
     ? `Lectura: ${code} · ${code.length} caracteres · terminador: ${terminator} · ${duration} ms. Sin navegación ni envío al servidor.`
     : "No se recibió un código.";
+  // Trim only the human-entered reference, never the scanned payload.
+  const expected = $("scanner-expected").value.trim();
+  if (code && expected)
+    $("scanner-result").textContent +=
+      code === expected
+        ? " Coincide exactamente con el contenido esperado."
+        : ` NO coincide. Esperado ${JSON.stringify(expected)} (${expected.length} caracteres); recibido ${JSON.stringify(code)} (${code.length}).`;
+  if (/^https?[Ññ]/.test(code))
+    $("scanner-result").textContent +=
+      " Posible distribución de teclado distinta: prueba el modo US del lector.";
+}
+$("scanner-expected").addEventListener("input", renderScanResult);
+function showScan(terminator) {
+  lastScan = {
+    code: $("scanner-code").value,
+    terminator,
+    duration:
+      scanStarted === null ? 0 : Math.round(performance.now() - scanStarted),
+  };
+  renderScanResult();
   $("scanner-code").value = "";
   scanStarted = null;
 }

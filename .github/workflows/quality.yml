@@ -29,7 +29,7 @@ jobs:
         with:
           node-version: "24"
           cache: npm
-      - run: python -m pip install .
+      - run: python -m pip install . pypdf==6.15.0
       - run: npm ci --ignore-scripts
       - run: npm run format:check
       - run: npx playwright install --with-deps chromium
@@ -42,6 +42,7 @@ jobs:
           trap 'kill $!' EXIT
           for attempt in $(seq 1 30); do curl -fsS -o /dev/null http://127.0.0.1:8765/api/context && break || sleep 1; done
           npm run test:ui
+          python scripts/check-receipt-pdfs.py
       - uses: actions/upload-artifact@v4
         if: always()
         with:

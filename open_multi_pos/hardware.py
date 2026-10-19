@@ -14,6 +14,8 @@ class PrinterProfile:
     printable_mm: int
     dots: int
     dpi: int
+    page_mm: int | None = None
+    margin_mm: int = 2
     cut: str = "none"
     native_qr: bool = False
     physically_verified: bool = False
@@ -23,8 +25,20 @@ class PrinterProfile:
             raise ValueError("Ancho de impresión inválido")
         if not 200 <= self.dots <= 1200 or not 100 <= self.dpi <= 600:
             raise ValueError("Resolución inválida")
+        if not 30 <= self.driver_page_mm <= self.paper_mm:
+            raise ValueError("Ancho lógico de controlador inválido")
+        if not 0 <= self.margin_mm <= 5 or self.content_mm < 26:
+            raise ValueError("Margen de impresión inválido")
         if self.cut not in ("none", "manual", "automatic"):
             raise ValueError("Tipo de corte inválido")
+
+    @property
+    def driver_page_mm(self) -> int:
+        return self.paper_mm if self.page_mm is None else self.page_mm
+
+    @property
+    def content_mm(self) -> int:
+        return min(self.printable_mm, self.driver_page_mm - 2 * self.margin_mm)
 
 
 def printer_profiles() -> dict[str, PrinterProfile]:
