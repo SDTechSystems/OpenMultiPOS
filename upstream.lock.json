@@ -1,6 +1,6 @@
 {
   "review_date": "2026-10-18",
-  "status": "source-reviewed; local Bench installation and brand permissions tested; native checkout untested",
+  "status": "source-reviewed; Bench and scoped X POS HTTP adapters tested; unaudited invoice routes blocked; native checkout untested",
   "tested_environment": {
     "date": "2026-10-19",
     "os": "Ubuntu 26.04.1 / WSL2",
@@ -10,7 +10,8 @@
     "bench": "5.29.1",
     "mariadb": "11.8.6",
     "redis": "8.0.5",
-    "brand_permission_tests": 9
+    "brand_permission_tests": 9,
+    "xpos_http_security_tests": 19
   },
   "runtime": {
     "python": ">=3.14,<3.15",

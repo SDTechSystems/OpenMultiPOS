@@ -38,7 +38,16 @@ Resultado local: **9 pruebas de integración aprobadas**, con dos empresas/marca
 
 Conservar `-e` al instalar extras de Frappe: una instalación no editable cambia la ruta de importación al wheel, que no contiene las fuentes frontend necesarias para `bench build`. En este Frappe `--parse` interpreta literales Python (`True`, no `true`); `--skip-test-records` está obsoleto y puede evitar que se ejecute la suite. CI reproduce instalación, migración y pruebas desde cero.
 
-Las **40 pruebas sin Frappe** se ejecutan aparte mediante `python -m unittest discover -s tests -v`. Son pruebas del simulador/contratos; no sumarlas a las de Bench como si ambas validaran stock productivo.
+Con las nueve pruebas anteriores completadas y el servicio web activo en loopback, desde el checkout:
+
+```bash
+"$HOME/.local/share/openmultipos/bench/env/bin/python" scripts/test-xpos-http.py \
+  --bench "$HOME/.local/share/openmultipos/bench"
+```
+
+Resultado: **19 pruebas HTTP reales**, con solicitudes v1/v2 autenticadas, usuarios de dos empresas, perfil de otra marca bajo la misma empresa, Sales Invoice/POS Invoice, permisos de campos y concurrencia del contador. La suite requiere `allow_tests`, crea exclusivamente borradores ficticios y aperturas POS de saldo cero que cancela, y restaura credenciales/roles temporales. Ejecutar solo en sitio desechable; no contra datos reales. CI levanta Gunicorn con dos workers y dos threads para reproducir solicitudes simultáneas.
+
+Las **40 pruebas sin Frappe** se ejecutan aparte mediante `python -m unittest discover -s tests -v`. Son pruebas del simulador/contratos; no sumarlas a las de Bench como si validaran stock productivo.
 
 ## Contexto de marca y límites
 
@@ -46,6 +55,6 @@ Configurar OMP Business Brand con Company/Warehouse/POS Profile coherentes. El c
 
 Endpoint autenticado de lectura: `open_multi_pos.api.get_brand_context(brand=ID)`. Revalida permisos, perfil habilitado y pertenencia actual del almacén.
 
-El probe `bench --site omp.localhost execute open_multi_pos.integration.audit_xpos.receipt_context_probe` confirmó que el endpoint upstream de contexto de recibo permite consultar otro perfil aunque la API documental nativa lo rechace. Solo se ejercitaron datos ficticios y se imprimieron booleanos de diagnóstico. **El aislamiento de OpenMultiPOS no garantiza el de todos los endpoints X POS.**
+El probe `bench --site omp.localhost execute open_multi_pos.integration.audit_xpos.receipt_context_probe` usa ahora el método resuelto por los overrides. Devuelve `native_profile_access_denied=true` y `xpos_adapter_access_denied=true`. Las 19 pruebas HTTP comprueban además el dispatch real, incluyendo llamadas directas al adaptador. El cuerpo Python original upstream permanece intacto; los overrides no interceptan imports internos de otras aplicaciones.
 
-Antes de datos reales: corregir/restringir esa ruta, revisar `mark_invoice_printed` y `create_invoice`/reintentos y probar sus solicitudes directas. Checkout, stock, pagos mixtos, cierres, unicidad concurrente, offline y restauración siguen pendientes de integración nativa.
+Ver [matriz de APIs y límites](xpos-api-security.md). El cajero conserva lectura restringida; creación/reintentos y otras operaciones de factura X POS devuelven 403 incluso para managers. Antes de habilitarlas se necesita checkout nativo con unicidad atómica en BD, stock, pagos mixtos y cierres. Offline y restauración siguen pendientes. **Estas pruebas no certifican el resto de endpoints X POS.**

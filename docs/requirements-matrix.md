@@ -5,7 +5,7 @@ Estado de descubrimiento antes de implementar. “Existente” indica código up
 | ID | Prioridad | Estado upstream | Evidencia | Gap | Riesgo | Esfuerzo | Prueba de aceptación |
 | --- | --- | --- | --- | --- | --- | --- | --- |
 | F01 | P0 | necesita configuración / extensión | Company, Warehouse, POS Profile | Añadir marca y usuarios; probar API cruzada | Alta | M | Dos marcas / misma entidad permitida |
-| F02 | P0 | existente / no verificado | Frappe roles; X POS auth.py | Auditar endpoints que usan ignore_permissions | Crítica | L | Cajero no consulta ni escribe negocio ajeno |
+| F02 | P0 | integración parcial probada | Frappe roles, hooks propios y adaptadores X POS | 9 pruebas Bench + 19 HTTP; 14 rutas de factura bloqueadas; otras APIs pendientes | Crítica | L | Cajero no consulta ni escribe negocio ajeno |
 | F03 | P0 | existente / necesita configuración | ERPNext Item, Barcode, Item Price | Catálogo demo y plantillas; probar CSV/variantes | Media | M | Crear vela/mouse con modelos adecuados |
 | F04 | P0 | existente / no verificado | Stock Entry y stock ledger ERPNext | Verificar modo POS, cierres y concurrencia | Crítica | L | Almacén correcto, stock exacto y sin duplicados |
 | F05 | P0 | existente / extensión | X POS invoices.py / test_invoice_retry.py | Aislamiento y unicidad atómica todavía sin probar | Crítica | L | Reintento y cobros simultáneos una sola vez |

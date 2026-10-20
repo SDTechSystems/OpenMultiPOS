@@ -79,6 +79,13 @@ jobs:
           bench --site omp.localhost set-config allow_tests True --parse
           uv pip install --python env/bin/python -e './apps/frappe[test]'
           bench --site omp.localhost run-tests --module open_multi_pos.integration.test_permissions --skip-before-tests
+      - name: Exercise secured X POS over HTTP v1 and v2
+        working-directory: ${{ runner.temp }}/omp-bench
+        run: |
+          env/bin/gunicorn --chdir sites --bind 127.0.0.1:8000 --workers 2 --threads 2 --pid "$RUNNER_TEMP/omp-http.pid" --daemon frappe.app:application
+          trap 'kill "$(cat "$RUNNER_TEMP/omp-http.pid")"' EXIT
+          for attempt in $(seq 1 30); do curl -fsS -H 'Host: omp.localhost' -o /dev/null http://127.0.0.1:8000/api/method/ping && break || sleep 1; done
+          env/bin/python "$GITHUB_WORKSPACE/scripts/test-xpos-http.py" --bench "$RUNNER_TEMP/omp-bench"
   browser:
     needs: privacy
     runs-on: ubuntu-latest

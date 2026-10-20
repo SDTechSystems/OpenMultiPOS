@@ -93,4 +93,25 @@ Las primeras ejecuciones revelaron detalles del runner: `set-config --parse` int
 
 **Hallazgo upstream confirmado U04 parcial:** el probe `open_multi_pos.integration.audit_xpos.receipt_context_probe` devolvió `native_profile_access_denied=true` y `xpos_receipt_access_denied=false`. El cajero A no puede leer documentalmente el perfil B, pero la función X POS de contexto devuelve su contexto sin ejecutar ese control. Solo se usaron entidades ficticias; no se registró el payload retornado. La prueba reproduce una llamada Python directa a la función whitelisted; no se presenta como ensayo HTTP de todas sus rutas.
 
-Por tanto, issue #3 sigue abierto: falta restringir esa ruta y probar directamente mark_invoice_printed, creación de facturas y reintentos. Checkout productivo y pruebas nativas de stock, unicidad concurrente, caja/offline/recuperación siguen bloqueados. Los nueve casos aprobados prueban el perímetro OpenMultiPOS evaluado, no el aislamiento completo de X POS.
+Al cerrar aquel incremento, issue #3 seguía abierto: faltaba restringir esa ruta y probar directamente mark_invoice_printed, creación de facturas y reintentos. La siguiente sección registra el avance posterior. Los nueve casos aprobados prueban el perímetro OpenMultiPOS evaluado, no el aislamiento completo de X POS.
+
+## P0 · Recibos, facturas e impresión por HTTP · 19/10/2026
+
+Se añadieron adaptadores con `override_whitelisted_methods`, sin modificar core/upstream. El contexto valida marca concedida/habilitada, perfil vigente, asignación, permisos nativos y formato configurado; no vuelve al resolver cached original. El detalle valida cada documento y aplica permisos de campo antes de devolver valores. El registro de impresión admite solo POST, comprueba lectura/impresión nativa y derechos del perfil específico, y usa bloqueo de fila. Un rol de reimpresión en otro perfil no concede ese derecho al documento actual.
+
+La inspección de creación/reintentos encontró autorización posterior a búsqueda de duplicado y escrituras con ignore_permissions. Se bloquearon 14 operaciones whitelisted del módulo de facturas, también para managers, incluyendo creación, borradores, fiscalización, listados y devoluciones/repetición. Solicitudes directas v1/v2 devuelven 403 sin mutar facturas, Stock Ledger Entry ni GL Entry. Esto no valida checkout nativo; conserva la puerta cerrada hasta issue #4. El inventario AST clasifica las 16 funciones whitelisted del módulo fijado y falla si cambia sin revisión.
+
+Los ensayos adicionales encontraron una factura de otra marca de la misma empresa accesible por permisos documentales nativos. Se añadieron restricciones de lista/documento para OMP Cashier en Sales Invoice/POS Invoice, sin conceder escritura. Una prueba HTTP de `/printview` devolvió una página de esa factura pese al rechazo REST; se añadió un hook posterior a autenticación que valida documento e impresión antes del render. Ambas formas de URL de página, REST v1/v2, lista y API de HTML se cubren mediante solicitudes reales. No se afirma haber identificado o corregido toda la superficie de impresión upstream.
+
+MariaDB produjo CHECKREAD bajo solicitudes concurrentes con bloqueo, traducido por Frappe a QueryDeadlockError. Se responde 409 y se deja el rollback al framework; no se resetea la transacción del llamador. Las pruebas reintentan únicamente registros abortados y verifican contador exacto y segunda impresión denegada al cajero sin permiso. No existe reintento automático de papel ni confirmación física en ese contador.
+
+| Evidencia de este incremento | Resultado | Alcance y límites |
+| --- | --- | --- |
+| Suite HTTP con Gunicorn/MariaDB | PASÓ · 19 pruebas | v1/v2, URLs propias, ambas clases de factura, Guest, dos empresas, otra marca en la misma empresa, revocación, perfil/marca deshabilitados, formato arbitrario, campos restringidos, rutas bloqueadas y concurrencia. Sin mocks de autorización. |
+| Suite Bench/MariaDB anterior | PASÓ · 9 pruebas | Regresión del perímetro marca/perfil sobre el sitio instalado. |
+| Suite sin framework | PASÓ · 40 pruebas | Simulador y contratos existentes, no checkout ERPNext. |
+| Ruff, formato y build | PASÓ | Fuentes propias; wheel incluye módulos y fixtures. |
+
+Los fixtures HTTP son exclusivamente ficticios: facturas en borrador de un ítem sin stock y aperturas POS de saldo cero canceladas después de preparar los documentos. Tokens aleatorios permanecen en memoria; la suite restaura credenciales/roles y elimina secretos temporales. No se publican cuerpos de recibos, credenciales ni logs privados. El probe resuelve ahora el override y devuelve `native_profile_access_denied=true`, `xpos_adapter_access_denied=true`; es diagnóstico Python adicional, separado de la evidencia HTTP.
+
+La matriz completa del incremento y sus límites están en [xpos-api-security.md](xpos-api-security.md). Las funciones Python originales upstream siguen intactas: llamadas internas por import requieren su propia revisión. Otras APIs de catálogo/clientes/reportes/cierres/exportación/archivos no quedan certificadas. Checkout, stock, pagos mixtos, caja, idempotencia de ventas, offline y recuperación continúan pendientes. DIAN desactivada; ningún nuevo ensayo físico ni uso de datos reales.

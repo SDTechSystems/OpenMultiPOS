@@ -2,7 +2,7 @@
 
 POS libre y autohospedable, diseñado como extensión de **ERPNext + Frappe + X POS** para operar varias marcas, inventarios, caja y recibos con impresoras configurables.
 
-**Estado: desarrollo con instalación Bench validada.** Incluye una demo local funcional y la app Frappe instalada con ERPNext/X POS en Ubuntu WSL; nueve pruebas reales validan permisos de marca/perfil. Las ventas de la demo son simuladas. Checkout productivo, otros endpoints X POS y offline todavía requieren integración y pruebas.
+**Estado: desarrollo con Bench y protección inicial de APIs validados.** Incluye una demo local funcional y la app Frappe instalada con ERPNext/X POS en Ubuntu WSL. Nueve pruebas Bench y 19 pruebas HTTP reales cubren marca/perfil, recibos, documentos e impresión. Las ventas de la demo son simuladas. Checkout productivo, otras APIs X POS y offline todavía requieren integración y pruebas.
 
 - [Funcionalidades F01–F19](docs/features.md)
 - [Plan por fases y backlog](docs/roadmap.md)
@@ -67,9 +67,9 @@ El diagnóstico del lector permite activar **«Lector USB configurado con teclad
 
 ## App Frappe
 
-La app `open_multi_pos` añade `OMP Business Brand`, su lista de usuarios, el rol de lectura `OMP Cashier`, restricciones de perfiles y un endpoint autorizado de contexto. Empresa, almacén y POS Profile deben coincidir. No tiene endpoint de ventas productivas en este incremento. Ver [desarrollo e instalación](docs/development.md) y [despliegue](docs/deployment.md).
+La app `open_multi_pos` añade `OMP Business Brand`, su lista de usuarios, el rol de lectura `OMP Cashier`, restricciones de perfiles/facturas y contexto autorizado. Empresa, almacén y POS Profile deben coincidir. Los adaptadores de recibo, detalle y registro de impresión conservan permisos nativos; 14 operaciones X POS de factura quedan bloqueadas hasta validar checkout e idempotencia. No se pueden registrar ventas desde X POS en este incremento. Ver [seguridad de APIs](docs/xpos-api-security.md), [desarrollo e instalación](docs/development.md) y [despliegue](docs/deployment.md).
 
-SHAs revisados e instalados en [upstream.lock.json](upstream.lock.json): Frappe 16.52.0, ERPNext 16.51.1 y X POS 2.12.0. Instalación, migración y nueve pruebas de permisos aprobadas localmente. Chrome Windows alcanza el backend WSL. El probe de contexto de recibo X POS confirmó un acceso cruzado pendiente de corregir; mantener datos ficticios hasta completar la auditoría de sus rutas.
+SHAs revisados e instalados en [upstream.lock.json](upstream.lock.json): Frappe 16.52.0, ERPNext 16.51.1 y X POS 2.12.0. Instalación, migración y pruebas locales aprobadas. Chrome Windows alcanza el backend WSL. El acceso cruzado confirmado en contexto de recibo está restringido mediante dispatch HTTP v1/v2, sin modificar upstream. Mantener datos ficticios hasta completar las puertas de checkout y la revisión del resto de APIs.
 
 ## Validación
 
