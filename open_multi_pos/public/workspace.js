@@ -468,7 +468,16 @@
           id: "product-group",
           label: "Grupo de productos",
           type: "select",
-          options: state.boot.item_groups.map((g) => [g,({Products:"Productos",Services:"Servicios",Consumable:"Consumibles","Raw Material":"Materia prima","Sub Assemblies":"Subensambles"})[g]||g]),
+          options: state.boot.item_groups.map((g) => [
+            g,
+            {
+              Products: "Productos",
+              Services: "Servicios",
+              Consumable: "Consumibles",
+              "Raw Material": "Materia prima",
+              "Sub Assemblies": "Subensambles",
+            }[g] || g,
+          ]),
           value:
             state.boot.item_groups.find((g) => g === "Products") ||
             state.boot.item_groups[0],
