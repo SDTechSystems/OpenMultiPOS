@@ -36,7 +36,7 @@ def qr_data_url(url: str) -> str:
     return qr_image(url)[0]
 
 
-def render_receipt(receipt: dict, profile: PrinterProfile) -> str:
+def render_receipt(receipt: dict, profile: PrinterProfile, *, native: bool = False) -> str:
     brand = receipt["brand"]
     rows = "".join(
         f"<tr><td>{escape(line['name'])}<br><small>{line['qty']} × {money(line['rate'])}</small>"
@@ -44,7 +44,7 @@ def render_receipt(receipt: dict, profile: PrinterProfile) -> str:
         for line in receipt["items"]
     )
     payments = "".join(
-        f"<p>{escape(p['label'].replace('(registro demo)', '').strip())}: {money(p['amount'])}</p>"
+        f"<p>{escape(p['mode_of_payment'] if native else p['label'].replace('(registro demo)', '').strip())}: {money(p['amount'])}</p>"
         for p in receipt["payments"]
         if p["amount"] > 0
     )
@@ -55,9 +55,15 @@ def render_receipt(receipt: dict, profile: PrinterProfile) -> str:
     module_dots = max(3, min(4, int(profile.content_mm / 25.4 * profile.dpi * 0.55 / modules)))
     qr_mm = modules * module_dots / profile.dpi * 25.4
     change = f"<p>Cambio: {money(receipt['change'])}</p>" if receipt["change"] else ""
+    title = "Recibo interno" if native else "Recibo interno demo"
+    badge = "RECIBO INTERNO" if native else "DEMO · RECIBO INTERNO"
+    label = "Recibo interno guardado" if native else "Recibo interno de demostración"
+    qr_label = "QR comercial" if native else "QR comercial de demostración"
+    script = "/assets/open_multi_pos/receipt-print.js" if native else "/receipt-print.js"
+    taxes = f"<p>Impuestos: {money(receipt['taxes'])}</p>" if native else ""
     return f'''<!doctype html><html lang="es-CO"><head><meta charset="utf-8">
-<meta name="viewport" content="width=device-width,initial-scale=1"><title>Recibo interno demo</title>
-<script src="/receipt-print.js" defer></script>
+<meta name="viewport" content="width=device-width,initial-scale=1"><title>{title}</title>
+<script src="{script}" defer></script>
 <style>
 @page {{ size: {profile.driver_page_mm}mm 150mm; margin: 0; }}
 * {{ box-sizing: border-box; }}
@@ -75,11 +81,11 @@ td {{ padding:3px 0; vertical-align:top; }} td:last-child,th:last-child {{ text-
 img {{ display:block; margin:3px auto 0; width:{qr_mm:.6f}mm; height:{qr_mm:.6f}mm; image-rendering:pixelated; }}
 small {{ font-size:11px; }} footer {{ margin-top:5px; padding-bottom:2mm; }}
 tr, footer {{ break-inside:avoid; }}
-</style></head><body data-paper-mm="{profile.driver_page_mm}" data-printable-mm="{profile.printable_mm}" data-margin-mm="{profile.margin_mm}" data-dots="{profile.dots}" data-dpi="{profile.dpi}"><article aria-label="Recibo interno de demostración">
+</style></head><body data-paper-mm="{profile.driver_page_mm}" data-printable-mm="{profile.printable_mm}" data-margin-mm="{profile.margin_mm}" data-dots="{profile.dots}" data-dpi="{profile.dpi}"><article aria-label="{label}">
 <header><h1>{escape(brand["name"])}</h1>
-<p class="badge">DEMO · RECIBO INTERNO<br>SIN VALIDEZ FISCAL</p></header>
+<p class="badge">{badge}<br>SIN VALIDEZ FISCAL</p></header>
 <p class="meta">{escape(receipt["id"])}<br>{local_time:%d/%m/%Y %H:%M} · COP</p>
 <table><thead><tr><th scope="col">Artículo</th><th scope="col">COP</th></tr></thead><tbody>{rows}</tbody></table>
-<p class="total">Total {money(receipt["total"])}</p>{payments}{change}
-<footer><small>{escape(brand["footer"])}</small><img src="{qr}" alt="QR comercial de demostración"></footer>
+{taxes}<p class="total">Total {money(receipt["total"])}</p>{payments}{change}
+<footer><small>{escape(brand["footer"])}</small><img src="{qr}" alt="{qr_label}"></footer>
 </article></body></html>'''
