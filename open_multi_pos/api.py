@@ -13,6 +13,8 @@ def get_brand_context(brand: str) -> dict:
         frappe.throw("Negocio desactivado", frappe.PermissionError)
     profile = frappe.get_doc("POS Profile", doc.pos_profile)
     profile.check_permission("read")
+    if profile.disabled:
+        frappe.throw("Perfil POS desactivado", frappe.PermissionError)
     profile_users = [row.user for row in profile.applicable_for_users]
     if (
         profile_users
@@ -21,9 +23,15 @@ def get_brand_context(brand: str) -> dict:
     ):
         frappe.throw("Usuario no autorizado en el perfil POS", frappe.PermissionError)
     # The brand grant must never confer access to an unrelated company/warehouse.
-    for doctype, name in (("Company", doc.company), ("Warehouse", doc.warehouse)):
-        frappe.get_doc(doctype, name).check_permission("read")
-    if profile.company != doc.company or profile.warehouse != doc.warehouse:
+    company = frappe.get_doc("Company", doc.company)
+    company.check_permission("read")
+    warehouse = frappe.get_doc("Warehouse", doc.warehouse)
+    warehouse.check_permission("read")
+    if (
+        profile.company != doc.company
+        or profile.warehouse != doc.warehouse
+        or warehouse.company != doc.company
+    ):
         frappe.throw("Perfil POS no coincide con empresa y almacén")
     return {
         "brand": doc.name,

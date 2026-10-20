@@ -27,6 +27,57 @@ jobs:
       - run: python -m unittest discover -s tests -v
       - run: python -m build
       - run: pip-audit --no-deps --disable-pip -r requirements-runtime.txt
+  bench:
+    needs: privacy
+    runs-on: ubuntu-24.04
+    timeout-minutes: 30
+    services:
+      mariadb:
+        image: mariadb:11.8.6@sha256:78a5047d3ba33975f183f183c2464cc7f1eab13ec8667e57cc9a5821d6da7577
+        env:
+          MARIADB_ROOT_PASSWORD: ci-only-database
+        ports:
+          - 3306:3306
+        options: >-
+          --health-cmd="healthcheck.sh --connect --innodb_initialized"
+          --health-interval=5s --health-timeout=5s --health-retries=20
+      redis:
+        image: redis:8.0.5@sha256:dbd4be0dd40f16bd91486087680fc2d25666e807b937774906dc111a621ce556
+        ports:
+          - 6379:6379
+        options: --health-cmd="redis-cli ping" --health-interval=5s --health-retries=10
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.14"
+      - uses: actions/setup-node@v4
+        with:
+          node-version: "24.22.0"
+      - name: Install development tools
+        run: |
+          sudo apt-get update -qq
+          sudo apt-get install -y --no-install-recommends build-essential pkg-config libmariadb-dev mariadb-client redis-server libpango-1.0-0 libpangocairo-1.0-0
+          python -m pip install frappe-bench==5.29.1
+          npm install --global yarn@1.22.22
+      - name: Install pinned applications
+        run: python scripts/prepare-bench.py --bench "$RUNNER_TEMP/omp-bench" --sources "$RUNNER_TEMP/omp-sources"
+      - name: Create disposable site and test permissions
+        env:
+          OMP_DB_PASSWORD: ci-only-database
+          OMP_ADMIN_PASSWORD: ci-only-administrator
+        working-directory: ${{ runner.temp }}/omp-bench
+        run: |
+          bench set-config -g redis_cache redis://127.0.0.1:6379/1
+          bench set-config -g redis_queue redis://127.0.0.1:6379/2
+          bench new-site omp.localhost --db-host 127.0.0.1 --db-root-username root --db-root-password "$OMP_DB_PASSWORD" --admin-password "$OMP_ADMIN_PASSWORD" --mariadb-user-host-login-scope '%'
+          bench --site omp.localhost install-app erpnext
+          bench --site omp.localhost install-app xpos
+          bench --site omp.localhost install-app open_multi_pos
+          bench --site omp.localhost migrate
+          bench --site omp.localhost set-config allow_tests true --parse
+          uv pip install --python env/bin/python './apps/frappe[test]'
+          bench --site omp.localhost run-tests --module open_multi_pos.integration.test_permissions --skip-test-records --skip-before-tests
   browser:
     needs: privacy
     runs-on: ubuntu-latest
