@@ -1,4 +1,4 @@
-"""Read-only scaffold. No productive checkout endpoint until Bench acceptance passes."""
+"""Authorized read-only brand context; online checkout lives in checkout.py."""
 
 import frappe
 

@@ -5,7 +5,9 @@ flowchart LR
     POS[X POS web] --> F[Frappe / ERPNext v16]
     O[App open_multi_pos] --> F
     O --> B[Marca → Company / Warehouse / POS Profile]
-    O --> R[Instantánea de recibo interno]
+    O --> N[Servicio autorizado → Sales Invoice / stock / GL]
+    N --> J[Clave única + snapshot persistente]
+    J --> R[Instantánea de recibo interno]
     R --> P[PrinterAdapter + perfil de capacidades]
     P --> V[Vista previa / navegador + controlador]
     P -. futuro .-> E[Agente ESC/POS local restringido]
@@ -13,7 +15,7 @@ flowchart LR
     Demo[Demo local ficticia] --> Sim[Simulador separado, sin ERPNext]
 ```
 
-ERPNext conserva catálogo, precios, impuestos, documentos, stock y contabilidad. La extensión añade exclusivamente marca y configuración de hardware/contexto. No copia ni modifica core. El primer scaffold no expone escritura de ventas productivas.
+ERPNext conserva catálogo, precios, impuestos, documentos, stock y contabilidad. La extensión añade marca, terminales, un servicio autorizado de caja y journals privados de idempotencia/snapshot. No copia ni modifica core. El backend en línea usa Sales Invoice con stock/GL inmediatos y aperturas/cierres nativos. La pantalla de caja todavía debe conectarse al contrato de [native-checkout.md](native-checkout.md).
 
 Desarrollo local validado: backend y herramientas en Ubuntu WSL; navegador, controlador de impresión y lector en Windows. Chrome Windows alcanza el servicio web WSL en loopback. La conexión de varios computadores requiere un servidor accesible con autenticación/TLS; no se habilita exponiendo el sitio de ensayo. Ver [local-services.md](local-services.md).
 

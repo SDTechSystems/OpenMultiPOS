@@ -119,3 +119,28 @@ La revisión del resolver de Frappe identificó variantes `.html` de ambas pági
 El primer CI nuevo pasó 18 casos HTTP y falló con 500 en la página HTML de denegación. El preparador usa `--skip-assets`; la página de error de Frappe también carga bundles y necesita el build omitido en ese sitio fresco. Se añadió compilación de assets nativos antes de Gunicorn y se comprueban tanto JSON como HTML con 403, sin relajar la expectativa de autorización.
 
 La matriz completa del incremento y sus límites están en [xpos-api-security.md](xpos-api-security.md). Las funciones Python originales upstream siguen intactas: llamadas internas por import requieren su propia revisión. Otras APIs de catálogo/clientes/reportes/cierres/exportación/archivos no quedan certificadas. Checkout, stock, pagos mixtos, caja, idempotencia de ventas, offline y recuperación continúan pendientes. DIAN desactivada; ningún nuevo ensayo físico ni uso de datos reales.
+
+## P0 · Backend de caja nativa · 19/10/2026
+
+Nuevo servicio `open_multi_pos.checkout`: terminal individual autorizada, cotización con ERPNext, apertura/cobro/cierre y consulta de estado. Se eligió Sales Invoice con is_created_using_pos y stock/contabilidad inmediatos. No se llama al create_invoice upstream ni a fiscalización interactiva. FBR activado y otras configuraciones no soportadas se rechazan antes de enviar. Las 14 rutas originales siguen cerradas; el frontend X POS no está conectado a este API.
+
+Tres DocTypes propios: OMP POS Terminal (UUID, usuario/marca inmutables, deshabilitada por defecto), OMP Checkout Quote (huella financiera y vencimiento) y OMP Checkout Request (PK por terminal/UUID, hash de payload y quote UNIQUE). El claim, envío nativo y snapshot comparten transacción. Los journals privados usan inserciones internas después de autorizar; las facturas nunca usan ignore_permissions. Los permisos nativos de rol/empresa siguen activos dentro de una capacidad ContextVar limitada a documentos concretos. El cajero no recibe roles contables ni permiso de escritura directa por HTTP.
+
+Se comprobaron precio/impuestos nativos, pagos COP mixtos y cambio del efectivo; los registros Bank no se presentan como confirmación bancaria. Artículos/bins bloqueados en orden estable, rechazo de stock insuficiente incluso con política global permisiva y serialización de cierre/cobro por perfil. Se fija la unidad de inventario: no se interpreta una unidad de venta de diez unidades como una unidad disponible. La marca persistida en el journal restringe facturas históricas aunque se reutilice su perfil.
+
+El cierre ERPNext contiene un commit interno antes de asociar algunas facturas. Se mantiene ese comportamiento sin fork y se documenta su límite: retry idéntico recupera el cierre y repara asociaciones, sin volver a enviar facturas ni descontar stock. No se anuncia atomicidad completa del cierre ni recuperación de todos los fallos. Solo checkout propio carece de commits/rollbacks internos; 409 y respuesta incierta requieren consultar estado y repetir la misma clave.
+
+| Evidencia local | Resultado | Alcance |
+| --- | --- | --- |
+| Migración | PASÓ | Tres DocTypes nuevos, índices UNIQUE/consulta y permisos mínimos sin roles contables. |
+| HTTP nativo | PASÓ · 16 pruebas | Factura enviada, Stock Ledger y GL balanceado, impuesto ficticio calculado por ERPNext, mixtos/cambio, apertura/cierre, retry/payload/quote, concurrencia/última unidad entre perfiles, cierre concurrente, expiración/precio cambiado, revocación/acceso cruzado, perfil reutilizado, unidad de inventario, rechazo fiscal y snapshot. |
+| Rollback contable real | PASÓ | Cuentas congeladas causan fallo nativo de GL; sin factura, SLE, GL ni claim adicionales. Misma clave funciona al corregir la configuración. |
+| Contratos sin Frappe | PASÓ · 47 pruebas | Incluye siete contratos nuevos de Decimal, UUID, campos admitidos, cantidades y normalización; separado de la integración real. |
+
+Fixtures únicamente ficticios; Stock Entry de preparación, facturas enviadas y cierres se conservan. Se restauran tokens/roles, precios, configuración y permiso temporal adicional; se deshabilitan perfiles/marcas/terminales de la suite. Ningún voucher ni log se publica. La migración encontró 550 trabajos pendientes sin consumidor: se instaló worker systemd de usuario para procesarlos sin purgar cola ni aumentar su límite; CI también arranca un worker.
+
+Contrato, configuración y límites en [native-checkout.md](native-checkout.md). Falta pantalla autenticada y búsqueda/lector conectados al API, presentación/impresión nativa del snapshot, devoluciones, pruebas operativas de backup/restauración y revisión del resto de upstream. No se cambió core, no se hicieron pruebas físicas nuevas, no se transmitió a DIAN y no se habilitó operación con datos reales.
+
+La repetición de la prueba concurrente reveló un cierre que omitía una venta recién completada: el bloqueo del perfil no refresca una vista REPEATABLE READ previa. Se añadió un Custom Field estándar de revisión en POS Opening Entry, incrementado con la venta; comparar snapshot/lectura bloqueada obliga a 409 si la vista está obsoleta, sin resetear transacciones. Se repitió la carrera y se añadió guard de eventos contra escrituras directas incluso con DocShare. El harness también descarta su snapshot diagnóstico antes de inspeccionar una cotización creada por HTTP; no modifica la transacción del servicio.
+
+Regresión final local: 9 pruebas Bench, 19 HTTP de seguridad y 16 HTTP de caja aprobadas; carrera cierre/venta repetida seis veces adicionales sin fallos. Ruff/formato/Prettier, 47 contratos/simulador y build aprobados. Worker activo: short/default/long con cero tareas pendientes y cero fallidas tras procesar el backlog.

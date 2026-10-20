@@ -1,6 +1,6 @@
 {
   "review_date": "2026-10-18",
-  "status": "source-reviewed; Bench and scoped X POS HTTP adapters tested; unaudited invoice routes blocked; native checkout untested",
+  "status": "source-reviewed; scoped API security and native online checkout tested; cashier UI pending; original X POS invoice routes blocked",
   "tested_environment": {
     "date": "2026-10-19",
     "os": "Ubuntu 26.04.1 / WSL2",
@@ -11,7 +11,8 @@
     "mariadb": "11.8.6",
     "redis": "8.0.5",
     "brand_permission_tests": 9,
-    "xpos_http_security_tests": 19
+    "xpos_http_security_tests": 19,
+    "native_checkout_http_tests": 16
   },
   "runtime": {
     "python": ">=3.14,<3.15",

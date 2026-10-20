@@ -28,7 +28,9 @@ Instalación y migración Bench completadas en Ubuntu WSL el 19/10/2026 con los 
 
 Incremento P0 de APIs: acceso cruzado de recibos restringido, contador de impresión protegido y concurrente, detalle con permisos de campos y facturas de cajeros filtradas por marca. Diecinueve pruebas HTTP reales cubren v1/v2 y rutas nativas alternativas. Catorce operaciones de factura X POS permanecen bloqueadas, incluida creación/reintentos; ver [matriz de APIs](xpos-api-security.md). No se modificó core.
 
-Próxima tarea P0: conectar checkout nativo con unicidad en BD, hash de payload, stock y concurrencia; habilitar sus rutas solo después de pruebas negativas y de reintentos. La auditoría del resto de APIs upstream continúa abierta. No conectar transacciones reales hasta superar esas puertas. La selección de entidad legal, logotipos y métodos bancarios se configura localmente; no bloquea la base genérica.
+Backend de caja nativa completado: 16 pruebas HTTP reales de cotización/checkout, Stock Ledger y GL, impuestos, mixtos/cambio, apertura/cierre, UUID/payload/quote únicos, última unidad entre perfiles y rollback. Journals privados, capacidades por solicitud y snapshot histórico; ver [native-checkout.md](native-checkout.md). Worker local activo para procesar trabajo en segundo plano. Las 14 rutas originales siguen bloqueadas.
+
+Próxima tarea P0: pantalla de caja autenticada en Windows conectada al nuevo API, búsqueda/lector, UUID estable ante respuesta incierta y recibo imprimible del snapshot nativo. Probar el flujo completo, dos usuarios y fallos de impresión sin repetir venta. Auditoría upstream, devoluciones y operación/recuperación siguen pendientes; solo datos ficticios.
 
 ## Seguimiento en GitHub
 

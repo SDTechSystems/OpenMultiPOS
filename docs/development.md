@@ -47,7 +47,7 @@ Con las nueve pruebas anteriores completadas y el servicio web activo en loopbac
 
 Resultado: **19 pruebas HTTP reales**, con solicitudes v1/v2 autenticadas, usuarios de dos empresas, perfil de otra marca bajo la misma empresa, Sales Invoice/POS Invoice, permisos de campos y concurrencia del contador. La suite requiere `allow_tests`, crea exclusivamente borradores ficticios y aperturas POS de saldo cero que cancela, y restaura credenciales/roles temporales. Ejecutar solo en sitio desechable; no contra datos reales. CI compila `bench build --apps frappe,erpnext` antes de iniciar Gunicorn con dos workers/dos threads: las páginas HTML de error necesitan sus assets incluso cuando la prueba espera un 403. El sitio local ya incluye esos assets; un Bench nuevo preparado con `--skip-assets` debe compilarlos primero.
 
-Las **40 pruebas sin Frappe** se ejecutan aparte mediante `python -m unittest discover -s tests -v`. Son pruebas del simulador/contratos; no sumarlas a las de Bench como si validaran stock productivo.
+Las **47 pruebas sin Frappe** se ejecutan aparte mediante `python -m unittest discover -s tests -v`. Son pruebas del simulador/contratos; no sumarlas a las de Bench como si validaran stock productivo.
 
 ## Contexto de marca y límites
 
@@ -57,4 +57,15 @@ Endpoint autenticado de lectura: `open_multi_pos.api.get_brand_context(brand=ID)
 
 El probe `bench --site omp.localhost execute open_multi_pos.integration.audit_xpos.receipt_context_probe` usa ahora el método resuelto por los overrides. Devuelve `native_profile_access_denied=true` y `xpos_adapter_access_denied=true`. Las 19 pruebas HTTP comprueban además el dispatch real, incluyendo llamadas directas al adaptador. El cuerpo Python original upstream permanece intacto; los overrides no interceptan imports internos de otras aplicaciones.
 
-Ver [matriz de APIs y límites](xpos-api-security.md). El cajero conserva lectura restringida; creación/reintentos y otras operaciones de factura X POS devuelven 403 incluso para managers. Antes de habilitarlas se necesita checkout nativo con unicidad atómica en BD, stock, pagos mixtos y cierres. Offline y restauración siguen pendientes. **Estas pruebas no certifican el resto de endpoints X POS.**
+Ver [matriz de APIs y límites](xpos-api-security.md). Las 14 operaciones originales de factura X POS devuelven 403 incluso para managers. La caja nativa se implementa en un servicio propio, descrito en [native-checkout.md](native-checkout.md), con 16 pruebas HTTP adicionales. El rol conserva lectura de perfiles y escrituras documentales financieras restringidas a la capacidad privada del servicio. La pantalla POS, offline y restauración siguen pendientes. **Estas pruebas no certifican el resto de endpoints X POS.**
+
+## Pruebas del checkout nativo
+
+Después de migrar el código actual y habilitar web/worker, ejecutar desde el checkout:
+
+```bash
+"$HOME/.local/share/openmultipos/bench/env/bin/python" scripts/test-native-checkout-http.py \
+  --bench "$HOME/.local/share/openmultipos/bench"
+```
+
+Resultado: 16 pruebas HTTP reales, separadas de las 19 de seguridad. Crean Stock Entry, facturas enviadas, GL/Stock Ledger y cierres exclusivamente ficticios. Conservan vouchers y deshabilitan sus perfiles/marcas/terminales al terminar; restauran tokens, permisos y configuración temporales. El worker evita acumular tareas generadas por documentos. No ejecutar suites simultáneas en el mismo sitio ni confundir un API probado con una pantalla POS integrada.

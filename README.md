@@ -2,7 +2,7 @@
 
 POS libre y autohospedable, diseñado como extensión de **ERPNext + Frappe + X POS** para operar varias marcas, inventarios, caja y recibos con impresoras configurables.
 
-**Estado: desarrollo con Bench y protección inicial de APIs validados.** Incluye una demo local funcional y la app Frappe instalada con ERPNext/X POS en Ubuntu WSL. Nueve pruebas Bench y 19 pruebas HTTP reales cubren marca/perfil, recibos, documentos e impresión. Las ventas de la demo son simuladas. Checkout productivo, otras APIs X POS y offline todavía requieren integración y pruebas.
+**Estado: desarrollo con backend de caja nativa probado.** Incluye demo simulada y app Frappe sobre ERPNext/X POS en Ubuntu WSL. Nueve pruebas Bench, 19 HTTP de seguridad y 16 HTTP de checkout nativo cubren permisos, stock/contabilidad, pagos, cierres e idempotencia. La pantalla de caja aún debe conectarse al nuevo API; otras APIs X POS y offline requieren integración y pruebas.
 
 - [Funcionalidades F01–F19](docs/features.md)
 - [Plan por fases y backlog](docs/roadmap.md)
@@ -67,9 +67,9 @@ El diagnóstico del lector permite activar **«Lector USB configurado con teclad
 
 ## App Frappe
 
-La app `open_multi_pos` añade `OMP Business Brand`, su lista de usuarios, el rol de lectura `OMP Cashier`, restricciones de perfiles/facturas y contexto autorizado. Empresa, almacén y POS Profile deben coincidir. Los adaptadores de recibo, detalle y registro de impresión conservan permisos nativos; 14 operaciones X POS de factura quedan bloqueadas hasta validar checkout e idempotencia. No se pueden registrar ventas desde X POS en este incremento. Ver [seguridad de APIs](docs/xpos-api-security.md), [desarrollo e instalación](docs/development.md) y [despliegue](docs/deployment.md).
+La app añade marcas, usuarios, terminales y [caja nativa en línea](docs/native-checkout.md). Empresa, almacén y POS Profile deben coincidir. El servicio cotiza con ERPNext y envía Sales Invoice con stock/contabilidad inmediatos, pagos mixtos, apertura/cierre y snapshot de recibo. El cajero mantiene permisos nativos y escrituras limitadas al servicio. Los adaptadores protegen lectura/impresión; 14 operaciones de factura X POS siguen bloqueadas y su pantalla no usa todavía el nuevo checkout. Ver [seguridad de APIs](docs/xpos-api-security.md), [desarrollo](docs/development.md) y [despliegue](docs/deployment.md).
 
-SHAs revisados e instalados en [upstream.lock.json](upstream.lock.json): Frappe 16.52.0, ERPNext 16.51.1 y X POS 2.12.0. Instalación, migración y pruebas locales aprobadas. Chrome Windows alcanza el backend WSL. El acceso cruzado confirmado en contexto de recibo está restringido mediante dispatch HTTP v1/v2, sin modificar upstream. Mantener datos ficticios hasta completar las puertas de checkout y la revisión del resto de APIs.
+SHAs revisados e instalados en [upstream.lock.json](upstream.lock.json): Frappe 16.52.0, ERPNext 16.51.1 y X POS 2.12.0. Instalación, migración y pruebas locales aprobadas sin modificar core. Chrome Windows alcanza el backend WSL; web y worker funcionan como servicios de usuario. Mantener datos ficticios hasta probar la pantalla nativa completa, revisar el resto de APIs y validar operación/recuperación.
 
 ## Validación
 
@@ -88,7 +88,7 @@ OMP_AXE_MODULE=@axe-core/playwright npm run test:ui
 python scripts/check-receipt-pdfs.py
 ```
 
-Para Chromium administrado por Playwright: `npx playwright install chromium` y definir `OMP_BROWSER_CHANNEL=chromium`. Capturas y resultados van a `test-results/`, ignorado por Git. GitHub Actions ejecuta privacidad, Python, navegador y un sitio Bench desechable. Los 40 tests sin framework incluyen contratos con mocks; la suite Bench se ejecuta por separado según [development.md](docs/development.md). Ver resultados reales en [audit-report.md](docs/audit-report.md).
+Para Chromium administrado por Playwright: `npx playwright install chromium` y definir `OMP_BROWSER_CHANNEL=chromium`. Capturas y resultados van a `test-results/`, ignorado por Git. GitHub Actions ejecuta privacidad, Python, navegador y un sitio Bench desechable. Los 47 tests sin framework incluyen contratos con mocks; la suite Bench se ejecuta por separado según [development.md](docs/development.md). Ver resultados reales en [audit-report.md](docs/audit-report.md).
 
 ## Alcance fiscal, marcas y licencia
 

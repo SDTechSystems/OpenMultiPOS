@@ -52,7 +52,7 @@ Crear un sitio de pruebas siguiendo [development.md](development.md). Las contra
 
 El perfil de usuario necesita `Sales User` para las lecturas nativas de Company/Warehouse y `OMP Cashier` para leer exclusivamente los perfiles POS autorizados. `Sales User` por sí solo no tiene lectura de POS Profile en el commit ERPNext fijado. No conceder `Accounts User` como solución: es un rol más amplio.
 
-OpenMultiPOS instala un permiso de solo lectura para `OMP Cashier`, conserva los permisos nativos de otros roles y restringe listas y documentos POS Profile para ese rol por marca habilitada, lista de acceso y `applicable_for_users`. Configurar también User Permissions nativas por Company/Warehouse. Los hooks restringen permisos; nunca sustituyen la autorización nativa.
+OpenMultiPOS conserva lectura de perfiles para `OMP Cashier` y agrega permisos nativos mínimos para facturas/aperturas/cierres, con escrituras limitadas a la capacidad privada del servicio de caja. No permite editar esos documentos directamente. Las listas/documentos se restringen por marca, usuario, empresa y applicable_for_users. Configurar User Permissions nativas por Company/Warehouse. Ver [native-checkout.md](native-checkout.md); los hooks nunca sustituyen los permisos nativos.
 
 Pruebas reales, separadas de los contratos sin Frappe:
 
@@ -79,6 +79,18 @@ journalctl --user -u openmultipos-web -n 30
 
 Abrir [el sitio local](http://omp.localhost:8000/login) en Chrome/Edge de Windows. Se comprobó conexión desde Chrome Windows y login HTTP de Administrator. La contraseña generada permanece en `$HOME/.local/share/openmultipos/private/development-credentials.json`, con permisos 600, fuera del repositorio. No copiarla a documentación o issues.
 
-Para instalar la plantilla en otro equipo, copiarla a `~/.config/systemd/user/`, ajustar las rutas si corresponde y ejecutar `systemctl --user daemon-reload` y `systemctl --user enable --now openmultipos-web`. No ejecutar `bench start` simultáneamente: usa el mismo puerto web. Este servicio sirve únicamente la web local; no representa una instalación de producción con workers, scheduler, TLS y supervisión completos.
+Para instalar la plantilla en otro equipo, copiarla a `~/.config/systemd/user/`, ajustar rutas si corresponde y ejecutar `systemctl --user daemon-reload` y `systemctl --user enable --now openmultipos-web`. No ejecutar `bench start` simultáneamente: usa el mismo puerto web.
+
+La plantilla `examples/systemd/openmultipos-worker.service` consume las colas short/default/long del mismo Bench, con el usuario local y sin abrir puertos. Está instalada y habilitada en esta máquina. Desde el checkout, en otra instalación con las mismas rutas:
+
+```bash
+mkdir -p "$HOME/.config/systemd/user"
+cp examples/systemd/openmultipos-worker.service "$HOME/.config/systemd/user/"
+systemctl --user daemon-reload
+systemctl --user enable --now openmultipos-worker
+systemctl --user status openmultipos-web openmultipos-worker
+```
+
+Los ensayos repetidos alcanzaron el límite de 550 tareas pendientes sin worker. Se añadió el servicio y se dejó procesar el backlog, sin purgar jobs ni elevar el límite. Web y worker no constituyen una instalación productiva con scheduler, TLS, socketio, backups y recuperación probados. Para diagnóstico se pueden consultar logs privados con journalctl; no publicarlos sin revisar datos y secretos.
 
 Al compilar solo la versión web de X POS, se usó `CYPRESS_INSTALL_BINARY=0 ELECTRON_SKIP_BINARY_DOWNLOAD=1 bench build --production`. Así se evita descargar ejecutables de escritorio/pruebas que no participan en ese build. Las dependencias JS sí se instalan; los ensayos Electron no se dan por realizados.

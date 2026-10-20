@@ -1,0 +1,79 @@
+{
+  "doctype": "DocType",
+  "name": "OMP Checkout Request",
+  "module": "Open Multi POS",
+  "engine": "InnoDB",
+  "fields": [
+    {
+      "fieldname": "terminal",
+      "fieldtype": "Link",
+      "label": "Terminal",
+      "reqd": 1,
+      "options": "OMP POS Terminal"
+    },
+    {
+      "fieldname": "request_id",
+      "fieldtype": "Data",
+      "label": "UUID de transacción",
+      "reqd": 1
+    },
+    {
+      "fieldname": "actor",
+      "fieldtype": "Link",
+      "label": "Cajero",
+      "reqd": 1,
+      "options": "User"
+    },
+    {
+      "fieldname": "brand",
+      "fieldtype": "Link",
+      "label": "Marca",
+      "reqd": 1,
+      "options": "OMP Business Brand"
+    },
+    {
+      "fieldname": "quote",
+      "fieldtype": "Link",
+      "label": "Cotización",
+      "reqd": 1,
+      "unique": 1,
+      "options": "OMP Checkout Quote"
+    },
+    {
+      "fieldname": "payload_hash",
+      "fieldtype": "Data",
+      "label": "Huella de solicitud",
+      "reqd": 1
+    },
+    {
+      "fieldname": "invoice",
+      "fieldtype": "Link",
+      "label": "Factura",
+      "options": "Sales Invoice",
+      "search_index": 1
+    },
+    {
+      "fieldname": "receipt_json",
+      "fieldtype": "Long Text",
+      "label": "Instantánea del recibo"
+    }
+  ],
+  "field_order": [
+    "terminal",
+    "request_id",
+    "actor",
+    "brand",
+    "quote",
+    "payload_hash",
+    "invoice",
+    "receipt_json"
+  ],
+  "permissions": [
+    {
+      "role": "System Manager",
+      "read": 1
+    }
+  ],
+  "sort_field": "creation",
+  "sort_order": "DESC"
+}
