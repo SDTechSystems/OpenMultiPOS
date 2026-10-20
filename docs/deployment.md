@@ -6,4 +6,4 @@ La ruta es Frappe/ERPNext v16 autohospedado con X POS web y la app OpenMultiPOS 
 
 Antes de uso real: fijar versiones de base de datos, Redis, Node, Bench e imagen OS; validar instalación, TLS, sesiones, permisos negativos, stock/pagos, idempotencia concurrente, colas y respaldo/restauración aislada. Generar secretos solo en el destino privado y mantener fuera del repositorio. Registrar el commit exacto y resultados del sitio de ensayo.
 
-Actualizaciones: backup restaurable y ensayo de migraciones en staging, revisar cambios upstream, actualizar lock tras pruebas. No cambiar automáticamente de rama a latest en producción. Hardware se prueba por modelo/controlador/firmware y no se deduce del éxito de CI.
+Actualizaciones: backup restaurable y ensayo de migraciones en staging, revisar cambios upstream, actualizar lock tras pruebas. No cambiar automáticamente de rama a latest en producción. Esta instalación conserva la impresora y el lector confirmados; no requiere otro modelo ni un ensayo adicional. El éxito de CI no confirma salida física de papel.

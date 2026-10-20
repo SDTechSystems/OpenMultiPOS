@@ -11,7 +11,7 @@ Estado de descubrimiento antes de implementar. “Existente” indica código up
 | F05 | P0 | integración en línea probada | PK request, quote UNIQUE, Web Locks y tombstone | Respuesta perdida, recarga, retry, dos pestañas y solicitud tardía probados; devoluciones pendientes | Crítica | L | Reintento y cobros simultáneos una sola vez |
 | F06 | P0 | integración en línea probada | Cash/Bank, POS Opening/Closing y pantalla propia | Mixtos, cambio y cierre visual probados; recuperación operativa ampliada pendiente | Alta | M | Efectivo + transferencia y cierre exactos |
 | F07 | P0 | no verificado | Entrada de búsqueda X POS | Diagnóstico HID y terminador, prueba física | Media | M | Cinco códigos y QR ajeno sin navegar |
-| F08 | P0 | extensión / no verificado | X POS usePrintInvoice.ts | Perfiles genéricos, simulador, driver; hardware pendiente | Alta | M | 58/80 mm sin recortes; fallo no duplica venta |
+| F08 | P0 | extensión / equipo existente | Recibo compacto y preset confirmado | Página 48 mm, contenido 44 mm y altura medida; sin otros modelos | Media | M | Mantener configuración confirmada; fallo no duplica venta |
 | F09 | P0 | integración web probada | Snapshot persistente y renderer escapado | Recibo/PDF 48/58/80 y permisos probados; papel/driver nativo pendientes | Alta | M | Dos marcas y reimpresión consistente |
 | F10 | P0/P1 | requiere desarrollo / no verificado | X POS generación de barcode/QR declarada | QR comercial seguro y fallback de impresión | Media | M | Escanear salida real con dos lectores |
 | F11 | P1 | no verificado | offlineStore.ts / syncEngine.ts / tests | Auditar seguridad offline y concurrencia con red real | Crítica | L | Dos reconexiones y conflictos visibles |
@@ -27,6 +27,6 @@ Estado de descubrimiento antes de implementar. “Existente” indica código up
 
 ## Requisitos administrativos vigentes
 
-La [hoja de ruta](roadmap.md) reemplaza la prioridad general de compatibilidad universal. F20-F27 se entregan en `/omp`: menú, perfiles, primer administrador, productos/entradas, cesta mixta, impresión para el equipo existente, herramientas nativas y manual visual. La relación negocio/entidad se configura durante el alta. Idioma, formato, moneda predeterminada y zona se editan en Ajustes; no se convierten documentos históricos.
+La [hoja de ruta](roadmap.md) reemplaza la prioridad general de compatibilidad universal. F20-F28 se entregan en `/omp`: menú, perfiles, primer administrador, productos/entradas, cesta mixta, impresión para el equipo existente, herramientas nativas y manual visual. La relación negocio/entidad se configura durante el alta. Idioma, formato, moneda predeterminada y zona se editan en Ajustes; no se convierten documentos históricos.
 
 Pruebas: `test-workspace-http.py` valida autorización, documentos/stock/GL, rollback conjunto, reintentos, marcas de abandono, contactos históricos y moneda contable. `test-workspace-browser.py` ejecuta formularios, recuperación por respuesta perdida, recorridos nativos, teclado, móvil y manual. Ver evidencia actualizada en [audit-report.md](audit-report.md). No se añaden nuevos ensayos de hardware ni se habilita offline o fiscal.

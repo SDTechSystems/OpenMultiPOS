@@ -72,7 +72,7 @@ El diagnóstico del lector permite activar **«Lector USB configurado con teclad
 
 La app añade marcas, usuarios, terminales y [caja nativa en línea](docs/native-checkout.md). Empresa, almacén y POS Profile deben coincidir. El servicio cotiza con ERPNext y envía Sales Invoice con stock/contabilidad inmediatos, pagos mixtos, apertura/cierre y snapshot de recibo. El cajero mantiene permisos nativos y escrituras limitadas al servicio. Los adaptadores protegen lectura/impresión; 14 operaciones de factura X POS siguen bloqueadas y su pantalla no usa todavía el nuevo checkout. Ver [seguridad de APIs](docs/xpos-api-security.md), [desarrollo](docs/development.md) y [despliegue](docs/deployment.md).
 
-SHAs revisados e instalados en [upstream.lock.json](upstream.lock.json): Frappe 16.52.0, ERPNext 16.51.1 y X POS 2.12.0. Instalación, migración y pruebas locales aprobadas sin modificar core. Chrome Windows alcanza el backend WSL; web y worker funcionan como servicios de usuario. Abrir `/omp_pos` con un cajero y terminal configurados según [la guía](docs/cashier-ui.md). Mantener datos ficticios hasta revisar el resto de APIs, hardware y operación/recuperación.
+SHAs revisados e instalados en [upstream.lock.json](upstream.lock.json): Frappe 16.52.0, ERPNext 16.51.1 y X POS 2.12.0. Instalación, migración y pruebas locales aprobadas sin modificar core. Chrome Windows alcanza el backend WSL; web y worker funcionan como servicios de usuario. Abrir `/omp_pos` con un cajero y terminal configurados según [la guía](docs/cashier-ui.md). Mantener datos ficticios hasta revisar el resto de APIs y la recuperación operativa.
 
 ## Validación
 
