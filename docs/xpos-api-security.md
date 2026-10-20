@@ -21,7 +21,7 @@ La suite clasifica mediante AST todas las funciones whitelisted del módulo `xpo
 
 Para OMP Cashier, hooks de lista/documento limitan Sales Invoice y POS Invoice a documentos POS de una marca habilitada y concedida. Comprueban enlaces de empresa/almacén y applicable_for_users. Son restricciones adicionales a los permisos nativos; no conceden roles contables. Escritura documental de cajeros permanece denegada en este incremento.
 
-Un hook posterior a la autenticación protege las páginas `/printview` y `/<DocType>/<name>` antes del render. Se añadió porque el ensayo HTTP devolvió una página de factura de otra marca aunque la API documental la rechazaba. Se prueban además REST v1/v2, `frappe.client.get_list` y la API nativa de HTML de impresión. Managers y otros roles mantienen sus permisos documentales nativos; los adaptadores X POS siempre exigen contexto autorizado.
+Un hook posterior a la autenticación protege las páginas `/printview` y `/<DocType>/<name>`, incluidas sus variantes `.html`, antes del render. Normaliza la ruta igual que el resolver de Frappe. Se añadió porque el ensayo HTTP devolvió una página de factura de otra marca aunque la API documental la rechazaba. Se prueban además REST v1/v2, `frappe.client.get_list` y la API nativa de HTML de impresión. Managers y otros roles mantienen sus permisos documentales nativos; los adaptadores X POS siempre exigen contexto autorizado.
 
 ## Concurrencia y alcance del contador
 

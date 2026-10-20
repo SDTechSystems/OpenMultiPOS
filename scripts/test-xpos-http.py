@@ -423,7 +423,12 @@ class XPOSHTTPTests(unittest.TestCase):
                 "/printview",
                 {"doctype": "Sales Invoice", "name": self.other_invoice, "format": "Standard"},
             ),
+            (
+                "/printview.html",
+                {"doctype": "Sales Invoice", "name": self.other_invoice, "format": "Standard"},
+            ),
             ("/Sales%20Invoice/" + quote(self.other_invoice, safe=""), {}),
+            ("/Sales%20Invoice/" + quote(self.other_invoice, safe="") + ".html", {}),
         ):
             response = requests.get(
                 OPTIONS.base_url + path, params=params, headers=headers, timeout=30

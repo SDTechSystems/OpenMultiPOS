@@ -47,7 +47,10 @@ def authorize_print_page():
     """Guard both native print-page URL forms before any template is rendered."""
     from open_multi_pos.permissions import manager
 
-    path = frappe.request.path.strip("/")
+    # Match Frappe PathResolver/resolve_path, including the public .html aliases.
+    path = frappe.request.path.strip("/ ")
+    if path.endswith(".html"):
+        path = path[:-5]
     if path == "printview":
         doctype, name = frappe.form_dict.get("doctype"), frappe.form_dict.get("name")
     else:
