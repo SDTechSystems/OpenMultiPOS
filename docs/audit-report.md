@@ -70,3 +70,27 @@ Lectura QR física posterior con modo US: el propietario confirmó `https://exam
 Revisión de archivos versionados e historial de contenido: sin datos comerciales reales, fotos, bases locales ni credenciales detectados. Material de referencia privado permanece fuera del repositorio. Añadidos exclusiones, guard de publicación, hooks locales y trabajo CI previo a pruebas/artefactos; el guard detecta patrones y no sustituye revisión contextual. Validación local: **35 tests Python**, Ruff, formato Prettier y revisión de los **73 archivos** del índice correctos. Identidad de nuevos commits con alias y correo GitHub no-reply.
 
 Protección remota de main verificada: PR obligatorio, comprobaciones requeridas, historial lineal, conversaciones resueltas, sin force-push ni eliminación y aplicación a administradores. Cuenta propietaria como único acceso de escritura; no se añaden colaboradores. Se documentan rama, PR, push y merge en `github-workflow.md`. El primer incremento permanece en PR de desarrollo, sin fusionar.
+
+## Instalación real y permisos · 19/10/2026
+
+Con autorización del propietario se instalaron herramientas y servicios en Ubuntu 26.04.1 WSL2. Python 3.14.4, Node 24.22.0 (archivo oficial con SHA256 verificado), Yarn 1.22.22, Bench 5.29.1, MariaDB 11.8.6 y Redis 8.0.5. MariaDB/Redis activos, habilitados al iniciar Ubuntu y escuchando en loopback. No se abrió firewall ni acceso remoto. Cuenta temporal de instalación eliminada después de crear el sitio; credenciales aleatorias y configuración del sitio fuera de Git y con permisos 600.
+
+Instalación nueva de Frappe, ERPNext y X POS en los tres SHAs de `upstream.lock.json`, más OpenMultiPOS; ambos DocTypes migrados correctamente. Bench y las fuentes de ejecución residen en el filesystem Linux, separados del checkout Windows con espacios. El preparador verifica SHAs antes de instalar y no sobreescribe entornos existentes. CI usa imágenes MariaDB/Redis por digest; su resultado se vincula al commit de cada ejecución en PR #1.
+
+Se detectó que Sales User no tiene lectura nativa de POS Profile. Se añadió OMP Cashier con permiso exclusivo de lectura, sin ampliar roles contables ni reemplazar permisos nativos. Hooks de lista y documento restringen sus perfiles por marca habilitada, autorización explícita y applicable_for_users. El contexto revalida además perfil habilitado y empresa actual del almacén. Los usuarios conservan User Permissions nativas por empresa.
+
+| Evidencia local | Resultado | Límite |
+| --- | --- | --- |
+| Instalación y migrate | PASÓ | Frappe 16.52.0, ERPNext 16.51.1, X POS 2.12.0, OpenMultiPOS 0.1.0; sitio desechable. |
+| Suite Bench/MariaDB | PASÓ · 9 pruebas | Dos marcas/empresas y dos cajeros, listas/contexto/client.get, Guest, acceso cruzado, rechazo de edición, configuración incoherente, perfiles deshabilitados y rol idempotente. Sin mocks. |
+| Suite sin framework | PASÓ · 40 pruebas | Simulador y contratos. No valida stock ni pagos ERPNext. |
+| Ruff y formato | PASÓ | Código propio. |
+| Build de assets | PASÓ | Frappe, ERPNext, X POS web y app; no se descargaron binarios Electron/Cypress ni se probaron esas aplicaciones. |
+| Servicio web local | PASÓ | Gunicorn bajo systemd de usuario, 127.0.0.1:8000, sin debugger. Respuesta ping y login HTTP real de Administrator. |
+| Cliente Windows | PASÓ · conectividad | Chrome nativo Windows/Playwright alcanzó el servidor WSL y recibió pong. No constituye checkout E2E ni nueva prueba física de impresora. |
+
+Las primeras ejecuciones revelaron detalles del runner: `set-config --parse` interpreta literales Python (True); el flag obsoleto `--skip-test-records` no debe usarse; instalar extras sin `-e` sustituye la fuente editable y rompe el build frontend. Corregidos comandos y documentación. La suite usa el instalador estándar de datos maestros ERPNext para crear Warehouse Type Transit y otras dependencias de una instalación previa al wizard; no se omitieron validaciones nativas para forzar fixtures.
+
+**Hallazgo upstream confirmado U04 parcial:** el probe `open_multi_pos.integration.audit_xpos.receipt_context_probe` devolvió `native_profile_access_denied=true` y `xpos_receipt_access_denied=false`. El cajero A no puede leer documentalmente el perfil B, pero la función X POS de contexto devuelve su contexto sin ejecutar ese control. Solo se usaron entidades ficticias; no se registró el payload retornado. La prueba reproduce una llamada Python directa a la función whitelisted; no se presenta como ensayo HTTP de todas sus rutas.
+
+Por tanto, issue #3 sigue abierto: falta restringir esa ruta y probar directamente mark_invoice_printed, creación de facturas y reintentos. Checkout productivo y pruebas nativas de stock, unicidad concurrente, caja/offline/recuperación siguen bloqueados. Los nueve casos aprobados prueban el perímetro OpenMultiPOS evaluado, no el aislamiento completo de X POS.

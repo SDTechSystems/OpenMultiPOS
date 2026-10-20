@@ -1,6 +1,17 @@
 {
   "review_date": "2026-10-18",
-  "status": "source-reviewed; deployment integration not executed",
+  "status": "source-reviewed; local Bench installation and brand permissions tested; native checkout untested",
+  "tested_environment": {
+    "date": "2026-10-19",
+    "os": "Ubuntu 26.04.1 / WSL2",
+    "python": "3.14.4",
+    "node": "24.22.0",
+    "yarn": "1.22.22",
+    "bench": "5.29.1",
+    "mariadb": "11.8.6",
+    "redis": "8.0.5",
+    "brand_permission_tests": 9
+  },
   "runtime": {
     "python": ">=3.14,<3.15",
     "node": ">=24"

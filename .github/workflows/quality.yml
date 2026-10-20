@@ -28,6 +28,7 @@ jobs:
       - run: python -m build
       - run: pip-audit --no-deps --disable-pip -r requirements-runtime.txt
   bench:
+    if: github.event_name == 'pull_request' || github.ref == 'refs/heads/main'
     needs: privacy
     runs-on: ubuntu-24.04
     timeout-minutes: 30
@@ -75,9 +76,9 @@ jobs:
           bench --site omp.localhost install-app xpos
           bench --site omp.localhost install-app open_multi_pos
           bench --site omp.localhost migrate
-          bench --site omp.localhost set-config allow_tests true --parse
-          uv pip install --python env/bin/python './apps/frappe[test]'
-          bench --site omp.localhost run-tests --module open_multi_pos.integration.test_permissions --skip-test-records --skip-before-tests
+          bench --site omp.localhost set-config allow_tests True --parse
+          uv pip install --python env/bin/python -e './apps/frappe[test]'
+          bench --site omp.localhost run-tests --module open_multi_pos.integration.test_permissions --skip-before-tests
   browser:
     needs: privacy
     runs-on: ubuntu-latest

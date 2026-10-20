@@ -28,6 +28,8 @@ def main():
     target, sources = args.bench.expanduser().resolve(), args.sources.expanduser().resolve()
     if target.exists():
         parser.error("El destino Bench ya existe; no se sobrescribe ni actualiza automáticamente.")
+    if (sources / "open_multi_pos").exists():
+        parser.error("La instantánea open_multi_pos ya existe; usar otro directorio de fuentes.")
     if target == sources or target in sources.parents or sources in target.parents:
         parser.error("Bench y fuentes deben ser directorios independientes.")
     if any(not re.fullmatch(r"[A-Za-z0-9_./-]+", str(path)) for path in (target, sources)):
@@ -83,8 +85,6 @@ def main():
     # Bench interpolates paths into shell commands. Export source to a safe Linux
     # path so a Windows checkout containing spaces is supported without patching core.
     snapshot = sources / "open_multi_pos"
-    if snapshot.exists():
-        parser.error("La instantánea open_multi_pos ya existe; usar otro directorio de fuentes.")
     snapshot.mkdir()
     names = (
         subprocess.check_output(

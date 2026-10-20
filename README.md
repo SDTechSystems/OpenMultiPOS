@@ -2,13 +2,14 @@
 
 POS libre y autohospedable, diseñado como extensión de **ERPNext + Frappe + X POS** para operar varias marcas, inventarios, caja y recibos con impresoras configurables.
 
-**Estado: primer incremento de desarrollo.** Incluye una demo local funcional y el scaffold de la app Frappe. Las ventas de la demo son simuladas. El checkout productivo, la instalación conjunta Bench y el modo offline todavía requieren integración y pruebas.
+**Estado: desarrollo con instalación Bench validada.** Incluye una demo local funcional y la app Frappe instalada con ERPNext/X POS en Ubuntu WSL; nueve pruebas reales validan permisos de marca/perfil. Las ventas de la demo son simuladas. Checkout productivo, otros endpoints X POS y offline todavía requieren integración y pruebas.
 
 - [Funcionalidades F01–F19](docs/features.md)
 - [Plan por fases y backlog](docs/roadmap.md)
 - [Matriz de requisitos y gaps](docs/requirements-matrix.md)
 - [Arquitectura](docs/architecture.md) · [Auditoría y resultados](docs/audit-report.md)
 - [Impresoras y ensayos físicos](docs/hardware-jaltech.md)
+- [Servicios locales y Windows/WSL](docs/local-services.md)
 - [GitHub: ramas, PRs, privacidad y protecciones](docs/github-workflow.md)
 
 ## Probar ahora: demo local
@@ -66,9 +67,9 @@ El diagnóstico del lector permite activar **«Lector USB configurado con teclad
 
 ## App Frappe
 
-La app `open_multi_pos` añade `OMP Business Brand`, su lista de usuarios, restricciones de lectura y un endpoint autorizado de contexto. Empresa, almacén y POS Profile deben coincidir. No tiene endpoint de ventas productivas en este incremento. Ver [desarrollo e instalación candidata](docs/development.md) y [despliegue](docs/deployment.md).
+La app `open_multi_pos` añade `OMP Business Brand`, su lista de usuarios, el rol de lectura `OMP Cashier`, restricciones de perfiles y un endpoint autorizado de contexto. Empresa, almacén y POS Profile deben coincidir. No tiene endpoint de ventas productivas en este incremento. Ver [desarrollo e instalación](docs/development.md) y [despliegue](docs/deployment.md).
 
-SHAs candidatos revisados en [upstream.lock.json](upstream.lock.json): Frappe 16.52.0, ERPNext 16.51.1 y X POS 2.12.0. Son fuentes fijadas; no se afirma que el conjunto instalado haya superado pruebas.
+SHAs revisados e instalados en [upstream.lock.json](upstream.lock.json): Frappe 16.52.0, ERPNext 16.51.1 y X POS 2.12.0. Instalación, migración y nueve pruebas de permisos aprobadas localmente. Chrome Windows alcanza el backend WSL. El probe de contexto de recibo X POS confirmó un acceso cruzado pendiente de corregir; mantener datos ficticios hasta completar la auditoría de sus rutas.
 
 ## Validación
 
@@ -87,7 +88,7 @@ OMP_AXE_MODULE=@axe-core/playwright npm run test:ui
 python scripts/check-receipt-pdfs.py
 ```
 
-Para Chromium administrado por Playwright: `npx playwright install chromium` y definir `OMP_BROWSER_CHANNEL=chromium`. Capturas y resultados van a `test-results/`, ignorado por Git. GitHub Actions ejecuta Python y navegador; los tests de contrato Frappe usan mocks y no reemplazan Bench. Ver resultados reales en [audit-report.md](docs/audit-report.md).
+Para Chromium administrado por Playwright: `npx playwright install chromium` y definir `OMP_BROWSER_CHANNEL=chromium`. Capturas y resultados van a `test-results/`, ignorado por Git. GitHub Actions ejecuta privacidad, Python, navegador y un sitio Bench desechable. Los 40 tests sin framework incluyen contratos con mocks; la suite Bench se ejecuta por separado según [development.md](docs/development.md). Ver resultados reales en [audit-report.md](docs/audit-report.md).
 
 ## Alcance fiscal, marcas y licencia
 

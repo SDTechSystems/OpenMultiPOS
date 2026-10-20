@@ -1,46 +1,51 @@
-# Desarrollo e instalación candidata Frappe
+# Desarrollo e instalación Frappe
 
-## Entorno mínimo probado
+## Entorno validado el 19/10/2026
 
-Demo: Python 3.14.4, python-qrcode 8.2 y SQLite estándar. Ruff, unittest y build ejecutables sin Frappe. Browser tests: Node y Chrome con Playwright/axe. No se ha levantado Bench/MariaDB/Redis en el entorno de esta iteración.
+Instalación local limpia: Ubuntu 26.04.1 en WSL2, Python 3.14.4, Node 24.22.0, Yarn 1.22.22, Bench 5.29.1, MariaDB 11.8.6 y Redis 8.0.5. Frappe 16.52.0, ERPNext 16.51.1 y X POS 2.12.0 se instalaron en los commits de `upstream.lock.json`, junto con la app OpenMultiPOS. Instalación de DocTypes y migración completadas.
 
-Usar venv con pip según README. En esta máquina, el Python Linux no incluía pip/ensurepip; las herramientas de sesión se instalaron en `/tmp/openmultipos-venv`, sin modificar el Python del sistema. Esa ruta no es requisito para otros equipos.
+Windows conserva el navegador POS, controladores de impresión y dispositivos. WSL ejecuta servidor, base de datos y herramientas. Se verificó que Chrome nativo de Windows llega al servidor WSL por `http://omp.localhost:8000`. Esto no sustituye ensayos del flujo POS completo ni de hardware.
 
-## Instalar app en un Bench Linux v16 preparado
+Seguir [local-services.md](local-services.md) para instalar herramientas, preparar una instantánea del checkout en Linux y administrar el servicio web. El repositorio puede permanecer en Windows; Bench y sus dependencias residen en Linux. La instantánea no sincroniza automáticamente las ediciones posteriores.
 
-Este procedimiento candidato requiere previamente servicios y Bench funcionales, Python 3.14 y Node >=24. No es una instalación completa validada de infraestructura. No usar un sitio de producción para el primer ensayo.
+## Crear un sitio local desechable
+
+Con las aplicaciones ya preparadas mediante `scripts/prepare-bench.py` y los servicios en loopback:
 
 ```bash
-bench init --python python3.14 --frappe-branch version-16 omp-bench
-cd omp-bench
-git -C apps/frappe checkout 4515014c87ece6cb20ee91d2cfb121c5cbd1ff4a
-bench get-app --branch version-16 https://github.com/frappe/erpnext.git
-git -C apps/erpnext checkout 5af6561f5aa48104559692fb4fd82f2580e8d338
-bench get-app --branch version-16 https://github.com/kodlyft/xpos.git
-git -C apps/xpos checkout 6392895a955f91b8c7d55574dc01ac5f19459dc3
-bench get-app --branch codex/foundation-and-roadmap https://github.com/JSX2011/OpenMultiPOS.git
-bench setup requirements
+cd "$HOME/.local/share/openmultipos/bench"
+bench set-config -g redis_cache redis://127.0.0.1:6379/1
+bench set-config -g redis_queue redis://127.0.0.1:6379/2
+bench set-config -g redis_socketio redis://127.0.0.1:6379/1
 bench new-site omp.localhost
 bench --site omp.localhost install-app erpnext
 bench --site omp.localhost install-app xpos
 bench --site omp.localhost install-app open_multi_pos
-bench build
 bench --site omp.localhost migrate
-bench start
 ```
 
-Si el clon de Bench no contiene un SHA, obtenerlo con `git -C apps/PROYECTO fetch origin SHA` antes del checkout. Confirmar los tres SHAs contra upstream.lock.json. Los prompts de new-site son para credenciales locales; no almacenarlas ni publicarlas. Fijar también el commit de OpenMultiPOS al validar una versión de despliegue.
+`new-site` solicita credenciales locales. Usar una cuenta de instalación temporal de MariaDB, eliminarla después de crear el sitio y conservar las credenciales del sitio fuera de Git. En esta instalación no se cambió la autenticación de root. No reutilizar contraseñas de CI. Un sitio con datos propios nunca debe sustituirse mediante `--force` para repetir pruebas.
 
-Crear Company y Warehouse demo con ERPNext; configurar POS Profile y sus usuarios. Crear OMP Business Brand en Desk con el mismo Company/Warehouse/POS Profile, perfil de impresión, pie, URL HTTPS y lista explícita de usuarios. Un usuario necesita rol Sales User y permisos nativos apropiados, además de la autorización de marca. No cargar marcas reales como fixtures públicos.
+## Pruebas reales
 
-Endpoint read-only autenticado: `open_multi_pos.api.get_brand_context(brand=ID)`. No habilita checkout ni garantiza que APIs de X POS adicionales estén restringidas.
+```bash
+bench --site omp.localhost set-config allow_tests True --parse
+uv pip install --python env/bin/python -e './apps/frappe[test]'
+bench --site omp.localhost run-tests --module open_multi_pos.integration.test_permissions --skip-before-tests
+```
 
-## Puerta de integración pendiente
+Resultado local: **9 pruebas de integración aprobadas**, con dos empresas/marcas, dos cajeros, permisos nativos por empresa, listas, métodos reales `frappe.client.get` y contexto OpenMultiPOS. Se comprueban Guest, acceso cruzado, perfiles desactivados, asignación nativa de usuarios, almacén de otra empresa, rechazo de escritura e instalación idempotente del rol. La suite usa los datos maestros estándar del setup ERPNext y entidades ficticias `OMP Test ...`.
 
-1. Instalación limpia y migración sin errores; comprobar ambos DocTypes.
-2. Dos usuarios/negocios: get_list, get_doc/API y lectura de contexto; Guest rechazado.
-3. POS Profile con usuario restringido, almacén/empresa equivocados y marca desactivada.
-4. Revisar los endpoints X POS señalados por auditoría antes de usarlos con datos reales.
-5. Conectar venta nativa solo después: pagos mixtos, stock, cierre, retry y concurrencia.
+Conservar `-e` al instalar extras de Frappe: una instalación no editable cambia la ruta de importación al wheel, que no contiene las fuentes frontend necesarias para `bench build`. En este Frappe `--parse` interpreta literales Python (`True`, no `true`); `--skip-test-records` está obsoleto y puede evitar que se ejecute la suite. CI reproduce instalación, migración y pruebas desde cero.
 
-No existe suite Bench integrada ejecutada; los tests actuales con fake frappe comprueban el contrato de hooks y la llamada a permisos nativos. No presentar su resultado como integración real.
+Las **40 pruebas sin Frappe** se ejecutan aparte mediante `python -m unittest discover -s tests -v`. Son pruebas del simulador/contratos; no sumarlas a las de Bench como si ambas validaran stock productivo.
+
+## Contexto de marca y límites
+
+Configurar OMP Business Brand con Company/Warehouse/POS Profile coherentes. El cajero necesita `Sales User`, `OMP Cashier`, User Permissions nativas y autorización explícita de marca. No conceder roles contables para resolver una lectura de perfil.
+
+Endpoint autenticado de lectura: `open_multi_pos.api.get_brand_context(brand=ID)`. Revalida permisos, perfil habilitado y pertenencia actual del almacén.
+
+El probe `bench --site omp.localhost execute open_multi_pos.integration.audit_xpos.receipt_context_probe` confirmó que el endpoint upstream de contexto de recibo permite consultar otro perfil aunque la API documental nativa lo rechace. Solo se ejercitaron datos ficticios y se imprimieron booleanos de diagnóstico. **El aislamiento de OpenMultiPOS no garantiza el de todos los endpoints X POS.**
+
+Antes de datos reales: corregir/restringir esa ruta, revisar `mark_invoice_printed` y `create_invoice`/reintentos y probar sus solicitudes directas. Checkout, stock, pagos mixtos, cierres, unicidad concurrente, offline y restauración siguen pendientes de integración nativa.

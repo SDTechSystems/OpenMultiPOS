@@ -24,7 +24,9 @@ S/M/L expresan tamaño relativo, no fechas prometidas. Las fases 1 y 2 pueden co
 
 ## Próximo incremento después de la base
 
-Preparar entorno Bench reproducible sobre Linux, instalar los SHAs de `upstream.lock.json`, ejecutar pruebas de permisos con dos usuarios y confirmar hooks/contratos X POS. No conectar transacciones reales hasta probar permisos, unicidad y stock. La selección de entidad legal, logotipos y métodos bancarios se configura localmente; no bloquea la base genérica.
+Instalación y migración Bench completadas en Ubuntu WSL el 19/10/2026 con los SHAs de `upstream.lock.json`. Nueve pruebas reales validan permisos de marca/perfil con dos usuarios y dos empresas. Las herramientas y el servicio local están documentados en [local-services.md](local-services.md).
+
+Próxima tarea P0: corregir/restringir el acceso cruzado confirmado en el contexto de recibo de X POS y completar auditoría directa de impresión, creación de factura y reintentos. Después conectar checkout nativo con unicidad en BD, stock y concurrencia. No conectar transacciones reales hasta superar esas puertas. La selección de entidad legal, logotipos y métodos bancarios se configura localmente; no bloquea la base genérica.
 
 ## Seguimiento en GitHub
 

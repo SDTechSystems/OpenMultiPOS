@@ -26,7 +26,7 @@ bench --version
 systemctl is-active mariadb redis-server
 ```
 
-MariaDB y Redis escuchan solo en loopback; no se abrieron puertos de Windows ni reglas del firewall. No habilitar acceso remoto a la base de datos. Los Redis privados del Bench usan sus propios puertos/configuración; el servicio Redis del sistema no sustituye automáticamente esos procesos.
+MariaDB y Redis escuchan solo en loopback; no se abrieron puertos de Windows ni reglas del firewall. No habilitar acceso remoto a la base de datos. En este sitio se configuraron explícitamente las bases lógicas Redis 1 (cache/socketio) y 2 (cola) del servicio instalado, según development.md. Un Bench sin esa configuración genera sus propios puertos Redis.
 
 En PowerShell se pueden iniciar los servicios de esta distribución con:
 
@@ -58,10 +58,27 @@ Pruebas reales, separadas de los contratos sin Frappe:
 
 ```bash
 cd "$HOME/.local/share/openmultipos/bench"
-bench --site omp.localhost set-config allow_tests true --parse
+bench --site omp.localhost set-config allow_tests True --parse
 bench --site omp.localhost run-tests \
   --module open_multi_pos.integration.test_permissions \
-  --skip-test-records --skip-before-tests
+  --skip-before-tests
 ```
 
 Este comando crea exclusivamente entidades ficticias `OMP Test ...` en el sitio de pruebas. Nunca ejecutarlo en un sitio de operación. Un resultado favorable cubre esos permisos y esa instalación; no certifica los endpoints adicionales de X POS ni checkout, stock o sincronización.
+
+## Web desde Windows
+
+La plantilla `examples/systemd/openmultipos-web.service` inicia Gunicorn y los assets del sitio en `127.0.0.1:8000`, sin depurador interactivo. Está instalada como servicio del usuario en esta máquina. Desde Ubuntu:
+
+```bash
+systemctl --user start openmultipos-web
+systemctl --user stop openmultipos-web
+systemctl --user restart openmultipos-web
+journalctl --user -u openmultipos-web -n 30
+```
+
+Abrir [el sitio local](http://omp.localhost:8000/login) en Chrome/Edge de Windows. Se comprobó conexión desde Chrome Windows y login HTTP de Administrator. La contraseña generada permanece en `$HOME/.local/share/openmultipos/private/development-credentials.json`, con permisos 600, fuera del repositorio. No copiarla a documentación o issues.
+
+Para instalar la plantilla en otro equipo, copiarla a `~/.config/systemd/user/`, ajustar las rutas si corresponde y ejecutar `systemctl --user daemon-reload` y `systemctl --user enable --now openmultipos-web`. No ejecutar `bench start` simultáneamente: usa el mismo puerto web. Este servicio sirve únicamente la web local; no representa una instalación de producción con workers, scheduler, TLS y supervisión completos.
+
+Al compilar solo la versión web de X POS, se usó `CYPRESS_INSTALL_BINARY=0 ELECTRON_SKIP_BINARY_DOWNLOAD=1 bench build --production`. Así se evita descargar ejecutables de escritorio/pruebas que no participan en ese build. Las dependencias JS sí se instalan; los ensayos Electron no se dan por realizados.

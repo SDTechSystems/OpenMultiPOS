@@ -14,6 +14,9 @@ class TestBrandPermissions(IntegrationTestCase):
         super().setUpClass()
         if not frappe.conf.get("allow_tests"):
             raise RuntimeError("Ejecutar exclusivamente en un sitio local de pruebas.")
+        from erpnext.setup.setup_wizard.operations.install_fixtures import install
+
+        install("Colombia")
         ensure_cashier_role()
         cls.fixtures = []
         for suffix in ("A", "B"):
