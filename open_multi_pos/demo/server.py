@@ -59,7 +59,13 @@ def make_server(store: DemoStore, port: int = 8765) -> ThreadingHTTPServer:
                     name, mime = STATIC[url.path]
                     self.respond(
                         200,
-                        files("open_multi_pos.demo").joinpath(f"static/{name}").read_text(),
+                        files("open_multi_pos")
+                        .joinpath(
+                            f"public/{name}"
+                            if name in ("scanner-input.js", "receipt-print.js")
+                            else f"demo/static/{name}"
+                        )
+                        .read_text(),
                         mime,
                     )
                 elif url.path == "/api/context":

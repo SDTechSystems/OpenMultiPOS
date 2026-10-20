@@ -79,6 +79,8 @@ journalctl --user -u openmultipos-web -n 30
 
 Abrir [el sitio local](http://omp.localhost:8000/login) en Chrome/Edge de Windows. Se comprobó conexión desde Chrome Windows y login HTTP de Administrator. La contraseña generada permanece en `$HOME/.local/share/openmultipos/private/development-credentials.json`, con permisos 600, fuera del repositorio. No copiarla a documentación o issues.
 
+La [caja propia](http://omp.localhost:8000/omp_pos) usa una sesión de cajero y terminal configurada; [guía y recuperación](cashier-ui.md). Se probó el recorrido nativo con Chrome Windows y dos usuarios ficticios, separado de la demo SQLite. Las suites deshabilitan sus terminales temporales al terminar; la configuración de una terminal de revisión se conserva aparte.
+
 Para instalar la plantilla en otro equipo, copiarla a `~/.config/systemd/user/`, ajustar rutas si corresponde y ejecutar `systemctl --user daemon-reload` y `systemctl --user enable --now openmultipos-web`. No ejecutar `bench start` simultáneamente: usa el mismo puerto web.
 
 La plantilla `examples/systemd/openmultipos-worker.service` consume las colas short/default/long del mismo Bench, con el usuario local y sin abrir puertos. Está instalada y habilitada en esta máquina. Desde el checkout, en otra instalación con las mismas rutas:

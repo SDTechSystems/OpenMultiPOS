@@ -1,6 +1,6 @@
 # Caja nativa en línea · API inicial
 
-Estado: backend probado sobre los SHAs de `upstream.lock.json`, exclusivamente con datos ficticios. La pantalla de caja debe conectarse a este contrato. Las 14 rutas de factura X POS siguen bloqueadas; no se copió su motor ni se modificó core. Offline, devoluciones, reservas, lotes/seriales y emisión fiscal quedan fuera de este incremento.
+Estado: backend probado sobre los SHAs de `upstream.lock.json`, exclusivamente con datos ficticios. La pantalla autenticada `/omp_pos` usa este contrato; [guía de caja](cashier-ui.md). Las 14 rutas de factura X POS siguen bloqueadas; no se copió su motor ni se modificó core. Offline, devoluciones, reservas, lotes/seriales y emisión fiscal quedan fuera de este incremento.
 
 ## Configuración
 
@@ -24,6 +24,7 @@ Prefijos Frappe `/api/method/` y `/api/v2/method/`; métodos bajo `open_multi_po
 | `quote` | POST | `data: {terminal, customer, items: [{item_code, qty}]}`; 1–50 líneas únicas, qty entero 1–10000. Rechaza campos extra como rate, warehouse, taxes o ignore_permissions. |
 | `checkout` | POST | `data: {terminal, request_id, quote, payments: [{mode_of_payment, amount, reference_no?}]}`; UUID v4 canónico y quote devuelto por el servidor. |
 | `get_status` | GET/POST | `terminal, request_id`. Devuelve factura y snapshot histórico. `not_found` exige conservar la misma clave al reintentar. |
+| `abandon_checkout` | POST | Mismo `data` que checkout. Recupera una venta completada o guarda un tombstone que impide vender esa clave/quote. No devuelve pagos externos. |
 | `shift_summary` | POST | `terminal, opening_entry`. Importes esperados por medio, incluidos saldo inicial y efectivo neto de cambio. POST serializa la lectura con la caja. |
 | `close_shift` | POST | `data: {terminal, opening_entry, counts: [{mode_of_payment, amount}]}`; todos los medios. Conserva diferencias. Repetir conteos idénticos recupera el cierre; otros conteos producen 409. |
 
@@ -47,7 +48,7 @@ Ante **409**, pérdida de respuesta o error posterior al commit, consultar estad
 
 ## Recibo y evidencia
 
-Snapshot persistente: marca, contexto, fecha UTC, líneas, impuestos, total, pagos, cambio, pie/QR y `fiscal_issued=false`. Editar la marca no cambia el recibo anterior; imprimir/consultar no repite venta. La presentación HTML, el botón web y el trabajo de impresión son el siguiente incremento; el API no confirma papel.
+Snapshot persistente: marca, contexto, fecha UTC, líneas, impuestos, total, pagos, cambio, pie/QR y `fiscal_issued=false`. Editar la marca no cambia el recibo anterior; imprimir/consultar no repite venta. La pantalla muestra HTML escapado de ese snapshot y permite cambiar perfil 48/58/80 mm sin vender otra vez. El botón solicita el diálogo del navegador, revalida permisos de impresión y nunca incrementa automáticamente `print_count` ni confirma papel.
 
 ```bash
 # Primero migrar, ejecutar las nueve pruebas Bench y activar web/worker.
@@ -56,4 +57,6 @@ Snapshot persistente: marca, contexto, fecha UTC, líneas, impuestos, total, pag
   --bench "$HOME/.local/share/openmultipos/bench"
 ```
 
-16 casos HTTP reales cubren stock/GL, impuestos, mixtos/cambio, cierre, UUID/payload/quote únicos, concurrencia/última unidad entre perfiles, permisos, expiración/precio cambiado, rollback por contabilidad congelada, capacidades sin fugas, fiscal desactivado y snapshot. Stock Entry, facturas y cierres ficticios se conservan como evidencia. Al terminar se restauran tokens/roles/configuración temporal y se deshabilitan perfiles/marcas/terminales de esta suite. Contratos sin Frappe y seguridad X POS se ejecutan por separado. No equivale a ensayo completo de pantalla POS, hardware o producción.
+20 casos HTTP reales cubren stock/GL, impuestos, mixtos/cambio, cierre, UUID/payload/quote únicos, concurrencia/última unidad entre perfiles, permisos, expiración/precio cambiado, rollback por contabilidad congelada, capacidades sin fugas, fiscal desactivado y snapshot. Stock Entry, facturas y cierres ficticios se conservan como evidencia. Al terminar se restauran tokens/roles/configuración temporal y se deshabilitan perfiles/marcas/terminales de esta suite. Contratos sin Frappe y seguridad X POS se ejecutan por separado. La pantalla tiene su propio E2E real descrito en [cashier-ui.md](cashier-ui.md). Ninguna suite certifica hardware o producción.
+
+`abandon_checkout` toma el mismo bloqueo de perfil y claim único que checkout. Si una venta ya terminó, devuelve su snapshot; si no, persiste `abandoned=1` sin documentos financieros. Checkout rechaza ese tombstone y otro UUID sigue sin poder usar la quote UNIQUE. Por ello una solicitud retrasada no puede vender después de liberar la pantalla. Un 409 requiere consultar/reintentar la resolución. `get_status` también puede devolver `abandoned`. El cajero debe conciliar cualquier pago externo antes de crear otro intento.

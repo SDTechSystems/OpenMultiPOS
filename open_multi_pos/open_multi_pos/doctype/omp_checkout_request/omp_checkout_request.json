@@ -56,6 +56,12 @@
       "fieldname": "receipt_json",
       "fieldtype": "Long Text",
       "label": "Instantánea del recibo"
+    },
+    {
+      "fieldname": "abandoned",
+      "fieldtype": "Check",
+      "label": "Intento liberado",
+      "default": "0"
     }
   ],
   "field_order": [
@@ -66,7 +72,8 @@
     "quote",
     "payload_hash",
     "invoice",
-    "receipt_json"
+    "receipt_json",
+    "abandoned"
   ],
   "permissions": [
     {

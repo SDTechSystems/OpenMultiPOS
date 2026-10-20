@@ -2,7 +2,7 @@ import unittest
 
 from open_multi_pos.fiscal import DisabledFiscalProvider
 from open_multi_pos.hardware import BrowserPrinterAdapter, PrinterProfile, printer_profiles
-from open_multi_pos.receipts import money, qr_data_url
+from open_multi_pos.receipts import money, qr_data_url, render_receipt
 from open_multi_pos.validation import cents, safe_qr_url
 
 
@@ -62,6 +62,32 @@ class ReceiptTests(unittest.TestCase):
     def test_invalid_profile_rejected(self):
         with self.assertRaises(ValueError):
             PrinterProfile("bad", "Bad", 57, 80, 384, 203)
+
+    def test_native_snapshot_escapes_names_and_payment_labels(self):
+        receipt = {
+            "id": "NATIVE-<1>",
+            "created_at": "2026-10-19T17:00:00+00:00",
+            "brand": {
+                "name": "<b>Marca</b>",
+                "footer": "<script>alert(1)</script>",
+                "qr_url": "https://example.com/native",
+            },
+            "items": [
+                {"name": "<img onerror=alert(1)>", "qty": 1, "rate": 100000, "amount": 100000}
+            ],
+            "payments": [{"mode_of_payment": "<svg onload=alert(1)>", "amount": 119000}],
+            "total": 119000,
+            "taxes": 19000,
+            "change": 0,
+        }
+        html = render_receipt(receipt, printer_profiles()["generic-58"], native=True)
+        self.assertNotIn("<svg onload", html)
+        self.assertNotIn("<script>alert", html)
+        self.assertIn("&lt;svg onload", html)
+        self.assertIn("Impuestos: $ 190", html)
+        self.assertIn("SIN VALIDEZ FISCAL", html)
+        self.assertNotIn("DEMO ·", html)
+        self.assertIn("/assets/open_multi_pos/receipt-print.js", html)
 
     def test_fiscal_is_disabled(self):
         result = DisabledFiscalProvider().status()

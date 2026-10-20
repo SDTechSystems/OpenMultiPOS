@@ -144,3 +144,26 @@ Contrato, configuración y límites en [native-checkout.md](native-checkout.md).
 La repetición de la prueba concurrente reveló un cierre que omitía una venta recién completada: el bloqueo del perfil no refresca una vista REPEATABLE READ previa. Se añadió un Custom Field estándar de revisión en POS Opening Entry, incrementado con la venta; comparar snapshot/lectura bloqueada obliga a 409 si la vista está obsoleta, sin resetear transacciones. Se repitió la carrera y se añadió guard de eventos contra escrituras directas incluso con DocShare. El harness también descarta su snapshot diagnóstico antes de inspeccionar una cotización creada por HTTP; no modifica la transacción del servicio.
 
 Regresión final local: 9 pruebas Bench, 19 HTTP de seguridad y 16 HTTP de caja aprobadas; carrera cierre/venta repetida seis veces adicionales sin fallos. Ruff/formato/Prettier, 47 contratos/simulador y build aprobados. Worker activo: short/default/long con cero tareas pendientes y cero fallidas tras procesar el backlog.
+
+## P0 · Pantalla autenticada y recuperación · 19/10/2026
+
+Nueva página `/omp_pos`, sesión cookie y CSRF Frappe, selección de terminales propias y contexto autorizado, cliente de mostrador del perfil, búsqueda por nombre/código/barcode, modo HID US opcional, carrito de unidades enteras, cotización del servidor, pagos mixtos, apertura y conteo/cierre. El catálogo comprueba permisos documentales, campos y grupos antes de responder; candidatos rechazados no dejan mensajes con sus datos en una respuesta vacía. No usa precios ni ledger del simulador.
+
+Antes de enviar checkout, guarda solo terminal/UUID/quote/pagos por sitio/usuario en localStorage. Web Locks serializa pestañas del mismo origen/perfil; recarga consulta el estado y conserva exactamente la clave/payload. No coordina otros equipos/perfiles ni implementa offline. Un intento incierto bloquea nuevas ventas hasta recuperar un resultado o resolverlo en servidor.
+
+Nuevo campo `OMP Checkout Request.abandoned` y POST `abandon_checkout`: mismo mutex/claim que venta, devuelve la factura si terminó o persiste un tombstone UNIQUE sin documentos financieros. Una solicitud tardía ya no puede vender esa clave/quote. No devuelve dinero externo y los conflictos conservan el intento. Se prueban resolución concurrente, repetición y cobro tardío rechazado.
+
+Recibo escapado del snapshot histórico, impuestos y medios nativos, fecha local, pie/QR, perfiles 48/58/80 mm y script compartido de altura finita. Cargar/imprimir revalida lectura e impresión; no crea factura ni marca salida de papel. El botón solo pide diálogo y no incrementa automáticamente print_count. El simulador conserva su rotulado DEMO y usa los helpers compartidos de escaneo/layout.
+
+| Evidencia local | Resultado | Alcance y límites |
+| --- | --- | --- |
+| Migración del journal | PASÓ | Tombstone persistente; índices únicos previos conservados, sin cambio de core. |
+| HTTP nativo | PASÓ · 20 pruebas | 16 previas y fachada/catálogo, recibo/permisos/layout, resolución y carrera. Catálogo rechazado sin mensajes filtrados, perfil deshabilitado omitido. |
+| E2E Chrome Windows → Bench/MariaDB | PASÓ · 1 recorrido | Login cookie/CSRF negativo, dos usuarios, cuatro facturas y cuatro SLE/GL, código HID simulado, mixtos/cambio, respuesta perdida antes/después del commit, retry con mismo UUID, recarga, dos pestañas con un solo POST, tombstone y cierre. Sin mocks del backend. |
+| Recibo nativo | PASÓ · 3 PDF de una página | 48/58/80 mm, altura menor a 180 mm y ancho comprobado con pypdf. Error HTTP de recibo conserva venta y no reenvía checkout. Diálogo sustituido en navegador de pruebas; ninguna salida física nueva. |
+| Teclado/responsive/axe | PASÓ | Enter de lector, Tab al botón de guardar y Enter; 390/768/1366 px sin desborde; sin violaciones axe en reglas seleccionadas. No acredita WCAG completa ni lector físico. |
+| Regresiones | PASÓ | 9 Bench, 19 HTTP seguridad, 48 Python, Ruff/formato/Prettier, sdist/wheel; demo navegador y seis PDF previos conservados. |
+
+El harness restaura hashes de contraseña, sesiones nuevas, roles, barcodes y configuración, y deshabilita terminales de suites. Credenciales efímeras pasan por stdin, sin argumentos ni archivos públicos. Capturas/PDF exclusivamente ficticios quedan fuera de Git. Un preparador separado deja una caja de revisión ficticia con credenciales locales modo 600; no sustituye una instalación productiva ni incorpora datos reales.
+
+CI incorpora el E2E Chromium Linux después de las suites HTTP en un sitio nuevo y sirve assets propios con el middleware de desarrollo de Frappe. La validación de CI y commit se registra en PR #1. Próximo P0: lector y recibo nativo en hardware/controlador Windows, luego recuperación operativa y auditoría restante. Devoluciones, historial navegable de caja, otros clientes, offline, backups/restauración y aceptación productiva siguen pendientes. DIAN desactivada; sin transmisiones fiscales ni pruebas físicas nuevas.

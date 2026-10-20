@@ -22,6 +22,146 @@ BaseFixtures = fixtures.XPOSHTTPTests
 
 
 class NativeCheckoutHTTPTests(BaseFixtures):
+    def test_native_cashier_facade_and_catalog_scope(self):
+        def facade(method, data=None, user=None):
+            return self.call("open_multi_pos.cashier." + method, data, user=user or self.na["user"])
+
+        listed = facade("terminals")
+        self.assertEqual(listed.status_code, 200)
+        names = {row["name"] for row in listed.json()["message"]}
+        self.assertIn(self.na["terminal"], names)
+        self.assertNotIn(self.nb["terminal"], names)
+        self.assertNotIn(self.nc["terminal"], names)
+        context = facade("context", {"terminal": self.na["terminal"]})
+        self.assertEqual(context.status_code, 200)
+        self.assertEqual(context.json()["message"]["customer"], "OMP HTTP Customer")
+        self.assertEqual(facade("context", {"terminal": self.nb["terminal"]}).status_code, 403)
+        result = facade("search", {"terminal": self.na["terminal"], "text": self.na["item"]})
+        self.assertEqual(result.status_code, 200)
+        self.assertEqual(result.json()["message"][0]["item_code"], self.na["item"])
+        self.assertTrue(result.json()["message"][0]["exact"])
+        self.assertEqual(
+            facade(
+                "search", {"terminal": self.nb["terminal"], "text": self.nb["item"]}
+            ).status_code,
+            403,
+        )
+        guest = self.call("open_multi_pos.cashier.terminals")
+        self.assertEqual(guest.status_code, 403)
+        try:
+            frappe.db.set_value("POS Profile", self.na["profile"], "disabled", 1)
+            frappe.db.commit()
+            frappe.clear_cache()
+            hidden_terminal = facade("terminals")
+            self.assertEqual(hidden_terminal.status_code, 200)
+            self.assertNotIn(
+                self.na["terminal"], {r["name"] for r in hidden_terminal.json()["message"]}
+            )
+            self.assertNotIn("_server_messages", hidden_terminal.json())
+        finally:
+            frappe.db.set_value("POS Profile", self.na["profile"], "disabled", 0)
+            frappe.db.commit()
+            frappe.clear_cache()
+        profile = frappe.get_doc("POS Profile", self.na["profile"])
+        item = frappe.get_doc("Item", self.na["item"])
+        groups, barcodes = (
+            [r.as_dict() for r in profile.item_groups],
+            [r.as_dict() for r in item.barcodes],
+        )
+        barcode = "OMP-HTTP-FICTIONAL-BARCODE"
+        try:
+            item.append("barcodes", {"barcode": barcode})
+            item.save()
+            profile.set("item_groups", [{"item_group": "Services"}])
+            profile.save()
+            frappe.db.commit()
+            frappe.clear_cache()
+            hidden = facade("search", {"terminal": self.na["terminal"], "text": barcode})
+            self.assertEqual(hidden.status_code, 200)
+            self.assertEqual(hidden.json()["message"], [])
+            self.assertNotIn("_server_messages", hidden.json())
+        finally:
+            frappe.db.rollback()
+            profile = frappe.get_doc("POS Profile", self.na["profile"])
+            profile.set("item_groups", groups)
+            profile.save()
+            item = frappe.get_doc("Item", self.na["item"])
+            item.set("barcodes", barcodes)
+            item.save()
+            frappe.db.commit()
+            frappe.clear_cache()
+
+    def test_native_abandoned_attempt_fences_delayed_checkout(self):
+        self.stock()
+        self.open()
+        quoted = self.quote()
+        data = self.payload(quoted)
+        before = self.counts()
+        result = self.native_call("abandon_checkout", data)
+        self.assertEqual(result.status_code, 200)
+        self.assertEqual(result.json()["message"]["status"], "abandoned")
+        self.assertEqual(self.native_call("abandon_checkout", data).status_code, 200)
+        self.assertEqual(self.native_call("checkout", data).status_code, 409)
+        self.assertEqual(
+            self.native_call("checkout", {**data, "request_id": str(uuid4())}).status_code, 409
+        )
+        status = self.native_call(
+            "get_status", {"terminal": self.na["terminal"], "request_id": data["request_id"]}
+        )
+        self.assertEqual(status.json()["message"]["status"], "abandoned")
+        before["OMP Checkout Request"] += 1  # Durable tombstone, no financial document.
+        self.assertEqual(before, self.counts())
+        sale = self.payload(self.quote())
+        self.assertEqual(self.native_call("checkout", sale).status_code, 200)
+        result = self.native_call("abandon_checkout", sale)
+        self.assertEqual(result.json()["message"]["status"], "completed")
+
+    def test_native_abandon_checkout_race(self):
+        self.stock()
+        self.open()
+        data = self.payload(self.quote())
+        with ThreadPoolExecutor(max_workers=2) as pool:
+            sale = pool.submit(self.native_call, "checkout", data)
+            abandon = pool.submit(self.native_call, "abandon_checkout", data)
+            sale, abandon = sale.result(), abandon.result()
+        self.assertIn(sale.status_code, (200, 409))
+        self.assertIn(abandon.status_code, (200, 409))
+        status = self.native_call(
+            "get_status", {"terminal": self.na["terminal"], "request_id": data["request_id"]}
+        )
+        self.assertEqual(status.status_code, 200)
+        final = status.json()["message"]
+        self.assertIn(final["status"], ("completed", "abandoned"))
+        late = self.native_call("checkout", data)
+        self.assertEqual(late.status_code, 200 if final["status"] == "completed" else 409)
+
+    def test_native_saved_receipt_authorization_and_layout(self):
+        self.stock()
+        self.open()
+        data = self.payload(self.quote())
+        result = self.native_call("checkout", data)
+        self.assertEqual(result.status_code, 200)
+        before = self.counts()
+        args = {
+            "terminal": self.na["terminal"],
+            "request_id": data["request_id"],
+            "printer": "generic-80",
+        }
+        receipt = self.call(
+            "open_multi_pos.cashier.receipt", args, user=self.na["user"], verb="POST"
+        )
+        self.assertEqual(receipt.status_code, 200)
+        html = receipt.json()["message"]["html"]
+        self.assertIn('data-paper-mm="80"', html)
+        self.assertIn("SIN VALIDEZ FISCAL", html)
+        self.assertNotIn("DEMO ·", html)
+        self.assertIn("/assets/open_multi_pos/receipt-print.js", html)
+        denied = self.call(
+            "open_multi_pos.cashier.receipt", args, user=self.nb["user"], verb="POST"
+        )
+        self.assertEqual(denied.status_code, 403)
+        self.assertEqual(before, self.counts())
+
     @classmethod
     def setUpClass(cls):
         super().setUpClass()

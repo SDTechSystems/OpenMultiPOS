@@ -63,6 +63,10 @@ jobs:
           npm install --global yarn@1.22.22
       - name: Install pinned applications
         run: python scripts/prepare-bench.py --bench "$RUNNER_TEMP/omp-bench" --sources "$RUNNER_TEMP/omp-sources"
+      - name: Install native cashier browser checks
+        run: |
+          npm ci --ignore-scripts
+          npx playwright install --with-deps chromium
       - name: Create disposable site and test permissions
         env:
           OMP_DB_PASSWORD: ci-only-database
@@ -87,11 +91,17 @@ jobs:
         run: |
           bench worker --queue short,default,long --quiet > "$RUNNER_TEMP/omp-worker.log" 2>&1 &
           omp_worker_pid=$!
-          env/bin/gunicorn --chdir sites --bind 127.0.0.1:8000 --workers 2 --threads 2 --pid "$RUNNER_TEMP/omp-http.pid" --daemon frappe.app:application
+          env/bin/gunicorn --chdir sites --bind 127.0.0.1:8000 --workers 2 --threads 2 --pid "$RUNNER_TEMP/omp-http.pid" --daemon 'frappe.app:application_with_statics()'
           trap 'kill "$omp_worker_pid" "$(cat "$RUNNER_TEMP/omp-http.pid")"' EXIT
           for attempt in $(seq 1 30); do curl -fsS -H 'Host: omp.localhost' -o /dev/null http://127.0.0.1:8000/api/method/ping && break || sleep 1; done
           env/bin/python "$GITHUB_WORKSPACE/scripts/test-xpos-http.py" --bench "$RUNNER_TEMP/omp-bench"
           env/bin/python "$GITHUB_WORKSPACE/scripts/test-native-checkout-http.py" --bench "$RUNNER_TEMP/omp-bench"
+          OMP_BROWSER_CHANNEL=chromium env/bin/python "$GITHUB_WORKSPACE/scripts/test-native-cashier.py" --bench "$RUNNER_TEMP/omp-bench"
+      - uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: native-cashier-browser-results
+          path: test-results/native-cashier/
   browser:
     needs: privacy
     runs-on: ubuntu-latest

@@ -2,13 +2,14 @@
 
 POS libre y autohospedable, diseñado como extensión de **ERPNext + Frappe + X POS** para operar varias marcas, inventarios, caja y recibos con impresoras configurables.
 
-**Estado: desarrollo con backend de caja nativa probado.** Incluye demo simulada y app Frappe sobre ERPNext/X POS en Ubuntu WSL. Nueve pruebas Bench, 19 HTTP de seguridad y 16 HTTP de checkout nativo cubren permisos, stock/contabilidad, pagos, cierres e idempotencia. La pantalla de caja aún debe conectarse al nuevo API; otras APIs X POS y offline requieren integración y pruebas.
+**Estado: caja nativa integrada y probada en desarrollo.** Pantalla autenticada `/omp_pos` sobre ERPNext en WSL y Chrome Windows: búsqueda/lector, apertura/cierre, pagos mixtos, recuperación de respuesta incierta y recibo histórico. Nueve pruebas Bench, 19 HTTP de seguridad, 20 HTTP de checkout y un recorrido E2E con dos cajeros. Otras APIs X POS, hardware y operación/recuperación requieren más validación; usar solo datos ficticios.
 
 - [Funcionalidades F01–F19](docs/features.md)
 - [Plan por fases y backlog](docs/roadmap.md)
 - [Matriz de requisitos y gaps](docs/requirements-matrix.md)
 - [Arquitectura](docs/architecture.md) · [Auditoría y resultados](docs/audit-report.md)
 - [Impresoras y ensayos físicos](docs/hardware-jaltech.md)
+- [Caja autenticada: uso y recuperación](docs/cashier-ui.md)
 - [Servicios locales y Windows/WSL](docs/local-services.md)
 - [GitHub: ramas, PRs, privacidad y protecciones](docs/github-workflow.md)
 
@@ -69,7 +70,7 @@ El diagnóstico del lector permite activar **«Lector USB configurado con teclad
 
 La app añade marcas, usuarios, terminales y [caja nativa en línea](docs/native-checkout.md). Empresa, almacén y POS Profile deben coincidir. El servicio cotiza con ERPNext y envía Sales Invoice con stock/contabilidad inmediatos, pagos mixtos, apertura/cierre y snapshot de recibo. El cajero mantiene permisos nativos y escrituras limitadas al servicio. Los adaptadores protegen lectura/impresión; 14 operaciones de factura X POS siguen bloqueadas y su pantalla no usa todavía el nuevo checkout. Ver [seguridad de APIs](docs/xpos-api-security.md), [desarrollo](docs/development.md) y [despliegue](docs/deployment.md).
 
-SHAs revisados e instalados en [upstream.lock.json](upstream.lock.json): Frappe 16.52.0, ERPNext 16.51.1 y X POS 2.12.0. Instalación, migración y pruebas locales aprobadas sin modificar core. Chrome Windows alcanza el backend WSL; web y worker funcionan como servicios de usuario. Mantener datos ficticios hasta probar la pantalla nativa completa, revisar el resto de APIs y validar operación/recuperación.
+SHAs revisados e instalados en [upstream.lock.json](upstream.lock.json): Frappe 16.52.0, ERPNext 16.51.1 y X POS 2.12.0. Instalación, migración y pruebas locales aprobadas sin modificar core. Chrome Windows alcanza el backend WSL; web y worker funcionan como servicios de usuario. Abrir `/omp_pos` con un cajero y terminal configurados según [la guía](docs/cashier-ui.md). Mantener datos ficticios hasta revisar el resto de APIs, hardware y operación/recuperación.
 
 ## Validación
 
@@ -88,7 +89,7 @@ OMP_AXE_MODULE=@axe-core/playwright npm run test:ui
 python scripts/check-receipt-pdfs.py
 ```
 
-Para Chromium administrado por Playwright: `npx playwright install chromium` y definir `OMP_BROWSER_CHANNEL=chromium`. Capturas y resultados van a `test-results/`, ignorado por Git. GitHub Actions ejecuta privacidad, Python, navegador y un sitio Bench desechable. Los 47 tests sin framework incluyen contratos con mocks; la suite Bench se ejecuta por separado según [development.md](docs/development.md). Ver resultados reales en [audit-report.md](docs/audit-report.md).
+Para Chromium administrado por Playwright: `npx playwright install chromium` y definir `OMP_BROWSER_CHANNEL=chromium`. Capturas y resultados van a `test-results/`, ignorado por Git. GitHub Actions ejecuta privacidad, Python, navegador y un sitio Bench desechable. Los 48 tests sin framework incluyen contratos con mocks; la suite Bench se ejecuta por separado según [development.md](docs/development.md). Ver resultados reales en [audit-report.md](docs/audit-report.md).
 
 ## Alcance fiscal, marcas y licencia
 

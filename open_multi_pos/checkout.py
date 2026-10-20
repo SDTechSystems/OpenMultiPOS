@@ -163,6 +163,18 @@ def group_allowed(doctype, name, allowed):
     return False
 
 
+def simple_sale_item(item):
+    return not (
+        item.disabled
+        or not item.is_sales_item
+        or item.has_variants
+        or item.is_fixed_asset
+        or item.has_batch_no
+        or item.has_serial_no
+        or frappe.db.exists("Product Bundle", item.name)
+    )
+
+
 def validate_catalog(profile, customer_name, rows, *, stock=False):
     customer = frappe.get_doc("Customer", customer_name)
     customer.check_permission("read")
@@ -175,10 +187,8 @@ def validate_catalog(profile, customer_name, rows, *, stock=False):
             frappe.db.get_value("Item", row["item_code"], "name", for_update=True)
         item = frappe.get_doc("Item", row["item_code"])
         item.check_permission("read")
-        if item.disabled or not item.is_sales_item or item.has_variants or item.is_fixed_asset:
+        if not simple_sale_item(item):
             frappe.throw("Artículo no habilitado para venta")
-        if item.has_batch_no or item.has_serial_no or frappe.db.exists("Product Bundle", item.name):
-            frappe.throw("Lotes, seriales y bundles requieren un flujo posterior")
         if not group_allowed("Item Group", item.item_group, profile.item_groups):
             frappe.throw("Artículo fuera de los grupos autorizados", frappe.PermissionError)
         if stock and item.is_stock_item:
@@ -398,6 +408,8 @@ def saved_sale(record, terminal):
         or record.brand != terminal.brand
     ):
         frappe.throw("Transacción no autorizada", frappe.PermissionError)
+    if record.get("abandoned"):
+        return {"status": "abandoned", "request_id": record.request_id}
     if not record.invoice or not record.receipt_json:
         conflict("Transacción no completada; consulte el estado con la misma clave")
     doc = frappe.get_doc("Sales Invoice", record.invoice)
@@ -543,6 +555,8 @@ def checkout(data: str | dict):
     quote_doc = authorized_quote(data["quote"], terminal)
     payload = {"quote": quote_doc.name, "payments": rows}
     record = claim_request(terminal, request_id, quote_doc, payload)
+    if record.get("abandoned"):
+        conflict("Intento liberado; esta clave y cotización ya no pueden vender")
     if record.invoice:
         locked_opening(
             quote_doc.opening_entry
@@ -591,6 +605,30 @@ def get_status(terminal: str, request_id: str):
         return {"status": "not_found", "request_id": request_id, "retry_with_same_key": True}
     record = frappe.get_doc("OMP Checkout Request", key)
     return saved_sale(record, terminal)
+
+
+@frappe.whitelist(methods=["POST"])
+@contract_errors
+def abandon_checkout(data: str | dict):
+    """Fence delayed checkout requests before the UI may release an uncertain cart.
+
+    The profile lock waits for in-flight sales. A unique tombstone then prevents
+    a delayed request from selling this quote/key, even after this POST commits.
+    This only resolves the invoice attempt; it never refunds an external payment.
+    """
+    data = contract.mapping(data, ("terminal", "request_id", "quote", "payments"))
+    request_id = contract.request_uuid(data["request_id"])
+    rows = contract.payments(data["payments"])
+    terminal, _, _ = terminal_context(data["terminal"], lock=True)
+    quote_doc = authorized_quote(data["quote"], terminal)
+    record = claim_request(
+        terminal, request_id, quote_doc, {"quote": quote_doc.name, "payments": rows}
+    )
+    if record.invoice:
+        locked_opening(quote_doc.opening_entry)
+        return saved_sale(record, terminal)
+    frappe.db.set_value("OMP Checkout Request", record.name, "abandoned", 1)
+    return {"status": "abandoned", "request_id": request_id}
 
 
 @frappe.whitelist(methods=["POST"])
