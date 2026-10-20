@@ -116,4 +116,6 @@ Los fixtures HTTP son exclusivamente ficticios: facturas en borrador de un ítem
 
 La revisión del resolver de Frappe identificó variantes `.html` de ambas páginas. El guard normaliza esas rutas igual que Frappe y las solicitudes HTTP negativas incluyen las cuatro formas; no basta comparar únicamente `/printview` literal.
 
+El primer CI nuevo pasó 18 casos HTTP y falló con 500 en la página HTML de denegación. El preparador usa `--skip-assets`; la página de error de Frappe también carga bundles y necesita el build omitido en ese sitio fresco. Se añadió compilación de assets nativos antes de Gunicorn y se comprueban tanto JSON como HTML con 403, sin relajar la expectativa de autorización.
+
 La matriz completa del incremento y sus límites están en [xpos-api-security.md](xpos-api-security.md). Las funciones Python originales upstream siguen intactas: llamadas internas por import requieren su propia revisión. Otras APIs de catálogo/clientes/reportes/cierres/exportación/archivos no quedan certificadas. Checkout, stock, pagos mixtos, caja, idempotencia de ventas, offline y recuperación continúan pendientes. DIAN desactivada; ningún nuevo ensayo físico ni uso de datos reales.

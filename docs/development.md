@@ -45,7 +45,7 @@ Con las nueve pruebas anteriores completadas y el servicio web activo en loopbac
   --bench "$HOME/.local/share/openmultipos/bench"
 ```
 
-Resultado: **19 pruebas HTTP reales**, con solicitudes v1/v2 autenticadas, usuarios de dos empresas, perfil de otra marca bajo la misma empresa, Sales Invoice/POS Invoice, permisos de campos y concurrencia del contador. La suite requiere `allow_tests`, crea exclusivamente borradores ficticios y aperturas POS de saldo cero que cancela, y restaura credenciales/roles temporales. Ejecutar solo en sitio desechable; no contra datos reales. CI levanta Gunicorn con dos workers y dos threads para reproducir solicitudes simultáneas.
+Resultado: **19 pruebas HTTP reales**, con solicitudes v1/v2 autenticadas, usuarios de dos empresas, perfil de otra marca bajo la misma empresa, Sales Invoice/POS Invoice, permisos de campos y concurrencia del contador. La suite requiere `allow_tests`, crea exclusivamente borradores ficticios y aperturas POS de saldo cero que cancela, y restaura credenciales/roles temporales. Ejecutar solo en sitio desechable; no contra datos reales. CI compila `bench build --apps frappe,erpnext` antes de iniciar Gunicorn con dos workers/dos threads: las páginas HTML de error necesitan sus assets incluso cuando la prueba espera un 403. El sitio local ya incluye esos assets; un Bench nuevo preparado con `--skip-assets` debe compilarlos primero.
 
 Las **40 pruebas sin Frappe** se ejecutan aparte mediante `python -m unittest discover -s tests -v`. Son pruebas del simulador/contratos; no sumarlas a las de Bench como si validaran stock productivo.
 

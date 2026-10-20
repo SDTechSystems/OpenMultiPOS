@@ -430,11 +430,16 @@ class XPOSHTTPTests(unittest.TestCase):
             ("/Sales%20Invoice/" + quote(self.other_invoice, safe=""), {}),
             ("/Sales%20Invoice/" + quote(self.other_invoice, safe="") + ".html", {}),
         ):
-            response = requests.get(
-                OPTIONS.base_url + path, params=params, headers=headers, timeout=30
-            )
-            self.assertEqual(response.status_code, 403)
-            self.assertNotIn("OMP HTTP Customer", response.text)
+            for accept in ("application/json", "text/html"):
+                with self.subTest(path=path, accept=accept):
+                    response = requests.get(
+                        OPTIONS.base_url + path,
+                        params=params,
+                        headers={**headers, "Accept": accept},
+                        timeout=30,
+                    )
+                    self.assertEqual(response.status_code, 403)
+                    self.assertNotIn("OMP HTTP Customer", response.text)
 
     def test_unassigned_format_is_rejected(self):
         self.assertEqual(

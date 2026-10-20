@@ -79,6 +79,9 @@ jobs:
           bench --site omp.localhost set-config allow_tests True --parse
           uv pip install --python env/bin/python -e './apps/frappe[test]'
           bench --site omp.localhost run-tests --module open_multi_pos.integration.test_permissions --skip-before-tests
+      - name: Build native pages for HTML permission checks
+        working-directory: ${{ runner.temp }}/omp-bench
+        run: bench build --apps frappe,erpnext
       - name: Exercise secured X POS over HTTP v1 and v2
         working-directory: ${{ runner.temp }}/omp-bench
         run: |
