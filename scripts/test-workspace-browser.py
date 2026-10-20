@@ -25,6 +25,10 @@ spec.loader.exec_module(fixtures)
 
 class WorkspaceBrowser(fixtures.WorkspaceHTTP):
     def test_browser(self):
+        self.assertTrue(
+            frappe.is_setup_complete(),
+            "ERPNext no está inicializado. Ejecute migrate después de crear los maestros ficticios; no cambie las banderas de configuración a mano.",
+        )
         # Only fictional companies, actors and products appear in exported images.
         prior_visible = frappe.get_all(
             "OMP Business Brand", filters={"workspace_visible": 1}, pluck="name"

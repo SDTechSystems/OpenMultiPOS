@@ -84,6 +84,8 @@ jobs:
           bench --site omp.localhost execute frappe.db.set_single_value --args '["System Settings", "time_zone", "America/Bogota"]'
           uv pip install --python env/bin/python -e './apps/frappe[test]'
           bench --site omp.localhost run-tests --module open_multi_pos.integration.test_permissions --skip-before-tests
+          # Native Installed Applications derives setup readiness from these real users/companies.
+          bench --site omp.localhost migrate
       - name: Build native pages for HTML permission checks
         working-directory: ${{ runner.temp }}/omp-bench
         run: bench build --apps frappe,erpnext

@@ -2,6 +2,8 @@
 
 Ruta `/omp`, acceso por sesión con rol System Manager. La cuenta de instalación habilita la primera cuenta humana. Las cuentas administrativas creadas por la interfaz incluyen OMP Administrator y los roles nativos necesarios para catálogo, compras, inventario, ventas y contabilidad. No hay alta pública ni envío automático de correos. Los cajeros usan `/omp_pos` y terminales asignadas.
 
+El sitio debe tener completa la configuración inicial nativa de ERPNext. Si una instalación nueva muestra su asistente, complétalo antes de operar las herramientas contables. El sitio local existente ya está inicializado.
+
 ## Configuración inicial
 
 1. Iniciar sesión con la cuenta de instalación y abrir `/omp`.
