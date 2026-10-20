@@ -1,0 +1,63 @@
+{
+  "doctype": "DocType",
+  "name": "OMP POS Terminal",
+  "module": "Open Multi POS",
+  "engine": "InnoDB",
+  "fields": [
+    {
+      "fieldname": "display_name",
+      "fieldtype": "Data",
+      "label": "Nombre de terminal",
+      "reqd": 1
+    },
+    {
+      "fieldname": "enabled",
+      "fieldtype": "Check",
+      "label": "Habilitada",
+      "default": "0"
+    },
+    {
+      "fieldname": "brand",
+      "fieldtype": "Link",
+      "label": "Marca",
+      "reqd": 1,
+      "options": "OMP Business Brand"
+    },
+    {
+      "fieldname": "user",
+      "fieldtype": "Link",
+      "label": "Usuario",
+      "reqd": 1,
+      "options": "User"
+    },
+    {
+      "fieldname": "opening_entry",
+      "fieldtype": "Link",
+      "label": "Apertura",
+      "read_only": 1,
+      "options": "POS Opening Entry"
+    }
+  ],
+  "field_order": [
+    "display_name",
+    "enabled",
+    "brand",
+    "user",
+    "opening_entry"
+  ],
+  "permissions": [
+    {
+      "role": "System Manager",
+      "read": 1,
+      "create": 1,
+      "write": 1
+    },
+    {
+      "role": "OMP Cashier",
+      "read": 1
+    }
+  ],
+  "sort_field": "creation",
+  "sort_order": "DESC",
+  "track_changes": 1
+}

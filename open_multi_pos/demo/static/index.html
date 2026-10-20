@@ -1,0 +1,216 @@
+<!doctype html>
+<html lang="es-CO">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width,initial-scale=1" />
+    <title>OpenMultiPOS · Caja demo</title>
+    <link rel="stylesheet" href="/style.css" />
+    <script src="/scanner-input.js" defer></script>
+    <script src="/app.js" defer></script>
+  </head>
+  <body>
+    <a class="skip" href="#catalog">Saltar al catálogo</a>
+    <div class="demo-banner">
+      MODO DEMO · Datos ficticios · Ventas simuladas · Sin conexión con ERPNext
+      o DIAN
+    </div>
+    <header class="topbar">
+      <a href="/" class="wordmark" aria-label="OpenMultiPOS inicio"
+        ><span class="mark" aria-hidden="true">M</span
+        ><span>OpenMultiPOS<small>Tu negocio, en orden.</small></span></a
+      >
+      <div class="top-controls">
+        <label
+          >Usuario de simulación<select id="user">
+            <option value="owner">Administrador demo</option>
+            <option value="cashier">Cajero artesanía demo</option>
+          </select></label
+        ><span class="status">● Servidor local</span>
+      </div>
+    </header>
+    <main>
+      <section class="page-heading">
+        <div>
+          <p class="eyebrow">PUNTO DE VENTA / CAJA</p>
+          <h1>Una buena venta empieza aquí.</h1>
+          <p class="muted">
+            Selecciona tu negocio y agrega productos para probar el flujo.
+          </p>
+        </div>
+        <label class="brand-select"
+          >Negocio activo<select
+            id="brand"
+            aria-describedby="warehouse"
+          ></select
+          ><small id="warehouse"></small
+        ></label>
+      </section>
+      <p id="message" role="status" aria-live="polite"></p>
+      <div class="workspace">
+        <section
+          id="catalog"
+          class="catalog"
+          tabindex="-1"
+          aria-labelledby="catalog-title"
+        >
+          <div class="section-title">
+            <h2 id="catalog-title">Catálogo</h2>
+            <span id="product-count" class="muted"></span>
+          </div>
+          <form id="search-form">
+            <label for="search"
+              >Buscar por nombre, SKU o código de barras</label
+            >
+            <div class="search-box">
+              <input
+                id="search"
+                type="search"
+                placeholder="Escanea o escribe aquí…"
+                autocomplete="off"
+              /><button type="submit" class="secondary">Agregar código</button>
+            </div>
+            <small class="muted"
+              >Entrada manual o lector con Enter · Los códigos no abren
+              enlaces.</small
+            >
+          </form>
+          <div id="products" class="products"></div>
+          <p class="catalog-note">
+            Inventario de demostración por almacén. Precios ficticios, sin
+            impuestos.
+          </p>
+        </section>
+        <aside class="cart-panel" aria-labelledby="cart-title">
+          <div class="section-title">
+            <h2 id="cart-title">Venta actual</h2>
+            <button id="clear" class="text-button" type="button">Vaciar</button>
+          </div>
+          <div class="active-brand">
+            <span id="brand-symbol" aria-hidden="true"></span>
+            <div>
+              <strong id="brand-name"></strong
+              ><small id="cart-warehouse"></small>
+            </div>
+          </div>
+          <div id="cart" class="cart-items"></div>
+          <div class="totals">
+            <div><span>Subtotal demo</span><span id="subtotal"></span></div>
+            <div class="grand-total">
+              <span>Total COP</span><strong id="total"></strong>
+            </div>
+          </div>
+          <form id="payment-form">
+            <fieldset>
+              <legend>Registrar pago de prueba</legend>
+              <p class="muted">
+                La transferencia es un registro manual; no confirma un pago
+                bancario.
+              </p>
+              <div class="payment-inputs">
+                <label for="cash"
+                  >Efectivo (COP)<input
+                    id="cash"
+                    type="text"
+                    inputmode="decimal"
+                    placeholder="0.00"
+                    autocomplete="off" /></label
+                ><label for="transfer"
+                  >Transferencia (COP)<input
+                    id="transfer"
+                    type="text"
+                    inputmode="decimal"
+                    placeholder="0.00"
+                    autocomplete="off"
+                /></label>
+              </div>
+              <button id="exact" type="button" class="text-button">
+                Usar total en efectivo
+              </button>
+            </fieldset>
+            <button id="checkout" type="submit" class="primary" disabled>
+              Completar venta demo <span aria-hidden="true">→</span>
+            </button>
+          </form>
+          <p class="fineprint">
+            Recibo interno sin validez fiscal. La demo se reinicia usando una
+            base de datos nueva.
+          </p>
+        </aside>
+      </div>
+      <section class="receipt-section" aria-labelledby="scanner-title">
+        <div class="section-title">
+          <h2 id="scanner-title">Prueba tu lector</h2>
+          <span class="pill">Entrada USB / teclado</span>
+        </div>
+        <label class="scanner-setting"
+          ><input type="checkbox" id="scanner-us" /> Lector USB configurado con
+          teclado US</label
+        >
+        <p class="muted">
+          Activa esta opción si «:» sale como «Ñ» o «/» como «-». Se aplica solo
+          a los campos de escaneo y búsqueda; desactívala al escribir con tu
+          teclado local.
+        </p>
+        <label for="scanner-expected"
+          >Contenido esperado (opcional, para comparar)</label
+        >
+        <input
+          id="scanner-expected"
+          placeholder="https://example.com/atelier"
+          autocomplete="off"
+        />
+        <form id="scanner-form">
+          <label for="scanner-code"
+            >Haz clic aquí y escanea un producto o el QR del ticket</label
+          >
+          <div class="search-box">
+            <input
+              id="scanner-code"
+              autocomplete="off"
+              placeholder="Esperando lectura…"
+            /><button class="secondary" type="submit">Mostrar lectura</button>
+          </div>
+        </form>
+        <p id="scanner-result" role="status" aria-live="polite">
+          La lectura se muestra solo en esta página; no se abre ningún enlace ni
+          se guarda en el servidor.
+        </p>
+      </section>
+      <section class="receipt-section" aria-labelledby="receipt-title">
+        <div class="section-title">
+          <div>
+            <p class="eyebrow">IMPRESIÓN FLEXIBLE</p>
+            <h2 id="receipt-title">El recibo, a tu medida.</h2>
+          </div>
+          <span class="pill">Sin hardware obligatorio</span>
+        </div>
+        <div class="receipt-controls">
+          <label for="printer"
+            >Perfil de impresora<select id="printer"></select></label
+          ><button id="preview" class="secondary" type="button" disabled>
+            Ver último recibo</button
+          ><button id="print" class="primary" type="button" disabled>
+            Abrir diálogo de impresión
+          </button>
+        </div>
+        <p id="printer-detail" class="muted"></p>
+        <p id="print-status" role="status" aria-live="polite">
+          Completa una venta para previsualizar el recibo.
+        </p>
+        <iframe
+          id="receipt"
+          title="Vista previa del recibo interno"
+          hidden
+        ></iframe>
+        <p class="fineprint">
+          El diálogo usa las impresoras instaladas en tu equipo. La salida
+          física, los márgenes y el QR requieren prueba por modelo.
+        </p>
+      </section>
+      <footer class="app-footer">
+        <span>OpenMultiPOS · Primer incremento</span
+        ><span>es-CO / COP / America/Bogota</span>
+      </footer>
+    </main>
+  </body>
+</html>

@@ -1,0 +1,157 @@
+<!doctype html>
+<html lang="es-CO">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <meta name="csrf-token" content="{{ csrf_token | e }}" />
+    <title>Caja · OpenMultiPOS</title>
+    <link rel="stylesheet" href="/assets/open_multi_pos/cashier.css" />
+    <script src="/assets/open_multi_pos/scanner-input.js" defer></script>
+    <script src="/assets/open_multi_pos/cashier.js" defer></script>
+  </head>
+  <body data-user="{{ cashier_user | e }}">
+    <a class="skip" href="#sale">Ir a la venta</a>
+    <header>
+      <div>
+        <p class="eyebrow">OpenMultiPOS</p>
+        <h1>Caja</h1>
+      </div>
+      <div>
+        <span>{{ cashier_user | e }}</span> · <a href="/app">Administración</a>
+      </div>
+    </header>
+    <main>
+      <section aria-labelledby="terminal-title" class="panel">
+        <h2 id="terminal-title">Punto de venta</h2>
+        <label for="terminal">Terminal y marca</label>
+        <select id="terminal">
+          <option value="">Cargando terminales…</option>
+        </select>
+        <p id="context">Consultando permisos…</p>
+        <p class="notice">
+          En línea · COP · Recibo interno sin validez fiscal. Los pagos se
+          registran manualmente; confirme la transferencia en su banco.
+        </p>
+        <div id="opening-panel" hidden>
+          <h3>Abrir caja</h3>
+          <p>Registre el saldo inicial de cada medio de pago.</p>
+          <form id="opening-form">
+            <div id="balances" class="amounts"></div>
+            <button type="submit">Abrir caja</button>
+          </form>
+        </div>
+        <div class="actions">
+          <button id="summary" type="button" hidden>Resumen y cierre</button>
+        </div>
+        <form id="closing-form" hidden>
+          <h3>Conteo de cierre</h3>
+          <p id="closing-summary"></p>
+          <div id="counts" class="amounts"></div>
+          <button type="submit">Confirmar cierre</button>
+          <button type="button" id="cancel-close" class="secondary">
+            Volver
+          </button>
+        </form>
+      </section>
+      <p id="message" role="status" aria-live="polite" aria-atomic="true">
+        Cargando caja…
+      </p>
+      <section
+        id="recovery"
+        class="panel"
+        aria-labelledby="recovery-title"
+        hidden
+      >
+        <h2 id="recovery-title">Venta por resolver</h2>
+        <p id="operation"></p>
+        <p>
+          Consulte el estado antes de continuar. Un corte de conexión no indica
+          que la venta haya fallado. No repita el pago externo.
+        </p>
+        <div class="actions">
+          <button id="recover" type="button">Consultar estado</button>
+          <button id="retry" type="button">Reintentar el mismo intento</button>
+          <button id="abandon" class="secondary" type="button">
+            Resolver sin crear venta
+          </button>
+        </div>
+        <p class="notice">
+          Resolver espera las solicitudes en curso: recupera la venta si existe
+          o bloquea definitivamente este intento. No devuelve pagos externos;
+          concílielos antes de volver a cobrar.
+        </p>
+      </section>
+      <div class="workspace">
+        <section
+          id="sale"
+          class="panel"
+          aria-labelledby="sale-title"
+          tabindex="-1"
+        >
+          <h2 id="sale-title">Venta actual</h2>
+          <fieldset id="basket-controls" disabled>
+            <legend>Artículos</legend>
+            <form id="search-form">
+              <label for="search"
+                >Buscar nombre, código o escanear código de barras</label
+              >
+              <div class="search-row">
+                <input
+                  id="search"
+                  type="text"
+                  autocomplete="off"
+                  maxlength="140"
+                /><button type="submit">Buscar</button>
+              </div>
+              <label class="check"
+                ><input id="scanner-us" type="checkbox" /> Lector con teclado
+                US</label
+              >
+            </form>
+            <ul id="results" aria-label="Resultados de búsqueda"></ul>
+            <ul id="cart" aria-label="Carrito"></ul>
+            <p id="cart-empty">Agregue un artículo para comenzar.</p>
+            <button id="quote" type="button">Calcular total</button>
+          </fieldset>
+          <div id="quoted" hidden>
+            <h3>Cotización vigente</h3>
+            <ul id="quote-lines"></ul>
+            <p id="taxes"></p>
+            <p id="total" class="total"></p>
+          </div>
+          <form id="payment-form" hidden>
+            <fieldset id="payment-controls">
+              <legend>Pago recibido</legend>
+              <div id="payments" class="amounts"></div>
+              <p id="change"></p>
+              <button id="checkout" type="submit">Guardar venta</button>
+            </fieldset>
+          </form>
+        </section>
+        <section class="panel" aria-labelledby="receipt-title">
+          <h2 id="receipt-title">Recibo guardado</h2>
+          <p id="receipt-state">
+            Aparecerá después de guardar o recuperar la venta.
+          </p>
+          <label for="printer">Perfil de impresora</label
+          ><select id="printer" disabled></select>
+          <div class="actions">
+            <button id="preview" type="button" disabled>
+              Volver a cargar recibo</button
+            ><button id="print" type="button" disabled>Imprimir recibo</button
+            ><button id="new-sale" type="button" disabled>Nueva venta</button>
+          </div>
+          <p class="notice">
+            La vista previa y el diálogo del navegador no confirman salida de
+            papel. Una falla de impresión no requiere volver a guardar la venta.
+          </p>
+          <iframe
+            id="receipt"
+            title="Vista previa del recibo interno"
+            hidden
+          ></iframe>
+        </section>
+      </div>
+    </main>
+  </body>
+</html>

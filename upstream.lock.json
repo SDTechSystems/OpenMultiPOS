@@ -1,0 +1,47 @@
+{
+  "review_date": "2026-10-18",
+  "status": "source-reviewed; scoped API security, native checkout and authenticated cashier UI tested; original X POS invoice routes blocked",
+  "tested_environment": {
+    "date": "2026-10-19",
+    "os": "Ubuntu 26.04.1 / WSL2",
+    "python": "3.14.4",
+    "node": "24.22.0",
+    "yarn": "1.22.22",
+    "bench": "5.29.1",
+    "mariadb": "11.8.6",
+    "redis": "8.0.5",
+    "brand_permission_tests": 9,
+    "xpos_http_security_tests": 19,
+    "native_checkout_http_tests": 20,
+    "native_cashier_browser_tests": 1,
+    "native_cashier_browser": "Windows Chrome / Playwright, cookie + CSRF",
+    "site_time_zone": "America/Bogota"
+  },
+  "runtime": {
+    "python": ">=3.14,<3.15",
+    "node": ">=24"
+  },
+  "dependencies": {
+    "frappe": {
+      "repository": "https://github.com/frappe/frappe",
+      "branch": "version-16",
+      "commit": "4515014c87ece6cb20ee91d2cfb121c5cbd1ff4a",
+      "version": "16.52.0",
+      "license": "MIT"
+    },
+    "erpnext": {
+      "repository": "https://github.com/frappe/erpnext",
+      "branch": "version-16",
+      "commit": "5af6561f5aa48104559692fb4fd82f2580e8d338",
+      "version": "16.51.1",
+      "license": "GPL-3.0"
+    },
+    "xpos": {
+      "repository": "https://github.com/kodlyft/xpos",
+      "branch": "version-16",
+      "commit": "6392895a955f91b8c7d55574dc01ac5f19459dc3",
+      "version": "2.12.0",
+      "license": "MIT"
+    }
+  }
+}

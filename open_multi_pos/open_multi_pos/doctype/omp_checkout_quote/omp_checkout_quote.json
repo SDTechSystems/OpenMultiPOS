@@ -1,0 +1,78 @@
+{
+  "doctype": "DocType",
+  "name": "OMP Checkout Quote",
+  "module": "Open Multi POS",
+  "engine": "InnoDB",
+  "fields": [
+    {
+      "fieldname": "terminal",
+      "fieldtype": "Link",
+      "label": "Terminal",
+      "reqd": 1,
+      "options": "OMP POS Terminal"
+    },
+    {
+      "fieldname": "actor",
+      "fieldtype": "Link",
+      "label": "Cajero",
+      "reqd": 1,
+      "options": "User"
+    },
+    {
+      "fieldname": "brand",
+      "fieldtype": "Link",
+      "label": "Marca",
+      "reqd": 1,
+      "options": "OMP Business Brand"
+    },
+    {
+      "fieldname": "opening_entry",
+      "fieldtype": "Link",
+      "label": "Apertura",
+      "reqd": 1,
+      "options": "POS Opening Entry"
+    },
+    {
+      "fieldname": "valid_until",
+      "fieldtype": "Datetime",
+      "label": "Vigente hasta",
+      "reqd": 1
+    },
+    {
+      "fieldname": "request_json",
+      "fieldtype": "Long Text",
+      "label": "Solicitud JSON",
+      "reqd": 1
+    },
+    {
+      "fieldname": "financial_hash",
+      "fieldtype": "Data",
+      "label": "Huella financiera",
+      "reqd": 1
+    },
+    {
+      "fieldname": "result_json",
+      "fieldtype": "Long Text",
+      "label": "Cotización JSON",
+      "reqd": 1
+    }
+  ],
+  "field_order": [
+    "terminal",
+    "actor",
+    "brand",
+    "opening_entry",
+    "valid_until",
+    "request_json",
+    "financial_hash",
+    "result_json"
+  ],
+  "permissions": [
+    {
+      "role": "System Manager",
+      "read": 1
+    }
+  ],
+  "sort_field": "creation",
+  "sort_order": "DESC"
+}
