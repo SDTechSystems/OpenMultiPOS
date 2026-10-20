@@ -6,7 +6,7 @@ Estado: backend probado sobre los SHAs de `upstream.lock.json`, exclusivamente c
 
 Un administrador configura, en un sitio de ensayo:
 
-1. Company, lista de venta y cuentas en COP; `POS Settings.invoice_type = Sales Invoice`. Se usan `is_pos=1`, `is_created_using_pos=1` y `update_stock=1`: ERPNext crea Stock Ledger Entry y GL Entry al enviar la factura. El cierre reconcilia, sin volver a contabilizar la venta.
+1. Zona del sitio `System Settings.time_zone = America/Bogota` antes de crear movimientos; Company, lista de venta y cuentas en COP; `POS Settings.invoice_type = Sales Invoice`. Se usan `is_pos=1`, `is_created_using_pos=1` y `update_stock=1`: ERPNext crea Stock Ledger Entry y GL Entry al enviar la factura. El cierre reconcilia, sin volver a contabilizar la venta.
 2. Marca concedida, perfil activo exclusivo de esa marca y almacén hoja activo. Varias marcas pueden compartir empresa/almacén mediante perfiles distintos. FBR y cargos automáticos de entrega deben estar desactivados.
 3. Cliente autorizado y precios Item Price de la lista del perfil; la lista del cliente no puede sustituirla. Se venden cantidades enteras de la unidad de inventario, aunque el artículo tenga otra unidad de venta configurada.
 4. Medios Cash/Bank activos en el perfil y cuentas COP del tipo correspondiente. La cuenta de cambio coincide con la del efectivo utilizado. Transferencia es registro manual, sin confirmación bancaria.

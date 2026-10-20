@@ -4,7 +4,7 @@ Abrir `/omp_pos` en el sitio Frappe, por ejemplo [caja local](http://omp.localho
 
 ## Preparar una terminal ficticia
 
-Seguir [native-checkout.md](native-checkout.md): Sales Invoice, COP, almacén activo, actualización de stock, lista/precios y cuentas Cash/Bank. Configurar el **cliente de mostrador en POS Profile.customer**; esta pantalla inicial no cambia cliente ni crea artículos/clientes. Perfil exclusivo por marca, concesión explícita y terminal individual por usuario. Usar `Sales User` y `OMP Cashier` con User Permissions de Company/Warehouse. Para ver/imprimir recibos también se requiere permiso nativo de impresión de Sales Invoice y permiso POS de reimpresión cuando corresponda; no conceder roles contables como atajo.
+Seguir [native-checkout.md](native-checkout.md): Sales Invoice, COP, almacén activo, actualización de stock, lista/precios y cuentas Cash/Bank. Configurar `System Settings.time_zone = America/Bogota` **antes de crear movimientos**: fechas y validación del día de apertura usan la zona del sitio. Configurar el **cliente de mostrador en POS Profile.customer**; esta pantalla inicial no cambia cliente ni crea artículos/clientes. Perfil exclusivo por marca, concesión explícita y terminal individual por usuario. Usar `Sales User` y `OMP Cashier` con User Permissions de Company/Warehouse. Para ver/imprimir recibos también se requiere permiso nativo de impresión de Sales Invoice y permiso POS de reimpresión cuando corresponda; no conceder roles contables como atajo.
 
 La instalación de desarrollo conserva Bench en Linux y navegador/controlador en Windows. Las fuentes de la app deben copiarse a la instantánea Bench antes de `migrate`, limpiar cache y reiniciar web/worker. Los recursos de `public/` se sirven mediante `/assets/open_multi_pos/`; no requieren copiar ni recompilar core. Ver [local-services.md](local-services.md).
 
@@ -15,7 +15,7 @@ Después de ejecutar las suites Bench/HTTP, puede dejarse una terminal ficticia 
   --bench "$HOME/.local/share/openmultipos/bench"
 ```
 
-Requiere `allow_tests` y los fixtures ficticios previos. Crea `omp-demo-cashier@example.invalid`, marca/perfil/terminal de demostración y completa a 20 unidades el SKU ficticio `OMP-NATIVE-STOCK-A` mediante Stock Entry nativo. Conserva la contraseña al repetirlo. Guarda `cashier_user`, `cashier_password` y `cashier_terminal` en el archivo privado `$HOME/.local/share/openmultipos/private/development-credentials.json` con modo 600, preservando la credencial anterior de Administrator. No muestra contraseñas ni envía correos. Iniciar sesión con ese cajero, en otro perfil/ventana privada si Administrator ya está conectado.
+Requiere `allow_tests` y los fixtures ficticios previos. Crea `omp-demo-cashier@example.invalid`, marca/perfil/terminal, cliente/lista COP y almacén de demostración separados; completa a 20 unidades el SKU ficticio `OMP-NATIVE-STOCK-A` mediante Stock Entry nativo. Conserva la contraseña al repetirlo. Guarda `cashier_user`, `cashier_password` y `cashier_terminal` en el archivo privado `$HOME/.local/share/openmultipos/private/development-credentials.json` con modo 600, preservando la credencial anterior de Administrator. No muestra contraseñas ni envía correos. Iniciar sesión con ese cajero, en otro perfil/ventana privada si Administrator ya está conectado.
 
 ## Recorrido
 

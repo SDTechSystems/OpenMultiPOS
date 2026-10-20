@@ -13,6 +13,7 @@ from pathlib import Path
 
 import frappe
 from frappe.permissions import add_permission
+from frappe.utils import get_system_timezone
 from frappe.utils.password import update_password
 
 
@@ -24,10 +25,63 @@ def setup(options):
     try:
         if not frappe.conf.get("allow_tests"):
             raise RuntimeError("Solo se permite en sitio desechable con allow_tests.")
+        if get_system_timezone() != "America/Bogota":
+            raise RuntimeError("Configure System Settings.time_zone = America/Bogota primero.")
         source = frappe.get_doc("POS Profile", "OMP Native Profile A")
         if source.company != "OMP Test Company A" or source.customer != "OMP HTTP Customer":
             raise RuntimeError("Primero ejecute las suites Bench y HTTP con fixtures ficticios.")
         user, profile_name = "omp-demo-cashier@example.invalid", "OMP Demo Profile"
+        price_list, customer, item = "OMP Demo COP", "OMP Demo Customer", "OMP-NATIVE-STOCK-A"
+        if not frappe.db.exists("Price List", price_list):
+            frappe.get_doc(
+                {
+                    "doctype": "Price List",
+                    "price_list_name": price_list,
+                    "currency": "COP",
+                    "selling": 1,
+                }
+            ).insert()
+        if not frappe.db.exists("Item Price", {"item_code": item, "price_list": price_list}):
+            frappe.get_doc(
+                {
+                    "doctype": "Item Price",
+                    "item_code": item,
+                    "price_list": price_list,
+                    "price_list_rate": 1000,
+                    "currency": "COP",
+                    "uom": "Nos",
+                }
+            ).insert()
+        if not frappe.db.exists("Customer", customer):
+            template = frappe.get_doc("Customer", source.customer)
+            frappe.get_doc(
+                {
+                    "doctype": "Customer",
+                    "customer_name": customer,
+                    "customer_type": "Individual",
+                    "customer_group": template.customer_group,
+                    "territory": template.territory,
+                    "default_price_list": price_list,
+                }
+            ).insert()
+        warehouse = frappe.db.get_value(
+            "Warehouse", {"warehouse_name": "OMP Demo Warehouse", "company": source.company}
+        )
+        if not warehouse:
+            warehouse = (
+                frappe.get_doc(
+                    {
+                        "doctype": "Warehouse",
+                        "warehouse_name": "OMP Demo Warehouse",
+                        "company": source.company,
+                        "parent_warehouse": frappe.db.get_value(
+                            "Warehouse", source.warehouse, "parent_warehouse"
+                        ),
+                    }
+                )
+                .insert()
+                .name
+            )
         role = "OMP Demo Receipt Printer"
         if not frappe.db.exists("Role", role):
             frappe.get_doc({"doctype": "Role", "role_name": role}).insert()
@@ -61,8 +115,18 @@ def setup(options):
             profile = frappe.copy_doc(source)
             profile.name = profile_name
             profile.disabled = 0
+            profile.warehouse = warehouse
             profile.set("applicable_for_users", [{"user": user}])
             profile.insert()
+        configured = frappe.get_doc("POS Profile", profile_name)
+        if configured.company != source.company or configured.warehouse != warehouse:
+            raise RuntimeError(
+                "El perfil de revisión existente debe usar su almacén ficticio separado."
+            )
+        if configured.customer != customer or configured.selling_price_list != price_list:
+            configured.customer = customer
+            configured.selling_price_list = price_list
+            configured.save()
         brand = frappe.db.get_value("OMP Business Brand", {"pos_profile": profile_name})
         if not brand:
             brand = (
@@ -71,7 +135,7 @@ def setup(options):
                         "doctype": "OMP Business Brand",
                         "display_name": "Marca ficticia OMP",
                         "company": source.company,
-                        "warehouse": source.warehouse,
+                        "warehouse": warehouse,
                         "pos_profile": profile_name,
                         "printer_profile": "generic-58",
                         "receipt_footer": "Gracias · demostración ficticia",
@@ -98,11 +162,8 @@ def setup(options):
                 .name
             )
         # Native vouchers only. Top up the fictional SKU without replacing stock.
-        item = "OMP-NATIVE-STOCK-A"
         current = (
-            frappe.db.get_value(
-                "Bin", {"item_code": item, "warehouse": source.warehouse}, "actual_qty"
-            )
+            frappe.db.get_value("Bin", {"item_code": item, "warehouse": warehouse}, "actual_qty")
             or 0
         )
         if current < 20:
@@ -116,7 +177,7 @@ def setup(options):
                         {
                             "item_code": item,
                             "qty": 20 - current,
-                            "t_warehouse": source.warehouse,
+                            "t_warehouse": warehouse,
                             "basic_rate": 100,
                             "expense_account": company.stock_adjustment_account,
                             "cost_center": company.cost_center,
