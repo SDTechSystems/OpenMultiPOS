@@ -246,6 +246,7 @@
       );
     state.context = await api("cashier.context", { terminal });
     const ctx = state.context;
+    $("cashier-currency").textContent = ctx.currency;
     $("context").textContent =
       `${ctx.brand.display_name} · ${ctx.brand.company} · ${ctx.brand.warehouse} · Cliente: ${ctx.customer} · ${ctx.opening?.status === "Open" ? `Caja abierta ${ctx.opening.name}` : "Caja cerrada"}`;
     amounts($("balances"), ctx.payment_modes, "balance");

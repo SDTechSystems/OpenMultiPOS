@@ -58,6 +58,7 @@ async function login(browser, fixture) {
   await status(page, "Seleccione la terminal");
   await page.locator("#terminal").selectOption(fixture.terminal);
   await status(page, "Terminal lista");
+  assert.equal(await page.locator("#cashier-currency").textContent(), "COP");
   return { context, page };
 }
 async function open(page) {

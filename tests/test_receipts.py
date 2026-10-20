@@ -66,6 +66,7 @@ class ReceiptTests(unittest.TestCase):
     def test_native_snapshot_escapes_names_and_payment_labels(self):
         receipt = {
             "id": "NATIVE-<1>",
+            "currency": "USD",
             "created_at": "2026-10-19T17:00:00+00:00",
             "brand": {
                 "name": "<b>Marca</b>",
@@ -84,6 +85,7 @@ class ReceiptTests(unittest.TestCase):
         self.assertNotIn("<svg onload", html)
         self.assertNotIn("<script>alert", html)
         self.assertIn("&lt;svg onload", html)
+        self.assertIn('scope="col">USD</th>', html)
         self.assertIn("Impuestos: $ 190", html)
         self.assertIn("SIN VALIDEZ FISCAL", html)
         self.assertNotIn("DEMO ·", html)
