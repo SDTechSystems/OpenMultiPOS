@@ -43,3 +43,12 @@ doc_events = {
     }
     for doctype in ("Sales Invoice", "POS Opening Entry", "POS Closing Entry")
 }
+
+# Administrators may operate one personal opening per workspace business.
+# Native closing queries already scope invoices by profile AND owner.
+extend_doctype_class = {
+    "POS Opening Entry": ["open_multi_pos.opening.WorkspaceOpeningMixin"],
+    "Sales Invoice": ["open_multi_pos.opening.WorkspaceInvoiceMixin"],
+}
+
+extend_bootinfo = ["open_multi_pos.localization.extend_boot"]

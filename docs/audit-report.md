@@ -169,3 +169,34 @@ El harness restaura hashes de contraseña, sesiones nuevas, roles, barcodes y co
 CI incorpora el E2E Chromium Linux después de las suites HTTP en un sitio nuevo y sirve assets propios con el middleware de desarrollo de Frappe. La validación de CI y commit se registra en PR #1. Próximo P0: lector y recibo nativo en hardware/controlador Windows, luego recuperación operativa y auditoría restante. Devoluciones, historial navegable de caja, otros clientes, offline, backups/restauración y aceptación productiva siguen pendientes. DIAN desactivada; sin transmisiones fiscales ni pruebas físicas nuevas.
 
 Configuración de fecha: se detectó que el sitio local conservaba la zona por defecto de Frappe (Asia/Kolkata). Se configuró America/Bogota y un almacén, cliente y lista de precios separados para la caja ficticia de revisión, sin reescribir vouchers anteriores. Un recorrido adicional Chrome Windows validó apertura, venta, snapshot y cierre con esa configuración; CI fija Bogotá antes de crear los fixtures del sitio nuevo.
+
+
+## Espacio administrativo y personalización · 20/10/2026
+
+La rama `codex/business-workspace` se creó desde `origin/main` e incorporó la base de desarrollo validada. El alcance cambió a dos negocios, administración diaria, español latinoamericano, COP y el equipo Windows existente. La relación con entidades legales se elige durante el alta. No se exige otro modelo ni otra prueba física. Las fotos del propietario permanecen privadas; confirmó que los recibos se imprimen normalmente.
+
+Añadidos `/omp`, menú con iconos y buscador, perfiles/contactos de negocio, primera cuenta humana desde instalación, equipo, inventario/productos/entradas, herramientas nativas de compras/finanzas/clientes y un recibo interno conjunto. Cesta de hasta dos negocios, misma moneda, una factura por negocio y transacción común. Se conservan las 14 rutas originales de factura X POS bloqueadas y la caja `/omp_pos`.
+
+SKU automático: iniciales/prefijo editable, nombre normalizado y serie nativa. Clave de creación única en Item y hash de payload; reintento y recarga recuperan el mismo código. No se modifican códigos existentes. Entrada de stock con clave única y marca de abandono para solicitudes tardías. Ningún documento nativo se crea con `ignore_permissions`.
+
+Dos extensiones de clase nativas permiten aperturas personales por negocio para administradores y validan la apertura de cada factura por usuario/perfil/empresa/fecha. Conservan las demás validaciones nativas. El cierre nativo consulta por propietario y perfil; una prueba usa dos administradores simultáneos y verifica que cerrar uno conserva abierto el otro.
+
+| Evidencia local | Resultado | Alcance |
+| --- | --- | --- |
+| Python sin Frappe | PASÓ · 52 pruebas | Contratos, simulador, recibos, SKU y guard de publicación. |
+| Ruff y formato | PASÓ | Fuentes propias Python y Prettier en assets/HTML/runner. |
+| Bench/MariaDB | PASÓ · 9 pruebas | Regresión de permisos con marcas/empresas/cajeros. |
+| Seguridad HTTP X POS | PASÓ · 19 pruebas | API v1/v2 y rutas nativas alternativas; sin ampliar accesos de cajero. |
+| Checkout HTTP nativo | PASÓ · 20 pruebas | Stock/GL, impuestos, concurrencia, cierres, snapshots y rollback. |
+| Espacio administrativo HTTP | PASÓ · 15 pruebas | Alta con entidad nueva/compartida; stock y SKU idempotentes/concurrentes; propiedad de producto; cesta de dos empresas; rollback del segundo hijo; abandono; snapshot/contactos; moneda USD y rechazo de cesta de monedas distintas; revocación/cancelación; dos administradores. |
+| Caja anterior, Chrome Windows | PASÓ | Cookie/CSRF, cuatro facturas, stock/GL, dos cajeros, dos pestañas, respuesta perdida, abandono, recibo y cierre. |
+| Espacio administrativo, Chrome Windows | PASÓ | Todas las herramientas nativas de compras/finanzas/clientes; SKU y entrada con respuesta perdida/recarga; cesta mixta y recibo; cambio español/inglés/formato; tutoriales/teclado; móvil 390 px; axe sin violaciones graves/críticas en la vista revisada. |
+| PDF del recibo conjunto | PASÓ | Una página de 48 mm, altura menor de 130 mm para el caso ficticio de dos artículos; no equivale a prueba física. |
+| Manual visual | REVISADO | Diez secciones y captura adicional del formulario SKU. Solo datos inventados; manifest SHA256 exacto. |
+| Construcción | PASÓ | sdist/wheel; comprobar assets y DocTypes del índice antes de publicar. |
+
+Se encontró contaminación de fixtures históricos de inventario por fechas de otra zona horaria: los intentos de reducir existencias chocaban con movimientos futuros del artículo ficticio reutilizado. La suite nativa ahora crea artículos nuevos por ejecución y conserva el ledger anterior; no reescribe vouchers para hacer pasar pruebas. Las 20 pruebas se repitieron con éxito. Las aperturas ficticias huérfanas de ensayos fallidos se cerraron nativamente, sin tocar documentos de una operación real.
+
+La primera pasada de axe detectó contraste 4,48:1 en Ctrl K; se oscureció el texto y la repetición pasó. Se corrigieron permisos nativos faltantes de maestros para cuentas humanas y el idioma de los formularios embebidos. Un hook soportado ajusta mensajes comunes de ERPNext a español latinoamericano, sin parchear core.
+
+Límites: no se habilitan devoluciones guiadas, offline, transmisión fiscal ni un puente de impresión. El navegador/controlador conserva cola, márgenes, encabezados/pies y puede imponer longitud fija. La nueva plantilla se validó en HTML/PDF; no se pidió otro ensayo físico. El manual y tutoriales se mantienen en español; la cobertura de traducción de formularios avanzados depende también de ERPNext. Backup/restauración aislada y revisión de APIs upstream restantes siguen en el plan antes de datos reales. La CI del nuevo PR se verifica por commit; esta tabla registra ejecución local.

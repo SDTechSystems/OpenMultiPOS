@@ -42,3 +42,7 @@ photos/
 *.rar
 *.log
 *PROJECT_BRIEF*
+
+# Only generated, hash-reviewed fictional manual images are publishable.
+!open_multi_pos/public/manual/screenshots/
+!open_multi_pos/public/manual/screenshots/*.png

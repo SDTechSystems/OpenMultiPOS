@@ -65,8 +65,8 @@ def terminal_context(name, *, lock=False):
 def checkout_configuration(profile):
     company = frappe.get_doc("Company", profile.company)
     warehouse = frappe.get_doc("Warehouse", profile.warehouse)
-    if profile.currency != "COP" or company.default_currency != "COP":
-        frappe.throw("Este incremento requiere moneda COP")
+    if not profile.currency or profile.currency != company.default_currency:
+        frappe.throw("La moneda de caja debe coincidir con la entidad legal")
     if frappe.db.count("OMP Business Brand", {"pos_profile": profile.name}) != 1:
         frappe.throw(
             "Cada marca requiere un perfil POS exclusivo; puede compartir empresa y almacén"
@@ -80,8 +80,8 @@ def checkout_configuration(profile):
     if profile.get("auto_set_delivery_charges"):
         frappe.throw("Cargos de entrega automáticos fuera del alcance de este incremento")
     price_list = frappe.get_doc("Price List", profile.selling_price_list)
-    if not price_list.enabled or not price_list.selling or price_list.currency != "COP":
-        frappe.throw("Configure una lista de venta COP habilitada")
+    if not price_list.enabled or not price_list.selling or price_list.currency != profile.currency:
+        frappe.throw("La lista de precios debe usar la moneda de caja")
 
 
 def active_opening(terminal, profile, name=None):
@@ -136,7 +136,7 @@ def payment_modes(profile):
             ledger.disabled
             or ledger.is_group
             or ledger.company != profile.company
-            or ledger.account_currency != "COP"
+            or ledger.account_currency != profile.currency
             or ledger.account_type != mode.type
         ):
             continue
@@ -187,6 +187,12 @@ def validate_catalog(profile, customer_name, rows, *, stock=False):
             frappe.db.get_value("Item", row["item_code"], "name", for_update=True)
         item = frappe.get_doc("Item", row["item_code"])
         item.check_permission("read")
+        owner = item.get("omp_business_brand")
+        if (
+            owner
+            and frappe.db.get_value("OMP Business Brand", owner, "pos_profile") != profile.name
+        ):
+            frappe.throw("El artículo pertenece a otro negocio", frappe.PermissionError)
         if not simple_sale_item(item):
             frappe.throw("Artículo no habilitado para venta")
         if not group_allowed("Item Group", item.item_group, profile.item_groups):
@@ -213,9 +219,9 @@ def build_invoice(profile, customer, rows):
             "customer": customer,
             "set_warehouse": profile.warehouse,
             "update_stock": 1,
-            "currency": "COP",
+            "currency": profile.currency,
             "conversion_rate": 1,
-            "price_list_currency": "COP",
+            "price_list_currency": profile.currency,
             "plc_conversion_rate": 1,
             "selling_price_list": profile.selling_price_list,
             "posting_date": nowdate(),
@@ -242,7 +248,7 @@ def build_invoice(profile, customer, rows):
         frappe.throw("La lista del cliente difiere de la lista del perfil")
     if any(not row.price_list_rate or row.rate < 0 for row in doc.items):
         frappe.throw("Configure precios de venta para todos los artículos")
-    if doc.currency != "COP" or doc.company != profile.company or not doc.update_stock:
+    if doc.currency != profile.currency or doc.company != profile.company or not doc.update_stock:
         frappe.throw("Configuración nativa de factura incoherente")
     return doc
 
@@ -357,7 +363,7 @@ def quote(data: str | dict):
     quote_id = str(uuid4())
     result = {
         "quote": quote_id,
-        "currency": "COP",
+        "currency": profile.currency,
         "total": str(total),
         "taxes": str(money(doc.total_taxes_and_charges)),
         "items": [
@@ -508,7 +514,9 @@ def receipt_snapshot(doc, context, request_id, opening):
         "fiscal_issued": False,
         "label": "RECIBO INTERNO · SIN VALIDEZ FISCAL",
         "created_at": datetime.now(UTC).isoformat(),
-        "currency": "COP",
+        "time_zone": frappe.db.get_single_value("OMP Workspace Settings", "time_zone")
+        or "America/Bogota",
+        "currency": doc.currency,
         "brand": {
             "id": context["brand"],
             "name": context["display_name"],
@@ -518,6 +526,7 @@ def receipt_snapshot(doc, context, request_id, opening):
             "printer_profile": context["printer_profile"],
             "footer": context["footer"],
             "qr_url": context["qr_url"],
+            "receipt_details": context.get("receipt_details", {}),
         },
         "items": [
             {
@@ -535,6 +544,7 @@ def receipt_snapshot(doc, context, request_id, opening):
         "payments": [
             {
                 "mode_of_payment": p.mode_of_payment,
+                "kind": frappe.db.get_value("Mode of Payment", p.mode_of_payment, "type"),
                 "amount": cents(p.amount),
                 "reference_no": p.reference_no or "",
                 "verified_externally": False,

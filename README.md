@@ -1,17 +1,19 @@
 # OpenMultiPOS
 
-POS libre y autohospedable, diseñado como extensión de **ERPNext + Frappe + X POS** para operar varias marcas, inventarios, caja y recibos con impresoras configurables.
+Espacio administrativo autohospedado sobre **ERPNext + Frappe + X POS**, orientado a gestionar dos negocios: ventas, inventario, compras, finanzas, clientes, equipo y recibos internos.
 
-**Estado: caja nativa integrada y probada en desarrollo.** Pantalla autenticada `/omp_pos` sobre ERPNext en WSL y Chrome Windows: búsqueda/lector, apertura/cierre, pagos mixtos, recuperación de respuesta incierta y recibo histórico. Nueve pruebas Bench, 19 HTTP de seguridad, 20 HTTP de checkout y un recorrido E2E con dos cajeros. Otras APIs X POS, hardware y operación/recuperación requieren más validación; usar solo datos ficticios.
+**La administración se abre en `/omp`**, con una cuenta administrativa. Menú lateral, selector de negocio, perfiles privados, productos con SKU automático y entradas de inventario, cesta de ambos negocios, datos de recibo configurables, manual con capturas y guías por sección. Español latinoamericano, COP y America/Bogota por defecto; configuración editable. El backend funciona en WSL y el navegador/equipos en Windows.
 
-- [Funcionalidades F01–F19](docs/features.md)
-- [Plan por fases y backlog](docs/roadmap.md)
-- [Matriz de requisitos y gaps](docs/requirements-matrix.md)
+Las operaciones usan documentos, stock y contabilidad nativos; una cesta conjunta crea una factura por negocio y un recibo interno. Solo se personalizan la impresora y el lector existentes. La impresión ya fue confirmada por el propietario; se conserva el preset. DIAN y operación sin conexión siguen desactivadas. Revisar recuperación operativa y APIs upstream restantes antes de cargar datos reales.
+
+- [Manual visual de administración](docs/manual.md)
+- [Configuración y contratos del espacio de trabajo](docs/workspace.md)
+- [Funcionalidades F01-F28](docs/features.md) · [Roadmap e issues](docs/roadmap.md)
 - [Arquitectura](docs/architecture.md) · [Auditoría y resultados](docs/audit-report.md)
-- [Impresoras y ensayos físicos](docs/hardware-jaltech.md)
-- [Caja autenticada: uso y recuperación](docs/cashier-ui.md)
+- [Impresora y lector existentes](docs/hardware-jaltech.md)
+- [Caja de cajero: uso y recuperación](docs/cashier-ui.md)
 - [Servicios locales y Windows/WSL](docs/local-services.md)
-- [GitHub: ramas, PRs, privacidad y protecciones](docs/github-workflow.md)
+- [Ramas, PRs y privacidad](docs/github-workflow.md)
 
 ## Probar ahora: demo local
 
@@ -20,7 +22,7 @@ Requisito: Python **3.14** con pip/venv. No requiere ERPNext, impresora, cuentas
 ```bash
 git clone https://github.com/JSX2011/OpenMultiPOS.git
 cd OpenMultiPOS
-git switch codex/foundation-and-roadmap
+git switch codex/business-workspace
 python3.14 -m venv .venv
 source .venv/bin/activate
 python -m pip install -e '.[dev]'
@@ -47,15 +49,15 @@ La búsqueda acepta SKU o código exacto con Enter; `VEL-01` / `7700000000011` c
 
 La demo calcula importes ficticios con centavos enteros, registra pagos mixtos, controla stock por marca, rechaza reintentos con payload diferente y conserva recibos históricos. **No calcula impuestos, no confirma transferencias, no escribe contabilidad ni sincroniza con ERPNext.** La clave de reintento se conserva mientras la página está abierta; recargar durante un cobro incierto requiere consultar la BD, no repetirlo como otra venta.
 
-## Impresoras independientes del fabricante
+## Impresora Windows existente y componentes históricos
 
-Perfiles JSON en `open_multi_pos/profiles/printers.json`: Jaltech de referencia (57 mm, 384 puntos), genérica 58 mm y genérica 80 mm. El layout usa ancho útil, DPI y capacidades; no requiere que la impresora sea Jaltech. Para otro modelo se añade/calibra su perfil y se prueba con el controlador instalado.
+Perfiles JSON en `open_multi_pos/profiles/printers.json`: Jaltech de referencia (57 mm, 384 puntos), genérica 58 mm y genérica 80 mm. El layout usa ancho útil, DPI y capacidades; no requiere que la impresora sea Jaltech. La personalización actual solo usa el preset del equipo existente; no se añade otro modelo.
 
 El perfil separa **rollo físico**, **página lógica del controlador** y **ancho útil**. En la cola Windows ensayada, el rollo de 57/58 mm se anuncia como página de 48 mm; el perfil POS-58 usa 48 mm de página y 44 mm de contenido con 2 mm de margen por lado. Así no se centra un PDF de 57 mm sobre una página de 48 mm que recortaría el extremo derecho. Otros controladores requieren su propio perfil calibrado.
 
 La vista previa y el botón de la demo usan navegador/driver. El documento calcula altura según contenido, pero el diálogo físico puede imponer formularios de 210/297/3276 mm. Un PDF corto **no garantiza** que ese controlador avance solo el contenido. Para longitud variable se añadió un diagnóstico local Windows/ESC-POS: raster monocromático, ancho validado, bloques continuos y pequeño avance final, sin corte automático ni cajón. El propietario confirmó una salida compacta (~9 cm de contenido), centrada y legible usando esa vía. No es una certificación de todos los modelos.
 
-La vía nativa es un **CLI local explícito**; todavía no está conectada al botón web ni expuesta como endpoint/puente de impresión. Requiere probar el comando raster por modelo/firmware. Desde un checkout con Node/Playwright, Chrome y Python Windows disponibles:
+La vía nativa es un **CLI local explícito**; todavía no está conectada al botón web ni expuesta como endpoint/puente de impresión. No se requiere como paso de la operación actual. Desde un checkout con Node/Playwright, Chrome y Python Windows disponibles:
 
 ```powershell
 node scripts/render-receipt-raster.cjs 'http://127.0.0.1:8765/api/receipt?id=ID_DEMO&profile=jaltech-jal58m' test-results/receipt-native

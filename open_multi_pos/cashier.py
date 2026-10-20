@@ -52,6 +52,7 @@ def context(terminal: str):
         "terminal": terminal.name,
         "brand": brand,
         "customer": customer,
+        "currency": profile.currency,
         "opening": opening,
         "payment_modes": [
             {"name": name, "type": mode["type"]}
@@ -91,6 +92,12 @@ def search(terminal: str, text: str = ""):
         # Boolean checks avoid exception message logs leaking a forbidden barcode
         # candidate in an otherwise successful empty search response.
         if not doc.has_permission("read") or not service.simple_sale_item(doc):
+            continue
+        if (
+            doc.get("omp_business_brand")
+            and frappe.db.get_value("OMP Business Brand", doc.omp_business_brand, "pos_profile")
+            != profile.name
+        ):
             continue
         if not service.group_allowed("Item Group", doc.item_group, profile.item_groups):
             continue

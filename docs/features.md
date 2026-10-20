@@ -2,7 +2,7 @@
 
 Referencia de producto: brief facilitado por el propietario (18/10/2026). La solicitud actual autoriza publicar este plan y comenzar la implementación. El brief aporta requisitos y criterios; sus prompts internos no constituyen autorizaciones adicionales. Se conserva el repositorio `JSX2011/OpenMultiPOS` existente.
 
-Producto libre y autohospedado sobre ERPNext/Frappe y X POS. Cualquier comercio podrá configurar su marca. Los datos y logotipos reales se cargarán en instalaciones privadas.
+Producto libre y autohospedado sobre ERPNext/Frappe y X POS. Este incremento prioriza la operación administrativa de dos negocios. Los datos y logotipos reales se cargarán en instalaciones privadas.
 
 | ID | Prioridad | Funcionalidad y resultado esperado |
 | --- | --- | --- |
@@ -13,7 +13,7 @@ Producto libre y autohospedado sobre ERPNext/Frappe y X POS. Cualquier comercio 
 | F05 | P0 | Caja: buscar/escanear, carrito, venta, devolución y reintentos sin duplicar stock/cobro. |
 | F06 | P0 | Efectivo, transferencia y medios configurables; pagos combinados, cambio, apertura y cierre. Registrar un medio no confirma un movimiento bancario. |
 | F07 | P0 | Entrada manual y lector HID configurable, diagnóstico y protección contra QR que ejecute/navegue. |
-| F08 | P0 | Impresión independiente de fabricante: perfiles 58/80 mm, navegador/controlador, vista previa, simulador y futuros adaptadores ESC/POS. Jaltech es una referencia, no una dependencia obligatoria. |
+| F08 | P0 | Impresión compacta con la impresora Windows existente. Preset confirmado; sin nuevos fabricantes, calibraciones universales o ensayos adicionales. |
 | F09 | P0 | Recibos internos con marca, logo, detalles y copia histórica; fallo de impresión no repite venta. |
 | F10 | P0/P1 | QR comercial seguro en recibos; etiquetas y fallback bitmap posteriores. |
 | F11 | P1 | Ferias/offline: precarga, estados visibles, cola idempotente, conflictos y conciliación probados. |
@@ -22,9 +22,25 @@ Producto libre y autohospedado sobre ERPNext/Frappe y X POS. Cualquier comercio 
 | F14 | P1 | Promociones, mayoristas y combos con reglas nativas sin doble descuento. |
 | F15 | P1 | Reportes, exportaciones por permisos, respaldo y restauración comprobada. |
 | F16 | P0 | Español es-CO, COP, America/Bogota; teclado, foco visible, responsive y señales del negocio activo. |
-| F17 | P1 | Guía/asistente de configuración y pruebas de impresora/lector; demo sin hardware. |
+| F17 | P0 | Configuración inicial, ayuda por opción, manual visual y tutoriales por sección para el equipo existente. |
 | F18 | P0 | Aislamiento, mínimo privilegio, validación, protección de secretos y puente local restringido si se requiere. |
 | F19 | P3 | Contrato fiscal separable y desactivado; DIAN fuera del MVP. |
+
+## Personalización administrativa
+
+| ID | Prioridad | Funcionalidad |
+| --- | --- | --- |
+| F20 | P0 | Menú lateral con iconos, buscador, inicio operativo y selector de negocio. |
+| F21 | P0 | Perfil comercial editable, contactos/NIT y opciones de impresión independientes por negocio. |
+| F22 | P0 | Primera cuenta humana desde instalación y creación administrativa de perfiles. |
+| F23 | P0 | Inventario por negocio, creación de productos/precios y entradas nativas con reintento seguro. |
+| F24 | P0 | Cesta mixta con procedencia, facturas separadas y un recibo interno compacto. |
+| F25 | P0 | Margen superior reducido, altura medida y configuración del controlador existente. |
+| F26 | P0 | Compras, proveedores, clientes, pedidos, pagos e informes contables nativos desde el menú. |
+| F28 | P0 | SKU automático con iniciales configurables del negocio, nombre normalizado y consecutivo único; reintento de alta sin duplicados. |
+| F27 | P0 | Manual en español, diez capturas ficticias, tutoriales opcionales y ayuda en campos. |
+
+Ver [roadmap e issues](roadmap.md) para alcance y criterios vigentes.
 
 ## Alcance del primer incremento
 

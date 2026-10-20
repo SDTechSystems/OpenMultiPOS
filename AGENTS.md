@@ -6,7 +6,7 @@
 - No publicar datos de clientes, credenciales, marcas/logos reales o certificados. Demo exclusivamente ficticia.
 - Demo es simulador local: nunca reutilizar su ledger/precios como backend productivo.
 - Dinero preciso (centavos enteros o Decimal), autorización en servidor, unicidad atómica e instantáneas de recibo.
-- Impresión por perfiles y adaptadores; no fijar fabricante ni afirmar compatibilidad sin ensayo físico.
+- Alcance de hardware solicitado: solo impresora Windows y lector HID existentes. Conservar el preset confirmado, no investigar otros fabricantes/modelos ni exigir ensayos adicionales. No afirmar compatibilidad universal.
 - DIAN desactivada; recibos internos identificados claramente. No transmitir documentos fiscales.
 - Ejecutar `python -m unittest discover -s tests -v`, `ruff check .` y `ruff format --check .` al cambiar backend. UI: flujo teclado y viewport móvil/escritorio cuando haya navegador disponible.
 - No afirmar que Bench o upstream están probados con mocks. Actualizar docs/audit-report.md con límites y resultados.
@@ -18,3 +18,9 @@
 - Antes de commit/push: revisar git diff --cached y ejecutar python scripts/check-public-files.py --staged. Ante un hallazgo, corregir sin publicar el valor detectado. El guard no reemplaza revisión humana de nombres, números o información contextual.
 - Mantener identidad de commits como alias de cuenta y correo GitHub no-reply. No cambiar el historial inicial ya publicado sin instrucción explícita del propietario.
 - Trabajar en rama de desarrollo y PR. No fusionar a main ni modificar accesos/protecciones sin autorización correspondiente; las credenciales del agente pertenecen a la cuenta autorizada, no a un colaborador independiente.
+
+## Espacio administrativo
+
+- Priorizar operación de dos negocios y dos administradores, menú lateral con iconos, selector de negocio, datos/permisos reales y ayuda en cada tarea. Ver docs/design-context.md.
+- Relación negocio/entidad legal configurable en instalación. Un recibo interno puede agrupar ventas, pero documentos, stock y cuentas conservan su empresa/perfil.
+- Manual visual y tutorial por sección son parte de la entrega. Capturas públicas solo generadas desde fixtures ficticios y aprobadas por manifest de hashes; imágenes del propietario siempre privadas.

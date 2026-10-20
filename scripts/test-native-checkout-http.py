@@ -189,6 +189,7 @@ class NativeCheckoutHTTPTests(BaseFixtures):
                 .insert()
                 .name
             )
+        fixture_run = uuid4().hex[:8]
         for suffix, source in (("A", cls.a), ("B", cls.b), ("C", cls.a)):
             user = cls.b["user"] if suffix == "C" else source["user"]
             company = frappe.get_doc("Company", source["company"])
@@ -279,7 +280,8 @@ class NativeCheckoutHTTPTests(BaseFixtures):
                     .insert()
                     .name
                 )
-            code = "OMP-NATIVE-STOCK-B" if suffix == "B" else "OMP-NATIVE-STOCK-A"
+            # Fresh items avoid inheriting stock ledger dates from another timezone/run.
+            code = ("OMP-NATIVE-STOCK-B-" if suffix == "B" else "OMP-NATIVE-STOCK-A-") + fixture_run
             if not frappe.db.exists("Item", code):
                 frappe.get_doc(
                     {

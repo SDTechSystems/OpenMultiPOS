@@ -1,46 +1,39 @@
-# Plan de ejecución
+# Plan de desarrollo para la operación administrativa
 
-| Fase | Entrega | Criterios de salida |
+La prioridad es gestionar dos negocios desde cuentas personales de administración, con Windows para el navegador, la impresora y el lector existentes. El backend continúa en WSL. Idioma inicial: español latinoamericano; formato es-CO, COP y America/Bogota. Los valores se configuran en Ajustes.
+
+La identidad, los contactos, los NIT, los productos y las cuentas reales se configuran en la instalación privada. El repositorio y las capturas usan datos ficticios. La relación entre negocios y entidades legales se elige durante la instalación; no se presupone un NIT compartido.
+
+| Prioridad | Entrega | Seguimiento y criterio |
 | --- | --- | --- |
-| 0 · Descubrimiento | Fuentes fijadas, licencias, gaps, riesgos y ADR | Evidencia por ruta/commit; distinguir código revisado de integración probada. |
-| 1 · Base | App Frappe instalable, perfiles/permisos y terminal de prueba | Bench v16: dos marcas, rechazo de acceso cruzado y venta nativa con stock exacto. Demo local para revisión temprana. |
-| 2 · Hardware y recibos | Perfiles 58/80 mm, branding, QR y lector | Vista previa y pruebas físicas por modelo/driver/firmware; reimpresión sin otra venta. |
-| 3 · Ferias | Traslados, cola offline y conciliación | Cortes de red, dos reintentos, concurrencia y conflictos sin duplicados. |
-| 4 · Operación | Pedidos, compras, descuentos, reportes, importaciones y backups | Encargo hasta entrega; restauración aislada y conciliación. |
-| 5 · Fiscal | Proyecto de adaptador independiente | Requiere encargo nuevo y verificación técnica/legal vigente. Sin envío DIAN en MVP. |
+| P0 | Espacio administrativo `/omp`, menú con iconos, buscador y selector de negocio | [F20 · #8](https://github.com/JSX2011/OpenMultiPOS/issues/8). Acciones conectadas a documentos reales y contexto visible. |
+| P0 | Perfil comercial y datos de recibo por negocio | [F21 · #9](https://github.com/JSX2011/OpenMultiPOS/issues/9). Nombre, razón social, NIT, teléfono, correo, dirección, mensaje y QR editables; visibilidad independiente e historial inmutable. |
+| P0 | Primera cuenta humana y administración del equipo | [F22 · #10](https://github.com/JSX2011/OpenMultiPOS/issues/10). Alta desde sesión de instalación, sin registro administrativo público; perfiles posteriores solo por un administrador. |
+| P0 | Productos, precios, almacenes y lector instalado | [F23 · #11](https://github.com/JSX2011/OpenMultiPOS/issues/11). Propietario visible, entrada nativa y recuperación sin duplicados. |
+| P0 | Cesta de ambos negocios y recibo interno conjunto | [F24 · #12](https://github.com/JSX2011/OpenMultiPOS/issues/12). Una transacción; facturas/stock/cuentas separados; fallo de una parte revierte ambas. |
+| P0 | Papel eficiente con el equipo Windows existente | [F25 · #13](https://github.com/JSX2011/OpenMultiPOS/issues/13). Página 48 mm, contenido 44 mm, altura medida y margen superior 0,5 mm; navegador con Márgenes Mínimo y sin encabezados/pies. |
+| P0 | Compras, proveedores, clientes, pedidos y finanzas | [F26 · #14](https://github.com/JSX2011/OpenMultiPOS/issues/14). Formularios e informes nativos accesibles en el menú; empresa, permisos y documentos conservados. |
+| P0 | Manual, capturas, guías y ayuda por opción | [F27 · #15](https://github.com/JSX2011/OpenMultiPOS/issues/15). Diez secciones documentadas, tutoriales opcionales y capturas exclusivamente ficticias. |
+| P0 | SKU automático por negocio y datos del producto | [F28 · #16](https://github.com/JSX2011/OpenMultiPOS/issues/16). Prefijo editable, nombre normalizado y consecutivo; no modifica códigos existentes y recupera el alta con la misma clave. |
+| P0 siguiente | Recuperación operativa y revisión antes de datos reales | [#7](https://github.com/JSX2011/OpenMultiPOS/issues/7). Reinicio, copia, restauración aislada y conciliación de ventas/stock/contabilidad; revisar APIs upstream restantes. |
+| P1 | Devoluciones guiadas, importaciones y flujos de costos/garantías | [#7](https://github.com/JSX2011/OpenMultiPOS/issues/7). Usar documentos nativos y probar el recorrido completo antes de añadir accesos rápidos. |
+| P1 | Ferias y operación sin conexión | [#6](https://github.com/JSX2011/OpenMultiPOS/issues/6). Fuera del checkout actual: reserva, cola, conflictos y conciliación requieren su propia implementación y pruebas. |
+| P3 | Integración fiscal separada | DIAN desactivada. Requiere un encargo independiente y validación vigente. |
 
-## Backlog ordenado
+## Entrega actual
 
-1. **P0 / S**: publicar requisitos, fuentes y arquitectura con evidencia.
-2. **P0 / M**: estructura app Frappe, perfiles y permisos; demo revisable y CI.
-3. **P0 / L**: levantar Bench fijado; pruebas de instalación y acceso directo a API/DocTypes; revisar endpoints X POS antes de uso real.
-4. **P0 / L**: conectar checkout nativo; clave idempotente con unicidad en BD, validación de almacén/usuario y concurrencia; pagos mixtos y cierres.
-5. **P0 / M**: contexto histórico de recibo y QR, perfiles configurables, navegador/controlador y diagnóstico de impresión.
-6. **P0 / M**: ensayos Jaltech y al menos otra impresora; lector HID, foco y terminador.
-7. **P1 / L**: offline con stock reservado, conflictos y pruebas de reconexión multi-terminal.
-8. **P1 / L**: pedidos, costos, promociones, reportes y restauración.
+La rama `codex/business-workspace` parte de `main` e incorpora la base validada de caja. Añade el espacio administrativo y los requisitos F20-F28. [El informe de auditoría](audit-report.md) registra pruebas y límites; [el manual](manual.md) explica la operación. El acceso de cajero existente `/omp_pos` sigue disponible.
 
-S/M/L expresan tamaño relativo, no fechas prometidas. Las fases 1 y 2 pueden compartir componentes de demo, pero cada puerta de salida conserva su propia evidencia.
+Los administradores pueden mantener una apertura personal por negocio. La extensión conserva las comprobaciones nativas de perfil, empresa y cuentas; el cierre consulta facturas por usuario y perfil. Una cesta conjunta solo admite la misma moneda y mantiene una factura por negocio, incluso cuando comparten entidad legal.
 
-## Próximo incremento después de la base
+La moneda de Ajustes se propone para entidades nuevas. No se transforma la moneda contable de una empresa con movimientos ni se reescriben recibos. Idioma y formato se pueden cambiar sin modificar importes; el manual se mantiene en español.
 
-Instalación y migración Bench completadas en Ubuntu WSL el 19/10/2026 con los SHAs de `upstream.lock.json`. Nueve pruebas reales validan permisos de marca/perfil con dos usuarios y dos empresas. Las herramientas y el servicio local están documentados en [local-services.md](local-services.md).
+## Alcance de equipos
 
-Incremento P0 de APIs: acceso cruzado de recibos restringido, contador de impresión protegido y concurrente, detalle con permisos de campos y facturas de cajeros filtradas por marca. Diecinueve pruebas HTTP reales cubren v1/v2 y rutas nativas alternativas. Catorce operaciones de factura X POS permanecen bloqueadas, incluida creación/reintentos; ver [matriz de APIs](xpos-api-security.md). No se modificó core.
+El propietario confirmó que la impresora imprime normalmente. Las fotografías solo sirvieron de referencia privada para el uso de papel. Se conserva el preset que funciona; no se exige otro ensayo físico, otra impresora, otro lector ni una matriz universal de fabricantes. Los perfiles genéricos históricos y sus pruebas permanecen como regresión de la base, sin ampliar el alcance de esta personalización. El helper RAW es un diagnóstico histórico opcional, no un paso obligatorio de la operación.
 
-Backend de caja nativa completado: 20 pruebas HTTP reales de cotización/checkout, Stock Ledger y GL, impuestos, mixtos/cambio, apertura/cierre, UUID/payload/quote únicos, última unidad entre perfiles y rollback. Journals privados, capacidades por solicitud y snapshot histórico; ver [native-checkout.md](native-checkout.md). Worker local activo para procesar trabajo en segundo plano. Las 14 rutas originales siguen bloqueadas.
+El navegador no puede imponer silenciosamente la cola, los márgenes o los encabezados del controlador. La aplicación prepara un documento corto; un formulario fijo de 210 mm puede conservar esa longitud en el controlador. Se utiliza tamaño adaptable si el equipo lo ofrece.
 
-Pantalla P0 integrada: `/omp_pos`, sesión/CSRF, terminales autorizadas, cliente de mostrador del perfil, búsqueda/código de barras, teclado US opcional, pagos mixtos y cierre. Chrome Windows pasó recuperación tras respuesta perdida, retry con mismo UUID, dos pestañas, resolución atómica sin venta y fallo de recibo sin otro cobro. Tres perfiles de recibo/PDF, móvil/escritorio y axe probados. Ver [cashier-ui.md](cashier-ui.md).
+## Base conservada
 
-Próxima tarea P0: ensayar el recibo **nativo** y lector físico con el controlador Windows, registrar avance/corte/legibilidad y fallback por modelo, sin repetir ventas. Después, recuperación operativa (reinicio/backup/restauración) y auditoría restante de upstream antes de datos reales. Devoluciones y offline siguen pendientes.
-
-## Seguimiento en GitHub
-
-- [Plan maestro](https://github.com/JSX2011/OpenMultiPOS/issues/2)
-- [Bench y permisos](https://github.com/JSX2011/OpenMultiPOS/issues/3)
-- [Checkout y stock nativos](https://github.com/JSX2011/OpenMultiPOS/issues/4)
-- [Impresoras y lectores](https://github.com/JSX2011/OpenMultiPOS/issues/5)
-- [Offline y ferias](https://github.com/JSX2011/OpenMultiPOS/issues/6)
-- [Operación comercial y recuperación](https://github.com/JSX2011/OpenMultiPOS/issues/7)
-
-Implementación inicial en [PR #1](https://github.com/JSX2011/OpenMultiPOS/pull/1).
+Nueve pruebas Bench, 19 HTTP de seguridad, 20 HTTP de caja y el recorrido previo de Chrome Windows cubren la base. Las 14 rutas originales de factura X POS continúan bloqueadas. [#2](https://github.com/JSX2011/OpenMultiPOS/issues/2) conserva el seguimiento maestro; [#3](https://github.com/JSX2011/OpenMultiPOS/issues/3), [#4](https://github.com/JSX2011/OpenMultiPOS/issues/4) y [#5](https://github.com/JSX2011/OpenMultiPOS/issues/5) mantienen la evidencia técnica anterior. No se fusiona a `main` automáticamente.

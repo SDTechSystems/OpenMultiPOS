@@ -1,4 +1,6 @@
+import hashlib
 import importlib.util
+import json
 import unittest
 from pathlib import Path
 
@@ -39,3 +41,23 @@ class PublicationPolicyTests(unittest.TestCase):
 
     def test_opaque_binary_is_blocked(self):
         self.assertIn("unreviewed-binary", module.violations("asset.bin", bytes([255, 254])))
+
+    def test_manual_allowlist_requires_exact_path_hash_and_png(self):
+        path = module.MANUAL_PREFIX + "sales.png"
+        png = b"\x89PNG\r\n\x1a\n" + bytes([255, 254])
+        manifest = json.dumps(
+            {
+                "source": "scripts/workspace-smoke.cjs",
+                "data": "fictional-only",
+                "images": {path: hashlib.sha256(png).hexdigest()},
+            }
+        ).encode()
+        reviewed = module.reviewed_images(manifest)
+        self.assertEqual(module.violations(path, png, reviewed), [])
+        self.assertTrue(module.violations(path, png + b"changed", reviewed))
+        self.assertTrue(module.violations("photos/sales.png", png, reviewed))
+        self.assertTrue(module.violations(path, b"not a png", reviewed))
+        self.assertEqual(module.reviewed_images(b"{}"), {})
+        self.assertEqual(
+            module.reviewed_images(manifest.replace(b"fictional-only", b"private")), {}
+        )

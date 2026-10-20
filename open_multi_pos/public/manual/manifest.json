@@ -1,0 +1,18 @@
+{
+  "source": "scripts/workspace-smoke.cjs",
+  "data": "fictional-only",
+  "reviewed": "2026-10-20",
+  "images": {
+    "open_multi_pos/public/manual/screenshots/home.png": "7bc323d3c1c48c1fa61847d89bdb940548e5b8efbc3eb5bec7a76891a83f71c7",
+    "open_multi_pos/public/manual/screenshots/sales.png": "c45c72f456796d716d757230cdcb39dcd155ec27648dc2b7a38107f634c39161",
+    "open_multi_pos/public/manual/screenshots/inventory.png": "6dc088472f4e67a409b65cef074d17529ca115dbd022861ee461a66f378aa5e9",
+    "open_multi_pos/public/manual/screenshots/purchases.png": "6db21abaf30b8d8942b4ccfae22f20c7803438daf3943b04c6ef93b82ef28f02",
+    "open_multi_pos/public/manual/screenshots/finances.png": "b84182fa9184e0074e6d89838fd927fbc5a009f040142339d3076d4432be208a",
+    "open_multi_pos/public/manual/screenshots/customers.png": "d1003ab6f54760a6fcd72c2e41d584a452a52ba64bcd2a42bde59f41a2a8d5c3",
+    "open_multi_pos/public/manual/screenshots/businesses.png": "b6c58a8f1609f6b6166eef5e015668bf8f4d00188babf945e5b9ca536bb98fa6",
+    "open_multi_pos/public/manual/screenshots/team.png": "10287373ce67115d3c4448e7ab75110abbe09cf40d7a0279240ebb19527c18e5",
+    "open_multi_pos/public/manual/screenshots/settings.png": "c8ecc5b4292cf9ab55dab2121f11fabe886d09d25bd6e91964d5db7bafbe8915",
+    "open_multi_pos/public/manual/screenshots/help.png": "da0fe522aaee367716f4df5a2a30b0d798e5deff4ad38f125e2171b13b23bbea",
+    "open_multi_pos/public/manual/screenshots/product-form.png": "fe2bedc8d0eb39c0e740ed47fb086525889b9c51f00c7122dcce7d4fbe1dc13b"
+  }
+}

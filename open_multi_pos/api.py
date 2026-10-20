@@ -3,6 +3,7 @@
 import frappe
 
 from open_multi_pos.permissions import manager
+from open_multi_pos.sku import business_initials
 
 
 @frappe.whitelist()
@@ -36,6 +37,7 @@ def get_brand_context(brand: str) -> dict:
     return {
         "brand": doc.name,
         "display_name": doc.display_name,
+        "sku_prefix": doc.get("sku_prefix") or business_initials(doc.display_name),
         "company": doc.company,
         "warehouse": doc.warehouse,
         "pos_profile": doc.pos_profile,
@@ -43,4 +45,21 @@ def get_brand_context(brand: str) -> dict:
         "footer": doc.receipt_footer,
         "qr_url": doc.qr_url,
         "fiscal_status": "not_configured",
+        "receipt_details": {
+            key: doc.get(key) or ""
+            for key in (
+                "legal_name",
+                "tax_id",
+                "phone",
+                "email",
+                "address",
+                "receipt_show_legal_name",
+                "receipt_show_tax_id",
+                "receipt_show_phone",
+                "receipt_show_email",
+                "receipt_show_address",
+                "receipt_show_footer",
+                "receipt_show_qr",
+            )
+        },
     }

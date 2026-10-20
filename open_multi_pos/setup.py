@@ -7,10 +7,77 @@ from frappe.permissions import add_permission
 def create_cashier_role():
     if not frappe.db.exists("Role", "OMP Cashier"):
         frappe.get_doc({"doctype": "Role", "role_name": "OMP Cashier", "desk_access": 1}).insert()
+    if not frappe.db.exists("Role", "OMP Administrator"):
+        frappe.get_doc(
+            {"doctype": "Role", "role_name": "OMP Administrator", "desk_access": 1}
+        ).insert()
 
 
 def ensure_cashier_role():
     create_cashier_role()
+    if not frappe.db.exists("Custom Field", "Stock Entry-omp_operation_key"):
+        from frappe.custom.doctype.custom_field.custom_field import create_custom_fields
+
+        create_custom_fields(
+            {
+                "Stock Entry": [
+                    {
+                        "fieldname": "omp_operation_key",
+                        "fieldtype": "Data",
+                        "label": "Operación de inventario",
+                        "unique": 1,
+                        "read_only": 1,
+                        "hidden": 1,
+                    },
+                    {
+                        "fieldname": "omp_payload_hash",
+                        "fieldtype": "Data",
+                        "label": "Huella de inventario",
+                        "read_only": 1,
+                        "hidden": 1,
+                    },
+                ]
+            }
+        )
+    if not frappe.db.exists("Custom Field", "Item-omp_operation_key"):
+        from frappe.custom.doctype.custom_field.custom_field import create_custom_fields
+
+        create_custom_fields(
+            {
+                "Item": [
+                    {
+                        "fieldname": "omp_operation_key",
+                        "fieldtype": "Data",
+                        "label": "Operación de creación",
+                        "unique": 1,
+                        "hidden": 1,
+                        "read_only": 1,
+                    },
+                    {
+                        "fieldname": "omp_payload_hash",
+                        "fieldtype": "Data",
+                        "label": "Huella de creación",
+                        "hidden": 1,
+                        "read_only": 1,
+                    },
+                ]
+            }
+        )
+    if not frappe.db.exists("Custom Field", "Item-omp_business_brand"):
+        from frappe.custom.doctype.custom_field.custom_field import create_custom_fields
+
+        create_custom_fields(
+            {
+                "Item": [
+                    {
+                        "fieldname": "omp_business_brand",
+                        "fieldtype": "Link",
+                        "label": "Negocio propietario",
+                        "options": "OMP Business Brand",
+                    }
+                ]
+            }
+        )
     if not frappe.db.exists("Custom Field", "POS Opening Entry-omp_checkout_revision"):
         from frappe.custom.doctype.custom_field.custom_field import create_custom_fields
 

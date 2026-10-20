@@ -1,3 +1,9 @@
+# Alcance vigente del equipo instalado
+
+Actualización 20/10/2026: la operación se limita a la impresora Windows y el lector existentes. El propietario confirmó que la impresión funciona normalmente; las fotos plegadas solo muestran el recibo. Se conserva página de controlador de 48 mm, contenido de 44 mm, Márgenes Mínimo y encabezados/pies desactivados. `/omp` reduce el margen superior de contenido a 0,5 mm y mide la altura; QR/contactos se pueden ocultar por negocio.
+
+No se exige otra prueba física, otro fabricante ni otro lector. Los apartados siguientes conservan el historial técnico de la base. Sus ensayos genéricos pendientes y futuros adaptadores no son requisitos de esta personalización. Fotografías, cola local e identificadores reales permanecen privados.
+
 # Impresión y lectores: matriz de pruebas físicas
 
 Referencia del brief: Jaltech POS JAL 58M, código 40163. El propietario compartió después una fotografía de la salida física; se inspeccionó sin redistribuirla. La ficha del fabricante confirma papel de 57 mm, 203 DPI, 384 puntos, USB y corte manual; ESC/POS es una declaración del fabricante, no un ensayo de integración. [Fuente](https://jaltechsas.com/product/impresora-jaltech-pos-58-mm/).

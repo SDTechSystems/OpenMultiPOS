@@ -1,0 +1,79 @@
+{
+  "doctype": "DocType",
+  "name": "OMP Workspace Settings",
+  "module": "Open Multi POS",
+  "engine": "InnoDB",
+  "fields": [
+    {
+      "fieldname": "interface_language",
+      "label": "Idioma del programa",
+      "fieldtype": "Select",
+      "options": "es\nen",
+      "default": "es"
+    },
+    {
+      "fieldname": "locale",
+      "label": "Formato regional",
+      "fieldtype": "Select",
+      "options": "es-CO\nes-MX\nes-PE\nes-CL\nen-US",
+      "default": "es-CO"
+    },
+    {
+      "fieldname": "default_currency",
+      "label": "Moneda de nuevos negocios",
+      "fieldtype": "Link",
+      "options": "Currency",
+      "default": "COP"
+    },
+    {
+      "fieldname": "time_zone",
+      "label": "Zona horaria",
+      "fieldtype": "Data",
+      "default": "America/Bogota"
+    },
+    {
+      "fieldname": "scanner_us",
+      "label": "Lector configurado con teclado US",
+      "fieldtype": "Check",
+      "default": "1"
+    },
+    {
+      "fieldname": "scanner_terminator",
+      "label": "Terminador del lector",
+      "fieldtype": "Select",
+      "options": "Enter\nTab",
+      "default": "Enter"
+    },
+    {
+      "fieldname": "printer_profile",
+      "label": "Impresora instalada",
+      "fieldtype": "Select",
+      "options": "jaltech-jal58m",
+      "default": "jaltech-jal58m"
+    },
+    {
+      "fieldname": "setup_suggestions",
+      "fieldtype": "Small Text",
+      "label": "Sugerencias privadas para la instalación",
+      "hidden": 1
+    }
+  ],
+  "field_order": [
+    "interface_language",
+    "locale",
+    "default_currency",
+    "time_zone",
+    "scanner_us",
+    "scanner_terminator",
+    "printer_profile",
+    "setup_suggestions"
+  ],
+  "permissions": [
+    {
+      "role": "System Manager",
+      "read": 1,
+      "write": 1
+    }
+  ],
+  "issingle": 1
+}

@@ -5,6 +5,8 @@ identify every real name, confidential SKU, price or customer in arbitrary text.
 """
 
 import argparse
+import hashlib
+import json
 import re
 import subprocess
 from pathlib import PurePosixPath
@@ -54,7 +56,52 @@ PATTERNS = {
 EMAIL = re.compile(r"\b[A-Z0-9._%+-]+@([A-Z0-9.-]+\.[A-Z]{2,})\b", re.IGNORECASE)
 
 
-def violations(path: str, data: bytes) -> list[str]:
+MANIFEST = "open_multi_pos/public/manual/manifest.json"
+MANUAL_PREFIX = "open_multi_pos/public/manual/screenshots/"
+MANUAL_SECTIONS = {
+    "product-form",
+    "home",
+    "sales",
+    "inventory",
+    "purchases",
+    "finances",
+    "customers",
+    "businesses",
+    "team",
+    "settings",
+    "help",
+}
+
+
+def reviewed_images(data: bytes) -> dict[str, str]:
+    """Exact generated images only; this manifest still requires visual privacy review."""
+    try:
+        manifest = json.loads(data)
+        if (
+            manifest.get("source") != "scripts/workspace-smoke.cjs"
+            or manifest.get("data") != "fictional-only"
+        ):
+            return {}
+        return {
+            path: sha
+            for path, sha in manifest["images"].items()
+            if path in {MANUAL_PREFIX + name + ".png" for name in MANUAL_SECTIONS}
+            and isinstance(sha, str)
+            and re.fullmatch(r"[a-f0-9]{64}", sha)
+        }
+    except (ValueError, KeyError, TypeError, AttributeError):
+        return {}
+
+
+def violations(path: str, data: bytes, reviewed: dict[str, str] | None = None) -> list[str]:
+    if (
+        reviewed
+        and path in reviewed
+        and path in {MANUAL_PREFIX + name + ".png" for name in MANUAL_SECTIONS}
+        and data.startswith(b"\x89PNG\r\n\x1a\n")
+        and hashlib.sha256(data).hexdigest() == reviewed[path]
+    ):
+        return []
     file = PurePosixPath(path)
     issues = []
     if (
@@ -93,6 +140,13 @@ def main():
         else ["git", "ls-tree", "-r", "--name-only", "-z", "HEAD"]
     )
     names = subprocess.check_output(command).decode().split("\0")
+
+    def read(name):
+        return subprocess.check_output(
+            ["git", "show", f":{name}" if args.staged else f"HEAD:{name}"]
+        )
+
+    reviewed = reviewed_images(read(MANIFEST)) if MANIFEST in names else {}
     failures = []
     count = 0
     for name in filter(None, names):
@@ -101,7 +155,7 @@ def main():
             data = subprocess.check_output(["git", "show", f":{name}"])
         else:
             data = subprocess.check_output(["git", "show", f"HEAD:{name}"])
-        issues = violations(name, data)
+        issues = violations(name, data, reviewed)
         if issues:
             failures.append((name, issues))
     if failures:

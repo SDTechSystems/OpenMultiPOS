@@ -23,3 +23,10 @@ Estado de descubrimiento antes de implementar. “Existente” indica código up
 | F17 | P1 | requiere desarrollo | Setup ERPNext/X POS | Guía replicable y diagnóstico sin hardware | Media | M | Usuario nuevo llega a recibo demo |
 | F18 | P0 | no verificado / extensión | Frappe security y X POS permisos | Revisión negativa completa y dependencias | Crítica | L | IDOR/CSRF/XSS rechazados en integración |
 | F19 | P3 | requiere desarrollo | Sin integración DIAN en la base | Solo contrato + proveedor desactivado | Alta | L | issued=false; ninguna red fiscal |
+
+
+## Requisitos administrativos vigentes
+
+La [hoja de ruta](roadmap.md) reemplaza la prioridad general de compatibilidad universal. F20-F27 se entregan en `/omp`: menú, perfiles, primer administrador, productos/entradas, cesta mixta, impresión para el equipo existente, herramientas nativas y manual visual. La relación negocio/entidad se configura durante el alta. Idioma, formato, moneda predeterminada y zona se editan en Ajustes; no se convierten documentos históricos.
+
+Pruebas: `test-workspace-http.py` valida autorización, documentos/stock/GL, rollback conjunto, reintentos, marcas de abandono, contactos históricos y moneda contable. `test-workspace-browser.py` ejecuta formularios, recuperación por respuesta perdida, recorridos nativos, teclado, móvil y manual. Ver evidencia actualizada en [audit-report.md](audit-report.md). No se añaden nuevos ensayos de hardware ni se habilita offline o fiscal.

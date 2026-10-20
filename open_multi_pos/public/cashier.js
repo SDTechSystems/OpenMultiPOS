@@ -28,7 +28,7 @@
     const text = String(value).trim().replace(",", ".");
     if (!/^\d{1,9}(\.\d{1,2})?$/.test(text))
       throw new Error(
-        "Ingrese un valor COP con hasta dos decimales, sin separadores de miles.",
+        "Ingrese un importe con hasta dos decimales, sin separadores de miles.",
       );
     const [whole, fraction = ""] = text.split(".");
     return `${BigInt(whole)}.${fraction.padEnd(2, "0")}`;

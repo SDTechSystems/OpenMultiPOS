@@ -2,11 +2,18 @@ import frappe
 from frappe.model.document import Document
 
 from open_multi_pos.hardware import printer_profiles
+from open_multi_pos.sku import business_initials, validate_prefix
 from open_multi_pos.validation import safe_qr_url
 
 
 class OMPBusinessBrand(Document):
     def validate(self):
+        try:
+            self.sku_prefix = validate_prefix(
+                self.get("sku_prefix") or business_initials(self.display_name)
+            )
+        except ValueError as exc:
+            frappe.throw(str(exc))
         warehouse = frappe.get_doc("Warehouse", self.warehouse)
         profile = frappe.get_doc("POS Profile", self.pos_profile)
         if warehouse.company != self.company or profile.company != self.company:

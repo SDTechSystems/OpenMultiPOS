@@ -2,7 +2,7 @@ import unittest
 
 from open_multi_pos.fiscal import DisabledFiscalProvider
 from open_multi_pos.hardware import BrowserPrinterAdapter, PrinterProfile, printer_profiles
-from open_multi_pos.receipts import money, qr_data_url, render_receipt
+from open_multi_pos.receipts import money, qr_data_url, render_compact_receipt, render_receipt
 from open_multi_pos.validation import cents, safe_qr_url
 
 
@@ -93,3 +93,40 @@ class ReceiptTests(unittest.TestCase):
         result = DisabledFiscalProvider().status()
         self.assertFalse(result.issued)
         self.assertEqual(result.status, "not_configured")
+
+    def test_compact_receipt_flags_escape_currency_and_negative_money(self):
+        part = {
+            "id": "FAKE-1",
+            "created_at": "2026-10-20T05:30:00+00:00",
+            "time_zone": "America/Bogota",
+            "brand": {
+                "name": "<Negocio>",
+                "footer": "Gracias",
+                "qr_url": "https://example.com/fake",
+                "receipt_details": {
+                    "phone": "000-000",
+                    "address": "<img onerror=alert(1)>",
+                    "receipt_show_phone": 0,
+                    "receipt_show_address": 1,
+                    "receipt_show_qr": 0,
+                    "receipt_show_footer": 0,
+                },
+            },
+            "items": [{"name": "<Producto>", "qty": 1, "rate": 100, "amount": 100}],
+            "payments": [{"kind": "Cash", "amount": 100}],
+            "taxes": 0,
+            "total": 100,
+        }
+        group = {"id": "fake", "currency": "USD", "sales": [part, part], "total": 200, "change": 0}
+        html = render_compact_receipt(group)
+        self.assertNotIn("000-000", html)
+        self.assertNotIn("<img onerror=alert(1)>", html)
+        self.assertIn("&lt;img onerror=alert(1)&gt;", html)
+        self.assertNotIn("<img src=", html)
+        self.assertNotIn("Gracias", html)
+        self.assertNotIn("Impuestos", html)
+        self.assertEqual(html.count("Subtotal"), 2)
+        self.assertIn("USD", html)
+        self.assertIn("20/10/2026 00:30", html)
+        self.assertIn("padding:.5mm 0 1mm", html)
+        self.assertEqual(money(-101), "-$ 1,01")

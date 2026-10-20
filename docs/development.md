@@ -47,7 +47,7 @@ Con las nueve pruebas anteriores completadas y el servicio web activo en loopbac
 
 Resultado: **19 pruebas HTTP reales**, con solicitudes v1/v2 autenticadas, usuarios de dos empresas, perfil de otra marca bajo la misma empresa, Sales Invoice/POS Invoice, permisos de campos y concurrencia del contador. La suite requiere `allow_tests`, crea exclusivamente borradores ficticios y aperturas POS de saldo cero que cancela, y restaura credenciales/roles temporales. Ejecutar solo en sitio desechable; no contra datos reales. CI compila `bench build --apps frappe,erpnext` antes de iniciar Gunicorn con dos workers/dos threads: las páginas HTML de error necesitan sus assets incluso cuando la prueba espera un 403. El sitio local ya incluye esos assets; un Bench nuevo preparado con `--skip-assets` debe compilarlos primero.
 
-Las **48 pruebas sin Frappe** se ejecutan aparte mediante `python -m unittest discover -s tests -v`. Son pruebas del simulador/contratos; no sumarlas a las de Bench como si validaran stock productivo.
+Las **52 pruebas sin Frappe** se ejecutan aparte mediante `python -m unittest discover -s tests -v`. Son pruebas del simulador/contratos; no sumarlas a las de Bench como si validaran stock productivo.
 
 ## Contexto de marca y límites
 
@@ -82,3 +82,10 @@ Después de la suite HTTP, con `npm ci --ignore-scripts` y Chrome disponibles:
 En WSL, `--node` acepta la ruta al ejecutable Node Windows para usar Chrome Windows. En CI se instala Chromium y se define `OMP_BROWSER_CHANNEL=chromium`. El servidor de desarrollo debe servir assets, por ejemplo Gunicorn con `'frappe.app:application_with_statics()'`; no es la configuración productiva.
 
 Un E2E crea cuatro facturas reales ficticias, comprueba cuatro SLE/GL, cookie/CSRF, dos usuarios, escaneo, red perdida antes/después del commit, UUID estable, dos pestañas, tombstone, cierre y permisos de recibo. PDF 48/58/80 mm de una página, axe y viewports 390/768/1366. Contraseñas temporales solo por stdin; restaura hashes, sesiones, roles y configuración. Salidas privadas en `test-results/native-cashier/`. Ver límites y operación en [cashier-ui.md](cashier-ui.md).
+
+
+## Administración, SKU y cesta mixta
+
+Además de la base, ejecutar `scripts/test-workspace-http.py` (15 pruebas HTTP) y `scripts/test-workspace-browser.py` desde el Python de Bench con `--bench`. El segundo acepta `--node` para Chrome Windows y usa Chromium con `OMP_BROWSER_CHANNEL=chromium` en CI. Solo sitio desechable con `allow_tests`; las credenciales temporales van por stdin y se restauran al terminar. Ver [workspace.md](workspace.md).
+
+Las capturas de `test-results/workspace` no se publican automáticamente. Solo las once imágenes ficticias revisadas del manual tienen una excepción exacta por ruta/hash en `open_multi_pos/public/manual/manifest.json`. El guard sigue bloqueando imágenes del propietario, binarios ajenos y correos reales. No usar `git add -f`.
