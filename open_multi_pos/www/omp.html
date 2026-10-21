@@ -11,6 +11,7 @@
     <script src="/assets/open_multi_pos/workspace-core.js" defer></script>
     <script src="/assets/open_multi_pos/workspace-sales.js" defer></script>
     <script src="/assets/open_multi_pos/workspace-returns.js" defer></script>
+    <script src="/assets/open_multi_pos/workspace-imports.js" defer></script>
     <script src="/assets/open_multi_pos/workspace.js" defer></script>
   </head>
   <body data-user="{{ workspace_user | e }}">
@@ -292,6 +293,147 @@
             </aside>
           </div>
         </section>
+        <section id="view-imports" class="view" hidden>
+          <p class="hint">
+            Importa un negocio por archivo. Las cantidades son unidades
+            adicionales que recibirás en su almacén; no reemplazan el saldo
+            actual. Usa Compras si corresponde registrar una factura de
+            proveedor y evita recibir dos veces la misma mercancía.
+          </p>
+          <form id="import-file-form" class="form-sheet">
+            <h2>1. Prepara el archivo</h2>
+            <button id="import-template" type="button" class="secondary">
+              Descargar plantilla vacía
+            </button>
+            <label for="import-file">Archivo CSV UTF-8</label>
+            <input id="import-file" type="file" accept=".csv,text/csv" hidden />
+            <button
+              id="import-choose"
+              type="button"
+              class="secondary"
+              aria-describedby="import-file-help"
+            >
+              Seleccionar archivo CSV
+            </button>
+            <span id="import-file-name" role="status"
+              >Sin archivo seleccionado</span
+            >
+            <p id="import-file-help">
+              Hasta 100 filas y 256 KiB. En Excel, guarda como CSV UTF-8. Se
+              admiten coma, punto y coma o tabulación como separador; los
+              importes usan punto o coma decimal, sin separadores de miles.
+              Conserva SKU y códigos de barras como texto para no perder ceros
+              iniciales.
+            </p>
+            <details id="import-format-help">
+              <summary>Cómo completar las columnas</summary>
+              <p>
+                Acciones: crear agrega un producto; actualizar cambia su
+                catálogo; ingresar solo recibe unidades de un SKU existente.
+                Deja SKU vacío al crear para generarlo automáticamente. Un SKU
+                existente conserva su código.
+              </p>
+              <p>
+                Al crear, completa nombre, grupo y precio. Al actualizar,
+                nombre, grupo, código de barras o precio vacíos conservan sus
+                valores. Un código de barras nuevo se agrega sin borrar los
+                anteriores. Usa un grupo final de Inventario; los nombres se
+                pueden consultar en el formulario nativo del producto.
+              </p>
+              <p>
+                Cantidad es un entero entre 0 y 10000; vacía equivale a cero. Si
+                es mayor que cero, costo por unidad es obligatorio. Si no hay
+                ingreso, deja costo vacío. La acción ingresar solo completa SKU,
+                cantidad y costo.
+              </p>
+              <p>
+                La plantilla está vacía. Este ejemplo es ficticio y solo muestra
+                el formato:
+              </p>
+              <pre>
+accion;sku;nombre;codigo_barras;grupo;precio;cantidad;costo
+crear;;Producto ficticio;;Products;2500,50;0;</pre
+              >
+              <p>
+                Las series, lotes, variantes, otras unidades y precios con
+                condiciones especiales se gestionan en ERPNext.
+              </p>
+            </details>
+            <button id="import-prepare" type="submit">
+              Validar y ver cambios
+            </button>
+          </form>
+          <div
+            id="import-errors"
+            class="warning"
+            hidden
+            role="region"
+            aria-labelledby="import-errors-title"
+          >
+            <h2 id="import-errors-title">
+              Corrige el archivo antes de aplicar
+            </h2>
+            <div id="import-error-table"></div>
+          </div>
+          <div id="import-recovery" class="warning" hidden>
+            <h2 id="import-status-title">Importación en curso</h2>
+            <p id="import-operation"></p>
+            <p id="import-recovery-text">
+              Consulta el estado antes de volver a importar. Conserva el intento
+              si se pierde la respuesta; no selecciones de nuevo el archivo para
+              repetir una operación pendiente.
+            </p>
+            <button id="import-status" class="secondary">
+              Consultar estado
+            </button>
+            <button id="import-refresh" class="secondary">
+              Actualizar vista previa
+            </button>
+            <button id="import-retry">Reintentar aplicación</button>
+            <button id="import-abandon" class="secondary">
+              Resolver intento
+            </button>
+          </div>
+          <form id="import-review" class="form-sheet" hidden>
+            <h2>2. Revisa todos los cambios</h2>
+            <p id="import-summary"></p>
+            <p id="import-warehouse" class="hint"></p>
+            <div id="import-preview-table"></div>
+            <h3>3. Confirma y aplica</h3>
+            <div id="import-repeat-warning" class="warning" hidden>
+              <p id="import-repeat-text"></p>
+              <label
+                ><input id="import-repeat" type="checkbox" /> Confirmo que este
+                contenido corresponde a una recepción o cambios nuevos, no a un
+                reintento.</label
+              >
+            </div>
+            <label
+              ><input id="import-confirm" type="checkbox" required /> Revisé el
+              negocio, los productos, precios, cantidades y costos; la mercancía
+              no se recibió antes por otra operación.</label
+            >
+            <p>
+              Aplicar guarda todo el lote en una transacción. Si falla una
+              validación nativa, no se conservan productos, cambios de precio ni
+              movimientos parciales de este intento. El SKU automático se asigna
+              al aplicar.
+            </p>
+            <button id="import-apply" type="submit">Aplicar importación</button>
+          </form>
+          <div id="import-result" hidden>
+            <h2>Importación aplicada</h2>
+            <p id="import-result-summary"></p>
+            <div id="import-result-table"></div>
+            <a id="import-native" target="_blank" rel="noopener" hidden
+              >Ver entrada en ERPNext</a
+            >
+            <button id="import-next">Nueva importación</button>
+            <button data-go="inventory" class="secondary">
+              Consultar inventario
+            </button>
+          </div>
+        </section>
         <section id="view-inventory" class="view" hidden>
           <div class="section-heading">
             <div>
@@ -300,6 +442,8 @@
             </div>
             <div class="actions">
               <button id="add-product">Nuevo producto</button
+              ><button data-go="imports" class="secondary">
+                Importar archivo</button
               ><button id="add-stock" class="secondary">
                 Ingresar existencias
               </button>

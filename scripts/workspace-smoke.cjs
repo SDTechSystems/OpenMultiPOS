@@ -20,6 +20,7 @@ async function go(page, id) {
       home: "Inicio",
       sales: "Ventas",
       returns: "Devoluciones",
+      imports: "Importar inventario",
       inventory: "Inventario",
       purchases: "Compras",
       finances: "Finanzas",
@@ -548,6 +549,113 @@ async function go(page, id) {
     console.log(
       "PASS guided return, same-key lost-response recovery, original receipt, keyboard, mobile and axe",
     );
+    await go(page, "imports");
+    const [template] = await Promise.all([
+      page.waitForEvent("download"),
+      page.locator("#import-template").click(),
+    ]);
+    assert.equal(template.suggestedFilename(), "plantilla-catalogo.csv");
+    await page.locator("#import-file").setInputFiles({
+      name: "errores-ficticios.csv",
+      mimeType: "text/csv",
+      buffer: Buffer.from(
+        "accion;sku;nombre;codigo_barras;grupo;precio;cantidad;costo\ncrear;;Producto ficticio;;Products;incorrecto;2;800\n",
+      ),
+    });
+    await page.locator("#import-prepare").click();
+    await ready(page);
+    await page.locator("#import-errors").waitFor();
+    assert.match(
+      await page.locator("#import-error-table").textContent(),
+      /importe/,
+    );
+    const importText =
+      "accion;sku;nombre;codigo_barras;grupo;precio;cantidad;costo\ncrear;;Producto ficticio importado " +
+      input.newCode +
+      ";;Products;2800,50;2;900,25\n";
+    let lostPreview = false;
+    await page.route(
+      "**/api/method/open_multi_pos.imports.preview",
+      async (route) => {
+        const response = await route.fetch();
+        assert.equal(response.status(), 200);
+        if (!lostPreview) {
+          lostPreview = true;
+          await route.abort("failed");
+        } else await route.fulfill({ response });
+      },
+    );
+    await page.locator("#import-file").setInputFiles({
+      name: "catalogo-ficticio.csv",
+      mimeType: "text/csv",
+      buffer: Buffer.from(importText),
+    });
+    await page.locator("#import-prepare").click();
+    await ready(page);
+    await page.reload();
+    await ready(page);
+    await page.locator("#import-review").waitFor();
+    assert.match(
+      await page.locator("#import-preview-table").textContent(),
+      /SKU automático/,
+    );
+    assert.equal(await page.locator("#business-picker").isDisabled(), true);
+    await page.locator("#import-confirm").check();
+    await page.evaluate(() => {
+      document.activeElement?.blur();
+      window.scrollTo(0, 0);
+    });
+    await page.screenshot({
+      path: path.join(out, "imports.png"),
+      fullPage: true,
+    });
+    const importAxe = await new AxeBuilder({ page })
+      .withTags(["wcag2a", "wcag2aa", "wcag21aa", "wcag22aa"])
+      .analyze();
+    assert.deepEqual(
+      importAxe.violations
+        .filter((v) => ["serious", "critical"].includes(v.impact))
+        .map((v) => v.id),
+      [],
+    );
+    let lostImport = false;
+    await page.route(
+      "**/api/method/open_multi_pos.imports.apply",
+      async (route) => {
+        const response = await route.fetch();
+        assert.equal(response.status(), 200);
+        if (!lostImport) {
+          lostImport = true;
+          await route.abort("failed");
+        } else await route.fulfill({ response });
+      },
+    );
+    await page.locator("#import-apply").focus();
+    await page.keyboard.press("Enter");
+    await ready(page);
+    await page.locator("#import-retry").waitFor();
+    await page.reload();
+    await ready(page);
+    await page.locator("#import-result").waitFor();
+    assert.match(
+      await page.locator("#import-result-summary").textContent(),
+      /Entrada de existencias/,
+    );
+    await page.setViewportSize({ width: 390, height: 844 });
+    assert.equal(
+      await page.evaluate(
+        () => document.documentElement.scrollWidth <= innerWidth,
+      ),
+      true,
+    );
+    await page.setViewportSize({ width: 1440, height: 1000 });
+    await page.locator("#import-next").click();
+    await ready(page);
+    assert.equal(await page.locator("#import-file").isEnabled(), true);
+    console.log(
+      "PASS import template, validation errors, preparation and apply lost-response recovery, auto SKU, keyboard, mobile and axe",
+    );
+    await go(page, "settings");
     await page.locator("#setting-language").focus();
     await page.keyboard.press("Tab");
     const axe = await new AxeBuilder({ page })

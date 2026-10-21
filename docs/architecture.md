@@ -50,3 +50,13 @@ Compras, finanzas, clientes y entidad legal se muestran en formularios/informes 
 El journal privado `OMP Return Request`, identificado por usuario/UUID, guarda payload, estado, nota y comprobante en la misma transacción que stock, GL y pagos negativos nativos. Un abandono bloquea envíos tardíos; recuperación/reintento no crea otra nota. La revisión de apertura avanza al reembolsar para que el cierre no use una vista anterior. La copia/restauración incluye este journal como tabla número 19.
 
 El navegador conserva el payload del intento antes de enviar, por sitio/usuario, y coordina pestañas con Web Locks. No conserva el comprobante en almacenamiento local. La interfaz no ejecuta transferencias ni confirma entrega de efectivo. Series/lotes, ajustes globales, fracciones y diferencias de redondeo requieren el formulario nativo; el servicio falla antes de registrar si no puede conciliar cantidades/importes.
+
+## Importación guiada de catálogo y existencias
+
+`imports.py` autoriza al administrador y su negocio en cada llamada POST. `import_contract.py` valida CSV UTF-8 con límites de filas/tamaño, campos tipados y rechazo de fórmulas. La preparación conserva filas normalizadas y plan en `OMP Import Request`, privado; no escribe catálogo ni ledger. El navegador persiste solo negocio, usuario/origen, UUID, fase, hash y confirmación de repetición, sin CSV ni catálogo.
+
+Perfil, negocio, intento, productos, precios y existencias se leen bajo bloqueos. El hash del plan incluye sus revisiones; aplicar vuelve a calcularlo y exige revisar cualquier cambio. Los índices de negocio/nombre y negocio/contenido/estado se crean durante instalación/migración. Se bloquean SKU y códigos repetidos, productos ajenos y configuraciones nativas no soportadas. Las lecturas de precios y movimientos previos usan consultas actuales después de esperar bloqueos.
+
+Crear usa el servicio existente de SKU; actualizar conserva el código y agrega códigos de barras sin sustituirlos. Las cantidades son entradas adicionales, consolidadas en una Stock Entry de Material Receipt. Item, Item Price, Stock Entry enviada, SLE, GL y resultado del journal comparten transacción y permisos nativos. Un fallo revierte todo. No se modifica core ni se usa ignore_permissions. Los reintentos de un UUID devuelven el resultado original; abandonar deja una marca que bloquea solicitudes tardías. Repetir contenido con otra clave requiere confirmación explícita; no identifica entregas físicas por sí solo.
+
+La recuperación vuelve a autorizar productos y documento nativo. Un movimiento anulado no se recrea por reintento. El respaldo completo incluye filas normalizadas y resultados privados; la conciliación añade Item Barcode y OMP Import Request, para 21 tablas.

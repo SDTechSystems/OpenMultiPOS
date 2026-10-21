@@ -18,12 +18,13 @@
     "site_time_zone": "America/Bogota",
     "workspace_http_tests": 19,
     "workspace_browser_tests": 1,
-    "manual_fictional_captures": 13,
+    "manual_fictional_captures": 14,
     "recovery_http_tests": 1,
     "restore_drill_tests": 1,
-    "reconciled_tables": 19,
+    "reconciled_tables": 21,
     "xpos_whitelisted_declarations": 227,
-    "returns_http_tests": 11
+    "returns_http_tests": 11,
+    "imports_http_tests": 11
   },
   "runtime": {
     "python": ">=3.14,<3.15",

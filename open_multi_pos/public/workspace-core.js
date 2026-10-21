@@ -80,6 +80,7 @@ window.OMPWorkspace = (() => {
     $("business-picker").disabled = true;
     window.OMPSales?.controls();
     window.OMPReturns?.controls();
+    window.OMPImports?.controls();
     try {
       return await action();
     } catch (error) {
@@ -90,6 +91,7 @@ window.OMPWorkspace = (() => {
       $("business-picker").disabled = false;
       window.OMPSales?.controls();
       window.OMPReturns?.controls();
+      window.OMPImports?.controls();
     }
   }
   function decimal(value) {

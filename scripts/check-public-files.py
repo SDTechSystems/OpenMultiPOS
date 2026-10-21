@@ -68,6 +68,7 @@ MANUAL_SECTIONS = {
     "product-form",
     "receipt-preview",
     "returns",
+    "imports",
     "home",
     "sales",
     "inventory",

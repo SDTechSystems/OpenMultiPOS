@@ -903,3 +903,44 @@ fieldset {
   border: 1px solid #8ea5bb;
   margin-top: 16px;
 }
+
+.sidebar {
+  overflow-y: auto;
+}
+#view-imports .form-sheet {
+  margin-bottom: 20px;
+}
+#view-imports .form-sheet > label {
+  display: block;
+  margin: 12px 0 6px;
+}
+#view-imports input[type="file"] {
+  display: block;
+  max-width: 100%;
+  margin: 12px 0;
+}
+#view-imports details {
+  margin: 16px 0;
+}
+#view-imports summary {
+  cursor: pointer;
+  min-height: 32px;
+}
+#view-imports pre {
+  white-space: pre-wrap;
+  overflow-wrap: anywhere;
+}
+#view-imports input[type="checkbox"] {
+  width: 20px;
+  height: 20px;
+  vertical-align: middle;
+}
+#view-imports .warning {
+  margin: 16px 0;
+}
+#view-imports button {
+  margin: 4px 2px;
+}
+#view-imports .table-wrap {
+  max-width: 100%;
+}
