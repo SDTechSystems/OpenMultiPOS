@@ -157,6 +157,55 @@
     ]
   },
   {
+    "id": "imports",
+    "title": "Importar inventario",
+    "intro": "Prepara un CSV, corrige errores y revisa el lote antes de crear productos o recibir unidades.",
+    "steps": [
+      {
+        "title": "Confirma el negocio",
+        "body": "Cada archivo se aplica a un solo negocio y almacén. Mientras haya un intento, el selector conserva ese contexto. Descarga la plantilla vacía y guarda el archivo como CSV UTF-8 desde Excel.",
+        "target": "#import-file-form"
+      },
+      {
+        "title": "Elige la acción por fila",
+        "body": "Crear pide nombre, grupo y precio; SKU vacío genera el código al aplicar. Actualizar conserva los campos vacíos y agrega un código de barras nuevo sin borrar los anteriores. Ingresar solo recibe unidades de un SKU existente.",
+        "target": "#import-format-help"
+      },
+      {
+        "title": "Revisa cantidades y costos",
+        "body": "Cantidad es un entero de 0 a 10000 y significa unidades adicionales, no el saldo final. Si recibes unidades, costo por unidad es obligatorio. El archivo admite hasta 100 filas y 256 KiB.",
+        "target": "#import-file-help"
+      },
+      {
+        "title": "Valida antes de aplicar",
+        "body": "Validar y ver cambios identifica filas inválidas y duplicados. Corrige el archivo si hay errores. Una vista válida muestra acciones, SKU, precio y existencias previstas. Aún no crea productos ni movimientos.",
+        "target": "#import-review"
+      },
+      {
+        "title": "Confirma el lote revisado",
+        "body": "Comprueba negocio, almacén, precios, cantidades y costos, y marca la confirmación. Si el contenido ya se aplicó, confirma expresamente si corresponde a una recepción nueva. Actualizar vista previa vuelve a validar cambios de catálogo o stock y exige revisar de nuevo.",
+        "target": "#import-review"
+      },
+      {
+        "title": "Recupera el mismo intento",
+        "body": "Si se pierde la respuesta, conserva la sesión y usa Consultar estado o Reintentar aplicación. Resolver intento bloquea una operación no aplicada o recupera el resultado guardado. No cargues otra vez el archivo para recuperar un ingreso ya hecho.",
+        "target": "#import-recovery"
+      },
+      {
+        "title": "Consulta los documentos",
+        "body": "El resultado muestra los SKU definitivos y la entrada nativa si hubo unidades. Nueva importación habilita otro archivo después de un resultado confirmado. Consulta Inventario para revisar los saldos.",
+        "target": "#import-result"
+      }
+    ],
+    "notes": [
+      "El lote usa documentos nativos y una transacción: una validación fallida no deja productos, precios o stock parciales de este intento.",
+      "Usa Compras si necesitas registrar factura y recepción de proveedor. No dupliques la misma mercancía mediante una importación y otra recepción.",
+      "Los SKU y códigos de barras deben conservarse como texto en Excel. Se admiten coma, punto y coma o tabulación como separador; importes con decimal punto/coma y sin separadores de miles. No se importa XLSX directamente.",
+      "Series, lotes, variantes, otras unidades y precios con condiciones especiales se revisan en ERPNext. No se trasladan productos de otro negocio ni se reemplazan saldos absolutos.",
+      "El archivo se procesa en la instalación privada. El navegador conserva la referencia del intento, no el CSV completo. Una recarga recupera la vista previa guardada en el servidor."
+    ]
+  },
+  {
     "id": "purchases",
     "title": "Compras",
     "intro": "Registra proveedores y compras con documentos de ERPNext.",

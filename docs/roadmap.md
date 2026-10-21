@@ -13,18 +13,18 @@ La identidad, los contactos, los NIT, los productos y las cuentas reales se conf
 | P0 | Cesta de ambos negocios y recibo interno conjunto | [F24 · #12](https://github.com/JSX2011/OpenMultiPOS/issues/12). Una transacción; facturas/stock/cuentas separados; fallo de una parte revierte ambas. |
 | P0 | Papel eficiente con el equipo Windows existente | [F25 · #13](https://github.com/JSX2011/OpenMultiPOS/issues/13). Página 48 mm, contenido 44 mm, altura medida y margen superior 0,5 mm; navegador con Márgenes Mínimo y sin encabezados/pies. |
 | P0 | Compras, proveedores, clientes, pedidos y finanzas | [F26 · #14](https://github.com/JSX2011/OpenMultiPOS/issues/14). Formularios e informes nativos accesibles en el menú; empresa, permisos y documentos conservados. |
-| P0 | Manual, capturas, guías y ayuda por opción | [F27 · #15](https://github.com/JSX2011/OpenMultiPOS/issues/15). Once secciones documentadas, tutoriales opcionales y capturas exclusivamente ficticias. |
+| P0 | Manual, capturas, guías y ayuda por opción | [F27 · #15](https://github.com/JSX2011/OpenMultiPOS/issues/15). Doce secciones documentadas, tutoriales opcionales y capturas exclusivamente ficticias. |
 | P0 | SKU automático por negocio y datos del producto | [F28 · #16](https://github.com/JSX2011/OpenMultiPOS/issues/16). Prefijo editable, nombre normalizado y consecutivo; no modifica códigos existentes y recupera el alta con la misma clave. |
 | P0 implementado | Recuperación operativa y cierre de APIs anteriores | [#7](https://github.com/JSX2011/OpenMultiPOS/issues/7). Reinicio real de servicios, sesiones/intentos; copia privada diaria y restauración aislada de 18 tablas/archivos/secretos con conciliación; gate HTTP de X POS. Fusionado en `main` mediante #17, sin reemplazar el sitio operativo. |
-| P1 | Importaciones, garantías y costos | [#20](https://github.com/JSX2011/OpenMultiPOS/issues/20), [#21](https://github.com/JSX2011/OpenMultiPOS/issues/21), [#22](https://github.com/JSX2011/OpenMultiPOS/issues/22). Incrementos posteriores separados de #7. |
+| P1 | Garantías y costos | [#21](https://github.com/JSX2011/OpenMultiPOS/issues/21), [#22](https://github.com/JSX2011/OpenMultiPOS/issues/22). Incrementos posteriores separados de #7. |
 | P1 integrado | Vista previa del recibo en Impresión de ERPNext | [#18](https://github.com/JSX2011/OpenMultiPOS/issues/18). Integrado mediante #35. Selección autorizada, instantánea histórica y vista compacta sin cobrar ni marcar como impreso. |
-| P1 implementado | Devoluciones guiadas por negocio | [#19](https://github.com/JSX2011/OpenMultiPOS/issues/19). Notas crédito parciales/totales vinculadas, stock y reembolsos nativos, recuperación sin duplicados y comprobante histórico. Revisión en rama `codex/guided-returns`. |
+| P1 integrado | Devoluciones guiadas por negocio | [#19](https://github.com/JSX2011/OpenMultiPOS/issues/19). Notas crédito parciales/totales vinculadas, stock y reembolsos nativos, recuperación sin duplicados y comprobante histórico. Integrado mediante #36. |
 | P1 | Ferias y operación sin conexión | [#6](https://github.com/JSX2011/OpenMultiPOS/issues/6). Fuera del checkout actual: reserva, cola, conflictos y conciliación requieren su propia implementación y pruebas. |
 | P3 | Integración fiscal separada | DIAN desactivada. Requiere un encargo independiente y validación vigente. |
 
 ## Entrega actual
 
-El espacio administrativo y los requisitos F20-F28 están integrados en `main` mediante #17. La vista previa #18 está integrada mediante #35. La rama `codex/guided-returns` continúa con #19: devoluciones desde el menú, facturas originales, notas crédito y recuperación de intentos. [El informe de auditoría](audit-report.md) registra pruebas y límites; [el manual](manual.md) explica la operación. El acceso de cajero existente `/omp_pos` sigue disponible.
+El espacio administrativo y los requisitos F20-F28 están integrados en `main` mediante #17. La vista previa #18 está integrada mediante #35. Las devoluciones #19 están integradas mediante #36. La rama `codex/guided-imports` implementa #20: preparación CSV, errores por fila, revisión y aplicación atómica de catálogo y entradas nativas. [El informe de auditoría](audit-report.md) registra pruebas y límites; [el manual](manual.md) explica la operación. El acceso de cajero existente `/omp_pos` sigue disponible.
 
 Los administradores pueden mantener una apertura personal por negocio. La extensión conserva las comprobaciones nativas de perfil, empresa y cuentas; el cierre consulta facturas por usuario y perfil. Una cesta conjunta solo admite la misma moneda y mantiene una factura por negocio, incluso cuando comparten entidad legal.
 
@@ -43,3 +43,10 @@ Nueve pruebas Bench, 19 HTTP de seguridad, 20 HTTP de caja y el recorrido previo
 ## Recuperación y seguridad de la entrega
 
 Ver [respaldo y restauración](recovery.md) y [revisión de APIs](upstream-api-review.md). La interfaz de Ajustes muestra fechas de copia/ensayo; el manual conserva los procedimientos del operador. Las copias son privadas y locales: el destino externo se configura por separado. El cliente X POS anterior no se usa para operar.
+
+## Próximas entregas
+
+- #20: Importar inventario implementado en rama, pendiente de revisión e integración. Archivos CSV de un negocio, SKU automático opcional, precios, códigos y cantidades adicionales; recuperación sin duplicados, guía y captura ficticia.
+- #21: garantías y servicio; #22: costos de importación y distribución de costos.
+- #37 y #38: versiones Windows portátil e instalable y configuración inicial guiada, reanudable y en español. Se construirán cuando la base funcional esté lista, con instalaciones limpias sin datos, claves ni respaldos privados. La propuesta documental #39 permanece en revisión separada.
+- #6: operación sin conexión, con su propia conciliación.

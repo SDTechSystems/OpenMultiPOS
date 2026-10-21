@@ -1,6 +1,20 @@
 "use strict";
 // Spanish is the source language. Native ERPNext forms use the user's chosen language.
 window.OMPWorkspaceEnglish = {
+  "Importar inventario": "Import inventory",
+  "Seleccionar archivo CSV": "Choose CSV file",
+  "Importar archivo": "Import file",
+  "Valida archivos y revisa productos, precios y unidades antes de aplicarlos.":
+    "Validate files and review products, prices and quantities before applying them.",
+  "Descargar plantilla vacía": "Download empty template",
+  "Validar y ver cambios": "Validate and preview changes",
+  "Actualizar vista previa": "Refresh preview",
+  "Reintentar aplicación": "Retry import",
+  "Resolver intento": "Resolve attempt",
+  "Aplicar importación": "Apply import",
+  "Nueva importación": "New import",
+  "Consultar inventario": "View inventory",
+
   "Importe neto de hoy": "Net amount today",
   Tipo: "Type",
   "Nota crédito": "Credit note",

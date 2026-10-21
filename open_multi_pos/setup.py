@@ -15,6 +15,12 @@ def create_cashier_role():
 
 def ensure_cashier_role():
     create_cashier_role()
+    if frappe.db.exists("DocType", "OMP Import Request"):
+        frappe.db.add_index(
+            "OMP Import Request", ["brand", "source_hash", "status"], "omp_import_content"
+        )
+    if frappe.db.exists("Custom Field", "Item-omp_business_brand"):
+        frappe.db.add_index("Item", ["omp_business_brand", "item_name"], "omp_business_item_name")
     if not frappe.db.exists("Custom Field", "Stock Entry-omp_operation_key"):
         from frappe.custom.doctype.custom_field.custom_field import create_custom_fields
 

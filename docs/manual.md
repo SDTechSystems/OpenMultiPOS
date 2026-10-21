@@ -188,6 +188,36 @@ Consulta el manual mientras trabajas o repite una guía.
 
 ![Captura ficticia: Ayuda](../open_multi_pos/public/manual/screenshots/help.png)
 
+## Importar inventario
+
+Abre **Importar inventario** en el menú o **Importar archivo** en Inventario. Cada archivo pertenece a un solo negocio y al almacén de su perfil POS. Revisa el selector antes de empezar.
+
+1. Descarga la plantilla y conserva sus ocho encabezados. Guarda como CSV UTF-8, de hasta 100 filas y 256 KiB. Se admiten coma, punto y coma o tabulación como separador. En Excel, configura SKU y códigos de barras como texto para conservar ceros iniciales.
+2. Selecciona el archivo y prepara la vista previa. Este paso no crea productos ni movimientos. Corrige las filas indicadas y vuelve a cargar el archivo si hay errores.
+3. Revisa negocio, almacén, precios, códigos, cantidades anteriores y resultantes, y valor de entrada. Marca la confirmación y pulsa Aplicar. Si el catálogo o las existencias cambiaron, actualiza y revisa otra vez la vista previa.
+4. Consulta los SKU resultantes y el movimiento nativo. Un SKU vacío en una fila nueva se genera con el prefijo configurado del negocio. Los SKU existentes se conservan.
+
+| Columna | Uso |
+| --- | --- |
+| accion | `crear`, `actualizar` o `ingresar`. |
+| sku | Obligatorio para actualizar o ingresar; opcional para crear. Debe ser único. |
+| nombre | Obligatorio para crear; vacío conserva el nombre al actualizar. |
+| codigo_barras | Opcional al crear o actualizar; agrega un código sin borrar los anteriores. No puede pertenecer a otro producto. |
+| grupo | Grupo final permitido por el perfil; obligatorio al crear. |
+| precio | Precio de venta positivo, sin símbolo ni separadores de miles; vacío conserva el precio al actualizar. |
+| cantidad | Unidades enteras que se **suman** al almacén, no el saldo final. Cero o vacío no mueve stock. |
+| costo | Costo unitario positivo obligatorio si hay cantidad; vacío cuando no hay entrada. |
+
+Para `ingresar`, indica SKU, cantidad y costo; deja vacíos los campos de catálogo. Puede recibir stock de un producto que todavía no tenga precio de venta. Los decimales admiten punto o coma; si la coma también separa columnas, encierra ese campo entre comillas. No incluyas fórmulas de hoja de cálculo.
+
+Una aplicación crea o actualiza productos y precios y, cuando hay cantidades, envía una sola Entrada de material nativa para el archivo. Todo se guarda en la misma transacción: un fallo revierte catálogo, stock y contabilidad. Si el mismo contenido ya fue aplicado, aparece una advertencia: confirma otra recepción únicamente si representa mercancía adicional. El sistema no puede determinar si dos archivos distintos corresponden a la misma entrega física.
+
+Si se pierde la respuesta, vuelve a la sección con la misma cuenta y navegador: consulta el estado o reintenta el intento guardado. No vuelvas a cargar el archivo como otra entrada. Resolver sin aplicar bloquea solicitudes tardías o recupera el resultado ya guardado. El navegador guarda la referencia del intento; el archivo normalizado se conserva de forma privada en el servidor y en sus respaldos. No se publica en GitHub.
+
+Este flujo admite productos simples de stock con unidad Nos. Series, lotes, variantes, paquetes, cantidades fraccionarias y precios especiales se gestionan con los formularios nativos. No combines esta entrada con otra recepción o factura que ya haya ingresado la misma mercancía.
+
+![Captura ficticia: Importar inventario](../open_multi_pos/public/manual/screenshots/imports.png)
+
 ## Si algo no responde
 
 Después de encender Windows, usa `scripts/start-openmultipos.cmd` para iniciar el programa. El [manual de respaldo y recuperación](recovery.md) explica cómo crear/verificar copias, ensayar su restauración y actuar si falla el disco o el sitio.
