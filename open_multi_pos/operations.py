@@ -278,6 +278,9 @@ def backup(site, root, *, systemd=True):
                     check=True,
                     timeout=240,
                 )
+        # Start a fresh read view: the comparison must not reuse MariaDB's
+        # earlier repeatable-read snapshot when detecting concurrent writes.
+        frappe.db.rollback()
         after = snapshot()
         if before != after:
             raise RuntimeError("El sitio cambió durante la copia; la copia no se acepta.")
