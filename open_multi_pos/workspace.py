@@ -401,14 +401,14 @@ def overview(brand):
     if not frappe.has_permission("Sales Invoice", "read"):
         frappe.throw("No tiene permiso para consultar ventas", frappe.PermissionError)
     invoices = frappe.db.sql(
-        """SELECT COUNT(*) AS count, COALESCE(SUM(grand_total),0) AS total FROM `tabSales Invoice` WHERE pos_profile=%s AND docstatus=1 AND posting_date=%s""",
+        """SELECT COALESCE(SUM(CASE WHEN is_return=0 THEN 1 ELSE 0 END),0) AS count, COALESCE(SUM(CASE WHEN disable_rounded_total=1 THEN grand_total ELSE COALESCE(NULLIF(rounded_total,0),grand_total) END),0) AS total FROM `tabSales Invoice` WHERE pos_profile=%s AND docstatus=1 AND posting_date=%s""",
         (context["pos_profile"], nowdate()),
         as_dict=True,
     )[0]
     recent = frappe.get_list(
         "Sales Invoice",
         filters={"pos_profile": context["pos_profile"], "docstatus": 1},
-        fields=["name", "posting_date", "grand_total", "currency", "customer"],
+        fields=["name", "posting_date", "grand_total", "currency", "customer", "is_return"],
         order_by="creation desc",
         limit=10,
     )

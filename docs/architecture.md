@@ -42,3 +42,11 @@ Las entradas de inventario usan una clave única en Stock Entry, hash de payload
 Una extensión de clase Frappe permite una apertura por usuario/perfil para administradores de negocios visibles en `/omp`. No modifica core; mantiene validaciones nativas de empresa, cuentas y estado. Los cajeros y perfiles ajenos al espacio conservan la regla original. El cierre nativo filtra facturas por propietario y perfil.
 
 Compras, finanzas, clientes y entidad legal se muestran en formularios/informes nativos dentro del espacio, con idioma y filtro de empresa. El filtro es contexto de trabajo, no un permiso. Los administradores conservan acceso administrativo al sitio; los permisos de cajero se verifican en servidor.
+
+## Devoluciones guiadas
+
+`returns.py` exige administración, terminal personal y acceso actual al negocio y a la factura original del journal de caja. Usa el mapper nativo de nota crédito y conserva precios/impuestos originales; no copia el motor contable. Bloquea perfil, factura original e intento, consulta devoluciones enviadas con lectura actual y valida cantidades e importe acumulado. La huella de cálculo detecta cambios antes de registrar. Cada nota conserva su empresa, perfil, almacén y factura original; las dos facturas de una cesta se devuelven por separado.
+
+El journal privado `OMP Return Request`, identificado por usuario/UUID, guarda payload, estado, nota y comprobante en la misma transacción que stock, GL y pagos negativos nativos. Un abandono bloquea envíos tardíos; recuperación/reintento no crea otra nota. La revisión de apertura avanza al reembolsar para que el cierre no use una vista anterior. La copia/restauración incluye este journal como tabla número 19.
+
+El navegador conserva el payload del intento antes de enviar, por sitio/usuario, y coordina pestañas con Web Locks. No conserva el comprobante en almacenamiento local. La interfaz no ejecuta transferencias ni confirma entrega de efectivo. Series/lotes, ajustes globales, fracciones y diferencias de redondeo requieren el formulario nativo; el servicio falla antes de registrar si no puede conciliar cantidades/importes.

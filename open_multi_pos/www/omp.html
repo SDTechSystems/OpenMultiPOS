@@ -10,6 +10,7 @@
     <script src="/assets/open_multi_pos/workspace-english.js" defer></script>
     <script src="/assets/open_multi_pos/workspace-core.js" defer></script>
     <script src="/assets/open_multi_pos/workspace-sales.js" defer></script>
+    <script src="/assets/open_multi_pos/workspace-returns.js" defer></script>
     <script src="/assets/open_multi_pos/workspace.js" defer></script>
   </head>
   <body data-user="{{ workspace_user | e }}">
@@ -95,7 +96,8 @@
                 <span>Ventas de hoy</span><strong id="today-count">—</strong>
               </div>
               <div>
-                <span>Importe vendido</span><strong id="today-total">—</strong>
+                <span>Importe neto de hoy</span
+                ><strong id="today-total">—</strong>
               </div>
               <div>
                 <span>Moneda del negocio</span
@@ -113,6 +115,105 @@
             <h2>Ventas recientes</h2>
             <div id="recent-sales"></div>
           </div>
+        </section>
+        <section id="view-returns" class="view" hidden>
+          <p class="hint">
+            Devuelve cada factura del negocio que la emitió. En un recibo
+            conjunto, tramita cada negocio por separado. El reembolso se
+            registra aquí; la entrega de efectivo o transferencia se realiza por
+            fuera del programa.
+          </p>
+          <div id="return-recovery" class="warning" hidden>
+            <h2>Hay una devolución por resolver</h2>
+            <p id="return-operation"></p>
+            <p>
+              Consulta el estado antes de repetir un reembolso. Reintentar
+              conserva la misma clave; resolver bloquea un envío tardío o
+              recupera la nota ya guardada.
+            </p>
+            <button id="return-status" class="secondary">
+              Consultar estado
+            </button>
+            <button id="return-retry">Reintentar devolución</button>
+            <button id="return-abandon" class="secondary">
+              Resolver sin crear otra nota
+            </button>
+          </div>
+          <form id="return-load" class="form-sheet">
+            <h2>1. Selecciona la venta</h2>
+            <label for="return-recent"
+              >Facturas recientes del negocio activo</label
+            >
+            <select id="return-recent"></select>
+            <label for="return-invoice"
+              >Número de factura anterior (opcional)</label
+            >
+            <input
+              id="return-invoice"
+              autocomplete="off"
+              aria-describedby="return-invoice-help"
+            />
+            <p id="return-invoice-help">
+              Escribe el número completo para una factura anterior. Déjalo vacío
+              para usar la selección reciente.
+            </p>
+            <button id="return-load-button">Cargar factura</button>
+            <button id="return-original-native" type="button" class="secondary">
+              Abrir factura original en ERPNext
+            </button>
+          </form>
+          <form id="return-quantities" class="form-sheet" hidden>
+            <h2>2. Elige qué devolver</h2>
+            <p id="return-source"></p>
+            <div id="return-items"></div>
+            <button id="return-calculate">Calcular reembolso</button>
+          </form>
+          <form id="return-confirm" class="form-sheet" hidden>
+            <h2>3. Revisa y registra el reembolso</h2>
+            <p id="return-total"></p>
+            <div id="return-payment-fields"></div>
+            <label for="return-reason">Motivo de devolución</label>
+            <textarea
+              id="return-reason"
+              maxlength="500"
+              required
+              aria-describedby="return-reason-help"
+            ></textarea>
+            <p id="return-reason-help">
+              Describe por qué recibes los productos. La nota crédito quedará
+              vinculada a la venta original.
+            </p>
+            <label
+              ><input id="return-checked" type="checkbox" required /> Revisé los
+              productos, las cantidades y los medios de reembolso.</label
+            >
+            <p>
+              Abre tu caja de hoy en Ventas antes de registrar. La nota devuelve
+              las existencias al almacén original y descuenta el reembolso del
+              cierre. El programa no envía dinero ni documentos fiscales.
+            </p>
+            <button id="return-submit">Registrar devolución</button>
+          </form>
+          <div id="return-result" hidden>
+            <h2>Devolución registrada</h2>
+            <p id="return-saved"></p>
+            <a id="return-native" target="_blank" rel="noopener"
+              >Ver nota crédito en ERPNext</a
+            >
+            <button id="return-print" class="secondary">
+              Imprimir comprobante
+            </button>
+            <button id="return-next">Nueva devolución</button>
+            <iframe
+              id="return-receipt"
+              title="Comprobante interno de devolución"
+              sandbox="allow-scripts allow-same-origin allow-modals"
+            ></iframe>
+          </div>
+          <div id="return-native-tools"></div>
+          <button id="return-native-list" class="secondary">
+            Revisar notas crédito en ERPNext
+          </button>
         </section>
         <section id="view-sales" class="view" hidden>
           <div id="shift-strip" class="shift-strip"></div>

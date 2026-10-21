@@ -21,7 +21,7 @@
       },
       {
         "title": "Consulta la operación",
-        "body": "Ventas de hoy cuenta las facturas enviadas del perfil activo. Importe vendido suma esas facturas. Ventas recientes permite revisar sus documentos, fechas y clientes. No representa utilidad ni saldo bancario.",
+        "body": "Ventas de hoy cuenta las ventas enviadas del perfil activo y excluye notas crédito. Importe neto de hoy suma las ventas y resta las devoluciones enviadas en esa fecha. Ventas recientes distingue ventas y notas crédito, con documentos, fechas y clientes. No representa utilidad ni saldo bancario.",
         "target": "#home-content"
       },
       {
@@ -75,6 +75,43 @@
       "Una cesta conjunta exige la misma moneda. Los documentos, el inventario y las cuentas permanecen en la empresa de cada negocio.",
       "El recibo es interno y no tiene validez fiscal. DIAN no está configurada.",
       "Conserva la pestaña y sus datos locales mientras haya un intento pendiente. No borres el almacenamiento para repetir una operación."
+    ]
+  },
+  {
+    "id": "returns",
+    "title": "Devoluciones",
+    "intro": "Recibe productos de una venta guardada y registra el reembolso en su negocio original.",
+    "steps": [
+      {
+        "title": "Busca la venta original",
+        "body": "Selecciona el negocio y una factura reciente o escribe su número completo. Cargar factura muestra las cantidades pendientes después de otras devoluciones enviadas.",
+        "target": "#return-load"
+      },
+      {
+        "title": "Elige productos y cantidades",
+        "body": "Usa cero para conservar un producto y una cantidad entera para devolverlo. No puedes superar lo pendiente. Calcula el reembolso con los precios e impuestos originales.",
+        "target": "#return-quantities"
+      },
+      {
+        "title": "Revisa el reembolso",
+        "body": "Distribuye el importe entre efectivo y transferencia, registra la referencia si corresponde y explica el motivo. Los medios deben sumar exactamente el total. Revisa los datos y marca la confirmación.",
+        "target": "#return-confirm"
+      },
+      {
+        "title": "Registra una sola vez",
+        "body": "Abre tu caja de hoy en Ventas antes de registrar. La nota crédito devuelve stock al almacén original y descuenta el reembolso del cierre. La entrega de dinero se realiza por fuera del programa. Si se pierde la respuesta, conserva el intento y consulta el estado.",
+        "target": "#return-recovery"
+      },
+      {
+        "title": "Conserva el comprobante",
+        "body": "La nota queda vinculada a la factura. El comprobante conserva los datos del negocio de la venta original. Imprimir no repite el reembolso. Nueva devolución libera la pantalla solo después de confirmar el resultado.",
+        "target": "#return-result"
+      }
+    ],
+    "notes": [
+      "Para un recibo conjunto, devuelve cada factura desde su negocio por separado. Una devolución no modifica la factura del otro negocio.",
+      "Las series, lotes, cantidades fraccionarias, descuentos globales, cargos fijos o diferencias de redondeo requieren revisar la nota en ERPNext. Usa Abrir factura original en ERPNext para su devolución nativa. Revisar notas crédito consulta las notas existentes.",
+      "Una respuesta perdida no confirma un fallo. Consultar estado recupera la nota. Reintentar conserva la clave. Resolver sin crear otra nota bloquea envíos tardíos o recupera lo ya guardado. No repitas un reembolso externo."
     ]
   },
   {

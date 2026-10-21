@@ -16,13 +16,14 @@
     "native_cashier_browser_tests": 1,
     "native_cashier_browser": "Windows Chrome / Playwright, cookie + CSRF",
     "site_time_zone": "America/Bogota",
-    "workspace_http_tests": 15,
+    "workspace_http_tests": 19,
     "workspace_browser_tests": 1,
-    "manual_fictional_captures": 11,
+    "manual_fictional_captures": 13,
     "recovery_http_tests": 1,
     "restore_drill_tests": 1,
-    "reconciled_tables": 18,
-    "xpos_whitelisted_declarations": 227
+    "reconciled_tables": 19,
+    "xpos_whitelisted_declarations": 227,
+    "returns_http_tests": 11
   },
   "runtime": {
     "python": ">=3.14,<3.15",

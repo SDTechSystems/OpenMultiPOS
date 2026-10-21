@@ -79,7 +79,7 @@ class WorkspaceBrowser(fixtures.WorkspaceHTTP):
                 print(result.stdout.strip(), flush=True)
             self.assertEqual(result.returncode, 0, result.stderr[-4000:])
             after = self.counts()
-            self.assertEqual(after["Sales Invoice"] - before["Sales Invoice"], 2)
+            self.assertEqual(after["Sales Invoice"] - before["Sales Invoice"], 3)
             self.assertEqual(after["Stock Entry"] - before["Stock Entry"], 1)
             pdf = PdfReader(
                 Path(__file__).resolve().parent.parent

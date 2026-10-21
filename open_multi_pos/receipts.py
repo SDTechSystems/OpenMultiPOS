@@ -96,6 +96,9 @@ tr, footer {{ break-inside:avoid; }}
 def render_compact_receipt(receipt: dict) -> str:
     """Current 48 mm Windows page, short top margin, no browser headers."""
     profile = printer_profiles()["jaltech-jal58m"]
+    is_return = bool(receipt.get("is_return"))
+    header = "DEVOLUCIÓN INTERNA" if is_return else "RECIBO INTERNO"
+    total_label = "Reembolso" if is_return else "Total"
     sections = []
     for part in receipt["sales"]:
         brand = part["brand"]
@@ -109,11 +112,11 @@ def render_compact_receipt(receipt: dict) -> str:
             "<tr><td>"
             + escape(row["name"])
             + "<small>"
-            + str(int(row["qty"]))
+            + str(abs(int(row["qty"])) if is_return else int(row["qty"]))
             + " × "
             + money(row["rate"])
             + "</small></td><td>"
-            + money(row["amount"])
+            + money(abs(row["amount"]) if is_return else row["amount"])
             + "</td></tr>"
             for row in part["items"]
         )
@@ -123,7 +126,9 @@ def render_compact_receipt(receipt: dict) -> str:
                 pay.get("kind"), pay.get("mode_of_payment", "Pago")
             )
             if pay["amount"]:
-                payments.append(escape(label) + " " + money(pay["amount"]))
+                payments.append(
+                    escape(label) + " " + money(abs(pay["amount"]) if is_return else pay["amount"])
+                )
         qr = ""
         if details.get("receipt_show_qr", 1) and brand.get("qr_url"):
             data, _ = qr_image(brand["qr_url"])
@@ -133,7 +138,13 @@ def render_compact_receipt(receipt: dict) -> str:
             if details.get("receipt_show_footer", 1) and brand.get("footer")
             else ""
         )
-        taxes = "<p>Impuestos " + money(part.get("taxes", 0)) + "</p>" if part.get("taxes") else ""
+        taxes = (
+            "<p>Impuestos "
+            + money(abs(part.get("taxes", 0)) if is_return else part.get("taxes", 0))
+            + "</p>"
+            if part.get("taxes")
+            else ""
+        )
         subtotal = (
             '<p class="subtotal">Subtotal ' + money(part["total"]) + "</p>"
             if len(receipt["sales"]) > 1
@@ -146,6 +157,11 @@ def render_compact_receipt(receipt: dict) -> str:
             + "".join(contact)
             + '</div><p class="reference">'
             + escape(part["id"])
+            + (
+                "<br>Venta original " + escape(part["return_against"])
+                if part.get("return_against")
+                else ""
+            )
             + "</p><table><thead><tr><th>Producto</th><th>Importe</th></tr></thead><tbody>"
             + lines
             + "</tbody></table>"
@@ -164,4 +180,4 @@ def render_compact_receipt(receipt: dict) -> str:
     change = "<p>Cambio " + money(receipt["change"]) + "</p>" if receipt.get("change") else ""
     currency = escape(receipt["currency"])
     return f"""<!doctype html><html lang="es-CO"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>Recibo interno</title><script src="/assets/open_multi_pos/receipt-print.js" defer></script><style>
-@page {{size:48mm 150mm;margin:0}}*{{box-sizing:border-box}}html{{width:48mm;margin:0 auto}}body{{margin:0;color:#000;background:#fff;font:600 12px/1.17 Arial,sans-serif}}article{{width:{profile.content_mm}mm;margin:0 auto;padding:.5mm 0 1mm;overflow-wrap:anywhere}}header,h2,.details{{text-align:center}}header{{font-size:9px;margin-bottom:1.2mm}}h2{{font-size:15px;margin:0 0 .5mm}}p{{margin:.5mm 0}}.reference,.details,.payments{{font-size:10px}}table{{width:100%;table-layout:fixed;border-collapse:collapse}}th{{font-size:10px;text-align:left;border-bottom:1px dashed}}th:first-child{{width:66%}}td{{padding:.7mm 0;vertical-align:top}}th:last-child,td:last-child{{text-align:right}}small{{display:block;font-size:10px}}section{{padding:0 0 1mm;margin:0 0 1mm;border-bottom:1px dashed}}.total{{font-size:16px;margin-top:1mm}}.subtotal{{font-size:12px;font-weight:700}}img{{display:block;width:23mm;height:23mm;margin:1mm auto 0}}tr{{break-inside:avoid}}h2{{break-after:avoid}}</style></head><body data-paper-mm="48"><article aria-label="Recibo interno guardado"><header>RECIBO INTERNO SIN VALIDEZ FISCAL<br>{when:%d/%m/%Y %H:%M} {currency}</header>{"".join(sections)}<p class="total">Total {money(receipt["total"])} {currency}</p>{change}</article></body></html>"""
+@page {{size:48mm 150mm;margin:0}}*{{box-sizing:border-box}}html{{width:48mm;margin:0 auto}}body{{margin:0;color:#000;background:#fff;font:600 12px/1.17 Arial,sans-serif}}article{{width:{profile.content_mm}mm;margin:0 auto;padding:.5mm 0 1mm;overflow-wrap:anywhere}}header,h2,.details{{text-align:center}}header{{font-size:9px;margin-bottom:1.2mm}}h2{{font-size:15px;margin:0 0 .5mm}}p{{margin:.5mm 0}}.reference,.details,.payments{{font-size:10px}}table{{width:100%;table-layout:fixed;border-collapse:collapse}}th{{font-size:10px;text-align:left;border-bottom:1px dashed}}th:first-child{{width:66%}}td{{padding:.7mm 0;vertical-align:top}}th:last-child,td:last-child{{text-align:right}}small{{display:block;font-size:10px}}section{{padding:0 0 1mm;margin:0 0 1mm;border-bottom:1px dashed}}.total{{font-size:16px;margin-top:1mm}}.subtotal{{font-size:12px;font-weight:700}}img{{display:block;width:23mm;height:23mm;margin:1mm auto 0}}tr{{break-inside:avoid}}h2{{break-after:avoid}}</style></head><body data-paper-mm="48"><article aria-label="Recibo interno guardado"><header>{header} SIN VALIDEZ FISCAL<br>{when:%d/%m/%Y %H:%M} {currency}</header>{"".join(sections)}<p class="total">{total_label} {money(abs(receipt["total"]) if is_return else receipt["total"])} {currency}</p>{change}</article></body></html>"""

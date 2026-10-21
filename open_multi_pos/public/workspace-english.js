@@ -1,6 +1,24 @@
 "use strict";
 // Spanish is the source language. Native ERPNext forms use the user's chosen language.
 window.OMPWorkspaceEnglish = {
+  "Importe neto de hoy": "Net amount today",
+  Tipo: "Type",
+  "Nota crédito": "Credit note",
+  Venta: "Sale",
+  Devoluciones: "Returns",
+  "Consulta la venta original y registra productos devueltos y reembolsos.":
+    "Review the original sale and record returned products and refunds.",
+  "Cargar factura": "Load invoice",
+  "Calcular reembolso": "Calculate refund",
+  "Registrar devolución": "Record return",
+  "Consultar estado": "Check status",
+  "Reintentar devolución": "Retry return",
+  "Resolver sin crear otra nota": "Resolve without another credit note",
+  "Nueva devolución": "New return",
+  "Imprimir comprobante": "Print return receipt",
+  "Abrir factura original en ERPNext": "Open original invoice in ERPNext",
+  "Revisar notas crédito en ERPNext": "Review credit notes in ERPNext",
+
   "Vista previa del recibo": "Receipt preview",
   "Guarda las opciones antes de abrir la muestra. Los recibos históricos conservan sus datos originales.":
     "Save the options before opening the sample. Historical receipts keep their original data.",

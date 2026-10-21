@@ -13,7 +13,7 @@ Revisa el negocio activo y entra a la tarea que necesitas.
 1. **Crea tu acceso.** En la primera instalación, entra con la cuenta de instalación y usa Crear mi perfil de administrador. Escribe tu correo y una contraseña. Después, inicia sesión con tu cuenta personal. Solo un administrador puede crear otros perfiles.
 2. **Configura los negocios.** En Negocios, crea cada negocio. Puedes elegir la misma entidad legal si comparten NIT y contabilidad, o crear entidades distintas. Esta decisión se configura durante el alta.
 3. **Selecciona el contexto.** El selector cambia el inventario, las compras, las finanzas y los ajustes que estás consultando. En ventas, cada producto conserva su negocio aunque cambies el selector.
-4. **Consulta la operación.** Ventas de hoy cuenta las facturas enviadas del perfil activo. Importe vendido suma esas facturas. Ventas recientes permite revisar sus documentos, fechas y clientes. No representa utilidad ni saldo bancario.
+4. **Consulta la operación.** Ventas de hoy cuenta las ventas enviadas del perfil activo y excluye notas crédito. Importe neto de hoy suma las ventas y resta las devoluciones enviadas en esa fecha. Ventas recientes distingue ventas y notas crédito, con documentos, fechas y clientes. No representa utilidad ni saldo bancario.
 5. **Encuentra herramientas.** Usa el menú izquierdo o presiona Ctrl K y escribe el nombre de una sección. Mi perfil abre tu cuenta para actualizar datos o contraseña.
 
 - El sitio requiere conexión con el servidor. Una respuesta perdida se resuelve consultando el mismo intento.
@@ -37,6 +37,25 @@ Vende productos de uno o ambos negocios y conserva una factura nativa por negoci
 - Conserva la pestaña y sus datos locales mientras haya un intento pendiente. No borres el almacenamiento para repetir una operación.
 
 ![Captura ficticia: Ventas](../open_multi_pos/public/manual/screenshots/sales.png)
+
+## Devoluciones
+
+Registra devoluciones parciales o totales de ventas de caja de OpenMultiPOS. El proceso crea una nota crédito nativa vinculada a la factura original, devuelve las unidades al almacén original y registra importes negativos en los medios de pago de la caja actual. El programa no envía dinero al banco ni transmite documentos fiscales.
+
+1. **Abre tu caja de hoy.** En Ventas, abre una caja personal del negocio que recibirá los productos. Puedes devolver una venta de una apertura anterior o de otro administrador autorizado; el reembolso se contabiliza en tu caja actual.
+2. **Selecciona la venta.** En Devoluciones, confirma el negocio activo. Elige una factura reciente o escribe su número completo. Pulsa Cargar factura. La lista reciente consulta las últimas 30 facturas del negocio. Para revisar el documento completo, usa Abrir factura original en ERPNext.
+3. **Elige las cantidades.** Cada producto muestra vendido, pendiente y precio original en su ayuda. Escribe una cantidad entera hasta lo pendiente; cero conserva el producto. Para una devolución total, selecciona todas las unidades pendientes. Calcular reembolso consulta precios e impuestos de la factura original, aunque el catálogo o el perfil hayan cambiado.
+4. **Distribuye el reembolso.** Registra importes positivos en efectivo y transferencia. Deben sumar exactamente el total; usa cero en los medios que no corresponden. Añade una referencia para identificar la transferencia realizada fuera del programa. Explica el motivo y marca la confirmación después de revisar productos, cantidades e importes.
+5. **Registra una sola vez.** Registrar devolución envía la nota crédito y sus movimientos nativos en la misma transacción. Si falla la validación, no se conserva una nota parcial ni movimientos de stock/contabilidad de ese intento. La operación utiliza una clave persistente; un reintento no crea otra nota.
+6. **Conserva el comprobante.** Ver nota crédito en ERPNext abre el documento. Imprimir comprobante usa la instantánea guardada, con los datos del negocio de la venta original y la referencia de esa factura. Nueva devolución libera la pantalla después de confirmar el resultado. Revisa en el cierre que los reembolsos resten del medio correcto. Si el esperado es negativo, registra el saldo real contado y revisa la diferencia; no inventes un conteo negativo.
+
+**Si se pierde la respuesta**, conserva la sesión y los datos locales. Consultar estado recupera la misma nota. Reintentar devolución usa la misma clave. Resolver sin crear otra nota recupera lo ya guardado o bloquea la clave para que un envío tardío no cree una devolución. Resolver no entrega ni recupera dinero externo; comprueba cualquier reembolso realizado antes de iniciar otro intento.
+
+**Un recibo conjunto tiene dos facturas.** Devuelve cada factura desde su negocio. Puedes devolver solo una parte de un negocio sin afectar al otro. Si devuelves productos de ambos, registra una operación para cada factura; sus notas, reembolsos y existencias permanecen separados.
+
+Las series/lotes, cantidades fraccionarias, descuentos globales, cargos fijos, notas previas sin vínculo de línea y diferencias de redondeo requieren revisar la devolución en el formulario nativo. Usa Abrir factura original en ERPNext y su acción nativa de devolución; revisa importes, existencias y pagos antes de enviar. Revisar notas crédito en ERPNext permite consultar las notas existentes. Una factura o nota anulada requiere revisión nativa y no se recupera como una devolución vigente.
+
+![Captura ficticia: Devoluciones](../open_multi_pos/public/manual/screenshots/returns.png)
 
 ## Inventario
 

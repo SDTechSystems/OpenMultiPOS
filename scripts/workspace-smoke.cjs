@@ -19,6 +19,7 @@ async function go(page, id) {
     {
       home: "Inicio",
       sales: "Ventas",
+      returns: "Devoluciones",
       inventory: "Inventario",
       purchases: "Compras",
       finances: "Finanzas",
@@ -477,6 +478,75 @@ async function go(page, id) {
     await printing.close();
     console.log(
       "PASS native Print Settings and portal receipt preview, sample, combined saved receipt, keyboard, mobile and axe",
+    );
+    await go(page, "returns");
+    await page.locator("#return-load-button").click();
+    await ready(page);
+    await page.locator("#return-qty-0").fill("1");
+    await page.locator("#return-calculate").click();
+    await ready(page);
+    await page
+      .locator("#return-reason")
+      .fill("Producto ficticio devuelto para el manual");
+    await page.locator("#return-checked").check();
+    await page.evaluate(() => {
+      document.activeElement?.blur();
+      window.scrollTo(0, 0);
+    });
+    await page.screenshot({
+      path: path.join(out, "returns.png"),
+      fullPage: true,
+    });
+    const returnAxe = await new AxeBuilder({ page })
+      .withTags(["wcag2a", "wcag2aa", "wcag21aa", "wcag22aa"])
+      .analyze();
+    assert.deepEqual(
+      returnAxe.violations
+        .filter((v) => ["serious", "critical"].includes(v.impact))
+        .map((v) => v.id),
+      [],
+    );
+    let lostReturn = false;
+    await page.route(
+      "**/api/method/open_multi_pos.returns.submit",
+      async (route) => {
+        const response = await route.fetch();
+        assert.equal(response.status(), 200);
+        if (!lostReturn) {
+          lostReturn = true;
+          await route.abort("failed");
+        } else await route.fulfill({ response });
+      },
+    );
+    await page.locator("#return-submit").focus();
+    await page.keyboard.press("Enter");
+    await ready(page);
+    await page.locator("#return-recovery").waitFor();
+    await page.reload();
+    await ready(page);
+    await page.locator("#return-result").waitFor();
+    await page
+      .locator("#return-receipt")
+      .contentFrame()
+      .getByText("DEVOLUCIÓN INTERNA SIN VALIDEZ FISCAL")
+      .waitFor();
+    assert.equal(await page.locator("#return-load-button").isDisabled(), true);
+    await page.setViewportSize({ width: 390, height: 844 });
+    assert.equal(
+      await page.evaluate(
+        () => document.documentElement.scrollWidth <= innerWidth,
+      ),
+      true,
+    );
+    await page.setViewportSize({ width: 1440, height: 1000 });
+    await page.locator("#return-next").click();
+    await ready(page);
+    await page.locator("#return-load-button").click();
+    await ready(page);
+    assert.equal(await page.locator("#return-qty-0").getAttribute("max"), "0");
+    await go(page, "settings");
+    console.log(
+      "PASS guided return, same-key lost-response recovery, original receipt, keyboard, mobile and axe",
     );
     await page.locator("#setting-language").focus();
     await page.keyboard.press("Tab");
