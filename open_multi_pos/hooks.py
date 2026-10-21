@@ -58,3 +58,6 @@ extend_bootinfo = [
     "open_multi_pos.localization.extend_boot",
     "open_multi_pos.upstream_gate.filter_boot",
 ]
+
+# Extend the native Printing section without changing ERPNext sources.
+doctype_js = {"Print Settings": "public/print-settings-preview.js"}

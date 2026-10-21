@@ -373,6 +373,111 @@ async function go(page, id) {
     await pdfPage.close();
     console.log("PASS mixed native sale and lost-response recovery");
     await go(page, "settings");
+    await context.addInitScript(() => {
+      window.print = () => {
+        window.top.__receiptPrintCalls =
+          (window.top.__receiptPrintCalls || 0) + 1;
+      };
+    });
+    const [preview] = await Promise.all([
+      context.waitForEvent("page"),
+      page.locator("#open-receipt-preview").click(),
+    ]);
+    await preview.locator("#show-preview").waitFor();
+    await preview.waitForFunction(
+      () =>
+        !document.getElementById("show-preview").disabled &&
+        document.getElementById("preview-brand").options.length > 0,
+    );
+    await preview.locator("#show-preview").focus();
+    await preview.keyboard.press("Enter");
+    await preview.waitForFunction(
+      () => !document.getElementById("print-preview").disabled,
+    );
+    assert.match(
+      await preview.locator("#preview-status").textContent(),
+      /Muestra/,
+    );
+    await preview
+      .locator("#preview-frame")
+      .contentFrame()
+      .getByText("MUESTRA · NO ES UNA VENTA")
+      .waitFor();
+    await preview.screenshot({
+      path: path.join(out, "receipt-preview.png"),
+      fullPage: true,
+    });
+    const previewAxe = await new AxeBuilder({ page: preview })
+      .withTags(["wcag2a", "wcag2aa", "wcag21aa", "wcag22aa"])
+      .analyze();
+    assert.deepEqual(
+      previewAxe.violations
+        .filter((v) => ["serious", "critical"].includes(v.impact))
+        .map((v) => v.id),
+      [],
+    );
+    assert.equal(
+      await preview.evaluate(() => window.__receiptPrintCalls || 0),
+      0,
+    );
+    let freshPreviewRequests = 0;
+    preview.on("request", (request) => {
+      if (request.url().includes("receipt_preview.preview"))
+        freshPreviewRequests++;
+    });
+    await preview.locator("#print-preview").click();
+    await preview.waitForFunction(() => window.__receiptPrintCalls === 1);
+    assert.equal(
+      freshPreviewRequests,
+      1,
+      "Explicit printing reauthorizes the receipt",
+    );
+    await preview.locator("#preview-source").selectOption("saved");
+    assert.equal(await preview.locator("#print-preview").isDisabled(), true);
+    await preview.locator("#preview-document").selectOption({
+      label: (
+        await preview.locator("#preview-document option").allTextContents()
+      ).find((label) => label.startsWith("Recibo conjunto")),
+    });
+    await preview.locator("#show-preview").click();
+    await preview.waitForFunction(
+      () => !document.getElementById("print-preview").disabled,
+    );
+    for (const brand of input.businesses)
+      await preview
+        .locator("#preview-frame")
+        .contentFrame()
+        .getByRole("heading", { name: brand.display_name })
+        .waitFor();
+    await preview.setViewportSize({ width: 390, height: 844 });
+    assert.equal(
+      await preview.evaluate(
+        () => document.documentElement.scrollWidth <= innerWidth,
+      ),
+      true,
+    );
+    await preview.locator("summary").focus();
+    await preview.keyboard.press("Enter");
+    assert.equal(await preview.locator("details").getAttribute("open"), "");
+    await preview.close();
+    const printing = await context.newPage();
+    await printing.goto(input.base + "/desk/print-settings/Print%20Settings");
+    const nativePreview = printing.getByRole("button", {
+      name: "Vista previa del recibo",
+      exact: true,
+    });
+    await nativePreview.waitFor({ timeout: 60000 });
+    const [nativePage] = await Promise.all([
+      context.waitForEvent("page"),
+      nativePreview.click(),
+    ]);
+    await nativePage.locator("#preview-brand").waitFor();
+    assert.match(nativePage.url(), /omp_receipt_preview/);
+    await nativePage.close();
+    await printing.close();
+    console.log(
+      "PASS native Print Settings and portal receipt preview, sample, combined saved receipt, keyboard, mobile and axe",
+    );
     await page.locator("#setting-language").focus();
     await page.keyboard.press("Tab");
     const axe = await new AxeBuilder({ page })

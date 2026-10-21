@@ -66,6 +66,7 @@ MANIFEST = "open_multi_pos/public/manual/manifest.json"
 MANUAL_PREFIX = "open_multi_pos/public/manual/screenshots/"
 MANUAL_SECTIONS = {
     "product-form",
+    "receipt-preview",
     "home",
     "sales",
     "inventory",

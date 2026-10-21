@@ -1,6 +1,10 @@
 "use strict";
 // Spanish is the source language. Native ERPNext forms use the user's chosen language.
 window.OMPWorkspaceEnglish = {
+  "Vista previa del recibo": "Receipt preview",
+  "Guarda las opciones antes de abrir la muestra. Los recibos históricos conservan sus datos originales.":
+    "Save the options before opening the sample. Historical receipts keep their original data.",
+
   "Respaldo y recuperación": "Backup and recovery",
   "Consultando el respaldo…": "Checking backup…",
   "Cómo proteger los datos": "How to protect your data",

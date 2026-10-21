@@ -911,6 +911,14 @@
       location.reload();
     });
   };
+  $("open-receipt-preview").onclick = () => {
+    window.open(
+      "/omp_receipt_preview?brand=" +
+        encodeURIComponent(state.brand?.brand || ""),
+      "_blank",
+      "noopener",
+    );
+  };
   $("receipt-settings-form").onsubmit = (event) => {
     event.preventDefault();
     run(async () => {
