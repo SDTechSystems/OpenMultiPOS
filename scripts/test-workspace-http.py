@@ -7,6 +7,7 @@ import secrets
 import sys
 import unittest
 from concurrent.futures import ThreadPoolExecutor
+from decimal import Decimal
 from pathlib import Path
 from urllib.parse import urlparse
 from uuid import uuid4
@@ -110,7 +111,10 @@ class WorkspaceHTTP(unittest.TestCase):
                         "terminal": terminal,
                         "opening_entry": name,
                         "counts": [
-                            {"mode_of_payment": r["mode_of_payment"], "amount": r["expected"]}
+                            {
+                                "mode_of_payment": r["mode_of_payment"],
+                                "amount": str(max(Decimal(r["expected"]), Decimal(0))),
+                            }
                             for r in summary["payments"]
                         ],
                     }

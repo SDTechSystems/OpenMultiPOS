@@ -79,6 +79,7 @@ window.OMPWorkspace = (() => {
     $("main").setAttribute("aria-busy", "true");
     $("business-picker").disabled = true;
     window.OMPSales?.controls();
+    window.OMPReturns?.controls();
     try {
       return await action();
     } catch (error) {
@@ -88,6 +89,7 @@ window.OMPWorkspace = (() => {
       $("main").removeAttribute("aria-busy");
       $("business-picker").disabled = false;
       window.OMPSales?.controls();
+      window.OMPReturns?.controls();
     }
   }
   function decimal(value) {

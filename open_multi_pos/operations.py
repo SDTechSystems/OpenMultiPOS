@@ -30,6 +30,7 @@ TABLES = (
     "OMP POS Terminal",
     "OMP Checkout Request",
     "OMP Sale Batch",
+    "OMP Return Request",
     "OMP Inventory Tombstone",
     "POS Opening Entry",
     "POS Closing Entry",

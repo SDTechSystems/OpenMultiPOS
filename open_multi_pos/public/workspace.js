@@ -23,6 +23,10 @@
       "Ventas",
       "Escanea productos, identifica su negocio y guarda la venta.",
     ],
+    returns: [
+      "Devoluciones",
+      "Consulta la venta original y registra productos devueltos y reembolsos.",
+    ],
     inventory: [
       "Inventario",
       "Crea productos y registra existencias en el almacén correcto.",
@@ -50,6 +54,7 @@
   const paths = {
     home: "M3 10l9-7 9 7M5 9v11h5v-6h4v6h5V9",
     sales: "M3 4h3l2 12h10l2-8H7M10 21h.01M18 21h.01",
+    returns: "M9 4L3 10l6 6M3 10h11a7 7 0 0 1 7 7v3",
     inventory: "M3 7l9-4 9 4-9 4-9-4v10l9 4 9-4V7M12 11v10M8 5l9 4",
     purchases: "M5 3h14v18l-3-2-4 2-4-2-3 2V3M8 8h8M8 12h8M8 16h4",
     finances: "M3 21h18M5 21V10h4v11M11 21V6h4v15M17 21V3h4v18",
@@ -263,6 +268,10 @@
       $("recent-sales"),
       [
         { label: "Documento", render: (r) => r.name },
+        {
+          label: "Tipo",
+          render: (r) => (r.is_return ? t("Nota crédito") : t("Venta")),
+        },
         { label: "Fecha", render: (r) => r.posting_date },
         { label: "Cliente", render: (r) => r.customer },
         {
@@ -1116,6 +1125,9 @@
     else if (view === "sales") {
       W.needBrand();
       await window.OMPSales.enter();
+    } else if (view === "returns") {
+      W.needBrand();
+      await window.OMPReturns.enter();
     } else if (view === "inventory") await inventory();
     else if (view === "businesses") await business();
     else if (view === "team") await team();

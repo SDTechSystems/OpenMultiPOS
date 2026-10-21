@@ -1,0 +1,83 @@
+{
+  "doctype": "DocType",
+  "name": "OMP Return Request",
+  "module": "Open Multi POS",
+  "engine": "InnoDB",
+  "fields": [
+    {
+      "fieldname": "actor",
+      "label": "Usuario",
+      "fieldtype": "Link",
+      "options": "User",
+      "reqd": 1
+    },
+    {
+      "fieldname": "brand",
+      "label": "Negocio",
+      "fieldtype": "Link",
+      "options": "OMP Business Brand",
+      "reqd": 1
+    },
+    {
+      "fieldname": "invoice",
+      "label": "Factura original",
+      "fieldtype": "Link",
+      "options": "Sales Invoice",
+      "reqd": 1
+    },
+    {
+      "fieldname": "request_id",
+      "label": "Identificador de operación",
+      "fieldtype": "Data",
+      "reqd": 1
+    },
+    {
+      "fieldname": "payload_hash",
+      "label": "Huella de solicitud",
+      "fieldtype": "Data",
+      "reqd": 1
+    },
+    {
+      "fieldname": "request_json",
+      "label": "Solicitud original",
+      "fieldtype": "Long Text",
+      "reqd": 1
+    },
+    {
+      "fieldname": "status",
+      "label": "Estado",
+      "fieldtype": "Select",
+      "options": "Pending\nCompleted\nAbandoned",
+      "reqd": 1,
+      "default": "Pending"
+    },
+    {
+      "fieldname": "credit_note",
+      "label": "Nota crédito",
+      "fieldtype": "Link",
+      "options": "Sales Invoice"
+    },
+    {
+      "fieldname": "receipt_json",
+      "label": "Recibo guardado",
+      "fieldtype": "Long Text"
+    }
+  ],
+  "field_order": [
+    "actor",
+    "brand",
+    "invoice",
+    "request_id",
+    "payload_hash",
+    "request_json",
+    "status",
+    "credit_note",
+    "receipt_json"
+  ],
+  "permissions": [
+    {
+      "role": "System Manager",
+      "read": 1
+    }
+  ]
+}

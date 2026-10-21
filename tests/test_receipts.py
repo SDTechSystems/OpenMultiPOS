@@ -132,3 +132,28 @@ class ReceiptTests(unittest.TestCase):
         self.assertIn("20/10/2026 00:30", html)
         self.assertIn("padding:.5mm 0 1mm", html)
         self.assertEqual(money(-101), "-$ 1,01")
+
+    def test_return_receipt_links_original_and_displays_positive_refund(self):
+        part = {
+            "id": "FAKE-CREDIT-1",
+            "return_against": "FAKE-<SALE>",
+            "created_at": "2026-10-20T05:30:00+00:00",
+            "brand": {"name": "Negocio ficticio"},
+            "items": [{"name": "Producto ficticio", "qty": -1, "rate": 100, "amount": -100}],
+            "payments": [{"kind": "Cash", "amount": -119}],
+            "taxes": -19,
+            "total": -119,
+        }
+        receipt = {
+            "sales": [part],
+            "currency": "COP",
+            "total": -119,
+            "change": 0,
+            "is_return": True,
+        }
+        html = render_compact_receipt(receipt)
+        self.assertIn("DEVOLUCIÓN INTERNA SIN VALIDEZ FISCAL", html)
+        self.assertIn("Venta original FAKE-&lt;SALE&gt;", html)
+        self.assertIn("Reembolso $ 1,19 COP", html)
+        self.assertIn("Impuestos $ 0,19", html)
+        self.assertNotIn("-$", html)
