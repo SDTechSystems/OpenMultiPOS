@@ -101,6 +101,6 @@ Al compilar solo la versión web de X POS, se usó `CYPRESS_INSTALL_BINARY=0 ELE
 
 ## Copias programadas y arranque
 
-Instalar `examples/systemd/openmultipos-backup.service` y `.timer` en `~/.config/systemd/user/`, ejecutar `systemctl --user daemon-reload` y `systemctl --user enable --now openmultipos-backup.timer`. Un administrador del sistema puede habilitar linger para el usuario Linux mediante `loginctl enable-linger NOMBRE_DE_USUARIO`, para que las unidades de usuario arranquen con WSL. El temporizador usa 03:15 America/Bogota, persistencia y retraso aleatorio de hasta cinco minutos.
+Instalar `examples/systemd/openmultipos-backup.service` y `.timer` en `~/.config/systemd/user/`, ejecutar `systemctl --user daemon-reload` y `systemctl --user enable --now openmultipos-backup.timer`. Un administrador del sistema puede habilitar linger para el usuario Linux mediante `loginctl enable-linger NOMBRE_DE_USUARIO`, para que las unidades de usuario arranquen con WSL. El lanzador conserva un único cliente WSL en segundo plano: habilitar systemd/linger no mantiene por sí solo viva la distribución. El temporizador usa 03:15 America/Bogota, persistencia y retraso aleatorio de hasta cinco minutos.
 
 En la máquina actual se instalaron temporizador y servicio; se habilitó linger. Windows inicia la distribución cuando ejecutas `scripts/start-openmultipos.cmd`; no se instaló una tarea oculta de inicio de Windows. La distribución detenida no ejecuta copias. [Procedimiento y límites](recovery.md).

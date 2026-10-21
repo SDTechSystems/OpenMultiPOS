@@ -4,7 +4,9 @@ La operación usa Windows para abrir el programa y Ubuntu WSL para MariaDB, Redi
 
 ## Abrir después de encender Windows
 
-Ejecuta `scripts/start-openmultipos.cmd` desde el Explorador. Inicia MariaDB y Redis en Ubuntu, después web, worker y el temporizador de copia; abre Administración. Los servicios deben haberse instalado siguiendo [servicios locales](local-services.md). El lanzador no contiene credenciales. La distribución debe llamarse Ubuntu y tener configurado el usuario Linux predeterminado.
+Ejecuta `scripts/start-openmultipos.cmd` desde el Explorador. Inicia MariaDB y Redis en Ubuntu, después web, worker y el temporizador de copia; abre Administración. Los servicios deben haberse instalado siguiendo [servicios locales](local-services.md). El lanzador mantiene un único cliente WSL en segundo plano para que el backend siga disponible al cerrar la terminal. Volver a abrirlo no crea otro proceso de mantenimiento. No contiene credenciales. La distribución debe llamarse Ubuntu y tener configurado el usuario Linux predeterminado.
+
+WSL no permanece activo únicamente por tener servicios systemd habilitados ([documentación de Microsoft](https://learn.microsoft.com/en-us/windows/wsl/systemd)). El cliente en segundo plano dura hasta detener Ubuntu o cerrar la sesión de Windows. Para detener la operación de forma ordenada, detén web/worker y el temporizador, después MariaDB/Redis y finalmente Ubuntu; no lo hagas mientras haya una venta o copia en curso.
 
 Si una venta, producto o entrada de inventario quedó pendiente, conserva el navegador y su almacenamiento. Inicia sesión con el mismo perfil y utiliza su opción de recuperación; conserva el identificador del intento. Una respuesta perdida no significa que la operación falló. No vuelvas a cobrar ni registres otra entrada para reemplazarla.
 
