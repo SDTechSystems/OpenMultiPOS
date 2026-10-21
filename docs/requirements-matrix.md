@@ -30,3 +30,7 @@ Estado de descubrimiento antes de implementar. “Existente” indica código up
 La [hoja de ruta](roadmap.md) reemplaza la prioridad general de compatibilidad universal. F20-F28 se entregan en `/omp`: menú, perfiles, primer administrador, productos/entradas, cesta mixta, impresión para el equipo existente, herramientas nativas y manual visual. La relación negocio/entidad se configura durante el alta. Idioma, formato, moneda predeterminada y zona se editan en Ajustes; no se convierten documentos históricos.
 
 Pruebas: `test-workspace-http.py` valida autorización, documentos/stock/GL, rollback conjunto, reintentos, marcas de abandono, contactos históricos y moneda contable. `test-workspace-browser.py` ejecuta formularios, recuperación por respuesta perdida, recorridos nativos, teclado, móvil y manual. Ver evidencia actualizada en [audit-report.md](audit-report.md). No se añaden nuevos ensayos de hardware ni se habilita offline o fiscal.
+
+## Cierre P0 de recuperación
+
+#7 añade ensayo HTTP con reinicio real, respaldos privados y restauración aislada con comparación de 18 tablas y archivos, prueba criptográfica y conciliación. El inventario fija 227 declaraciones HTTP de X POS; solo tres adaptadores autorizados siguen expuestos. Ver [recuperación](recovery.md) y [superficie HTTP](upstream-api-review.md). Los apartados de descubrimiento anteriores son históricos; los incrementos P1 de #7 se siguen en #19–#22 y la vista previa ERPNext en #18.

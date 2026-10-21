@@ -1,0 +1,11 @@
+[Unit]
+Description=OpenMultiPOS daily private backup
+
+[Timer]
+OnCalendar=*-*-* 03:15:00 America/Bogota
+Persistent=true
+RandomizedDelaySec=5min
+Unit=openmultipos-backup.service
+
+[Install]
+WantedBy=timers.target

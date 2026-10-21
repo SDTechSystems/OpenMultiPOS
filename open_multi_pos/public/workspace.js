@@ -778,6 +778,29 @@
   $("add-user").onclick = () => newUser(false);
   async function settings() {
     const s = state.boot.settings;
+    const recovery = await api("workspace.recovery_status");
+    const date = (value) =>
+      new Intl.DateTimeFormat(s.locale, {
+        dateStyle: "medium",
+        timeStyle: "short",
+        timeZone: s.time_zone,
+      }).format(new Date(value));
+    $("recovery-backup").textContent = recovery.backup_at
+      ? t(
+          recovery.backup_recent
+            ? "Último respaldo verificado:"
+            : "Respaldo pendiente de actualizar:",
+        ) +
+        " " +
+        date(recovery.backup_at)
+      : t(
+          "No hay un respaldo verificado registrado. Consulta el manual de recuperación.",
+        );
+    $("recovery-restore").textContent = recovery.restore_at
+      ? t("Último ensayo de restauración correcto:") +
+        " " +
+        date(recovery.restore_at)
+      : t("Todavía no hay un ensayo de restauración registrado.");
     fields($("settings-fields"), [
       {
         id: "setting-language",

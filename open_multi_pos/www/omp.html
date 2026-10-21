@@ -297,12 +297,29 @@
               <button>Guardar ajustes</button>
             </form>
             <div>
+              <div class="print-preset" aria-labelledby="recovery-title">
+                <h2 id="recovery-title">Respaldo y recuperación</h2>
+                <p id="recovery-backup" role="status">
+                  Consultando el respaldo…
+                </p>
+                <p id="recovery-restore"></p>
+                <details>
+                  <summary>Cómo proteger los datos</summary>
+                  <p>
+                    El respaldo diario se ejecuta cuando este computador y WSL
+                    están encendidos. Durante la copia, el programa se pausa
+                    unos instantes. Consulta el manual para verificar la copia,
+                    restaurarla en un sitio aislado y guardar otra copia fuera
+                    del computador.
+                  </p>
+                </details>
+              </div>
               <form id="receipt-settings-form" class="form-sheet">
                 <h2>Recibo del negocio activo</h2>
                 <div id="receipt-fields"></div>
                 <button>Guardar opciones del recibo</button>
               </form>
-              <div class="print-preset">
+              <div class="print-preset" id="printer-preset">
                 <h2>Impresora y lector instalados</h2>
                 <p>
                   Página de 48 mm. Ancho útil de 44 mm. Margen superior de

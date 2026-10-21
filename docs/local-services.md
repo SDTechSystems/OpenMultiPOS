@@ -95,6 +95,12 @@ systemctl --user enable --now openmultipos-worker
 systemctl --user status openmultipos-web openmultipos-worker
 ```
 
-Los ensayos repetidos alcanzaron el límite de 550 tareas pendientes sin worker. Se añadió el servicio y se dejó procesar el backlog, sin purgar jobs ni elevar el límite. Web y worker no constituyen una instalación productiva con scheduler, TLS, socketio, backups y recuperación probados. Para diagnóstico se pueden consultar logs privados con journalctl; no publicarlos sin revisar datos y secretos.
+Los ensayos repetidos alcanzaron el límite de 550 tareas pendientes sin worker. Se añadió el servicio y se dejó procesar el backlog, sin purgar jobs ni elevar el límite. El incremento de recuperación incorpora copia privada y restauración aislada verificadas; sigue siendo una instalación local en loopback. No se habilitan servidor público, TLS ni acceso multi-equipo mediante estos servicios. Para diagnóstico se pueden consultar logs privados con journalctl; no publicarlos sin revisar datos y secretos.
 
 Al compilar solo la versión web de X POS, se usó `CYPRESS_INSTALL_BINARY=0 ELECTRON_SKIP_BINARY_DOWNLOAD=1 bench build --production`. Así se evita descargar ejecutables de escritorio/pruebas que no participan en ese build. Las dependencias JS sí se instalan; los ensayos Electron no se dan por realizados.
+
+## Copias programadas y arranque
+
+Instalar `examples/systemd/openmultipos-backup.service` y `.timer` en `~/.config/systemd/user/`, ejecutar `systemctl --user daemon-reload` y `systemctl --user enable --now openmultipos-backup.timer`. Un administrador del sistema puede habilitar linger para el usuario Linux mediante `loginctl enable-linger NOMBRE_DE_USUARIO`, para que las unidades de usuario arranquen con WSL. El temporizador usa 03:15 America/Bogota, persistencia y retraso aleatorio de hasta cinco minutos.
+
+En la máquina actual se instalaron temporizador y servicio; se habilitó linger. Windows inicia la distribución cuando ejecutas `scripts/start-openmultipos.cmd`; no se instaló una tarea oculta de inicio de Windows. La distribución detenida no ejecuta copias. [Procedimiento y límites](recovery.md).

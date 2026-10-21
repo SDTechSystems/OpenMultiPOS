@@ -48,6 +48,30 @@ async function go(page, id) {
     const page = await context.newPage();
     if (!input.probe) {
       await page.route(
+        "**/api/method/open_multi_pos.workspace.recovery_status*",
+        async (route) => {
+          const response = await route.fetch();
+          assert.equal(response.status(), 200, "Administrator recovery status");
+          const body = await response.json();
+          assert.deepEqual(Object.keys(body.message).sort(), [
+            "backup_at",
+            "backup_recent",
+            "restore_at",
+          ]);
+          // Public manual images use invented operation dates, never local logs.
+          await route.fulfill({
+            response,
+            json: {
+              message: {
+                backup_at: "2026-01-15T08:15:00+00:00",
+                backup_recent: true,
+                restore_at: "2026-01-14T16:00:00+00:00",
+              },
+            },
+          });
+        },
+      );
+      await page.route(
         "**/api/method/open_multi_pos.workspace.team*",
         async (route) => {
           const response = await route.fetch();

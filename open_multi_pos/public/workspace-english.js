@@ -1,6 +1,18 @@
 "use strict";
 // Spanish is the source language. Native ERPNext forms use the user's chosen language.
 window.OMPWorkspaceEnglish = {
+  "Respaldo y recuperación": "Backup and recovery",
+  "Consultando el respaldo…": "Checking backup…",
+  "Cómo proteger los datos": "How to protect your data",
+  "Último respaldo verificado:": "Last verified backup:",
+  "Respaldo pendiente de actualizar:": "Backup needs updating:",
+  "No hay un respaldo verificado registrado. Consulta el manual de recuperación.":
+    "No verified backup has been recorded. See the recovery manual.",
+  "Último ensayo de restauración correcto:": "Last successful restore drill:",
+  "Todavía no hay un ensayo de restauración registrado.":
+    "No restore drill has been recorded yet.",
+  "El respaldo diario se ejecuta cuando este computador y WSL están encendidos. Durante la copia, el programa se pausa unos instantes. Consulta el manual para verificar la copia, restaurarla en un sitio aislado y guardar otra copia fuera del computador.":
+    "Daily backups run while this computer and WSL are on. The program pauses briefly during backup. See the manual to verify the backup, restore it to an isolated site, and keep another copy outside this computer.",
   Administración: "Administration",
   Inicio: "Home",
   Ventas: "Sales",

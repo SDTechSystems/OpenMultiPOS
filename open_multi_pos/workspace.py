@@ -86,6 +86,14 @@ def brand_context(brand):
 
 
 @frappe.whitelist(methods=["GET"])
+def recovery_status():
+    require_admin()
+    from open_multi_pos.operations import recovery_status as local_status
+
+    return local_status()
+
+
+@frappe.whitelist(methods=["GET"])
 def boot():
     require_admin()
     brands = []

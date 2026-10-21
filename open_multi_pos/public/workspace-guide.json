@@ -315,7 +315,12 @@
       {
         "title": "Conserva el ajuste de impresión",
         "body": "En el diálogo del navegador selecciona la cola instalada, Márgenes Mínimo y desactiva Encabezados y pies de página. Usa papel adaptable si el controlador lo ofrece. El documento ajusta su altura al contenido; el controlador puede conservar su longitud fija.",
-        "target": ".print-preset"
+        "target": "#printer-preset"
+      },
+      {
+        "title": "Consulta el respaldo",
+        "body": "En Respaldo y recuperación revisa la fecha de la última copia verificada y del último ensayo de restauración. Si falta una copia reciente, consulta el manual de recuperación. El computador y WSL deben estar encendidos para ejecutar el respaldo diario.",
+        "target": "#recovery-title"
       }
     ],
     "notes": [

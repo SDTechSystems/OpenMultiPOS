@@ -4,7 +4,7 @@ Espacio administrativo autohospedado sobre **ERPNext + Frappe + X POS**, orienta
 
 **La administración se abre en `/omp`**, con una cuenta administrativa. Menú lateral, selector de negocio, perfiles privados, productos con SKU automático y entradas de inventario, cesta de ambos negocios, datos de recibo configurables, manual con capturas y guías por sección. Español latinoamericano, COP y America/Bogota por defecto; configuración editable. El backend funciona en WSL y el navegador/equipos en Windows.
 
-Las operaciones usan documentos, stock y contabilidad nativos; una cesta conjunta crea una factura por negocio y un recibo interno. Solo se personalizan la impresora y el lector existentes. La impresión ya fue confirmada por el propietario; se conserva el preset. DIAN y operación sin conexión siguen desactivadas. Revisar recuperación operativa y APIs upstream restantes antes de cargar datos reales.
+Las operaciones usan documentos, stock y contabilidad nativos; una cesta conjunta crea una factura por negocio y un recibo interno. Solo se personalizan la impresora y el lector existentes. La impresión ya fue confirmada por el propietario; se conserva el preset. DIAN y operación sin conexión siguen desactivadas. La recuperación local incluye respaldo diario, ensayo aislado y conciliación; las APIs anteriores de X POS quedan cerradas salvo tres adaptadores autorizados. Revisa configuración privada y resultados antes de cargar datos reales.
 
 - [Manual visual de administración](docs/manual.md)
 - [Configuración y contratos del espacio de trabajo](docs/workspace.md)
@@ -13,6 +13,7 @@ Las operaciones usan documentos, stock y contabilidad nativos; una cesta conjunt
 - [Impresora y lector existentes](docs/hardware-jaltech.md)
 - [Caja de cajero: uso y recuperación](docs/cashier-ui.md)
 - [Servicios locales y Windows/WSL](docs/local-services.md)
+- [Respaldo, reinicio y restauración](docs/recovery.md) · [Política de APIs anteriores](docs/upstream-api-review.md)
 - [Ramas, PRs y privacidad](docs/github-workflow.md)
 
 ## Probar ahora: demo local

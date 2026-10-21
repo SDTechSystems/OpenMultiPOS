@@ -138,6 +138,8 @@ Configura la presentación y los equipos de esta instalación.
 4. **Elige datos del recibo.** Activa razón social, NIT, teléfono, correo, dirección, mensaje final o QR de forma independiente para el negocio activo. Guarda las opciones y cambia de negocio para configurar el otro.
 5. **Conserva el ajuste de impresión.** En el diálogo del navegador selecciona la cola instalada, Márgenes Mínimo y desactiva Encabezados y pies de página. Usa papel adaptable si el controlador lo ofrece. El documento ajusta su altura al contenido; el controlador puede conservar su longitud fija.
 
+6. **Consulta el respaldo.** En Respaldo y recuperación revisa la última copia verificada y el último ensayo de restauración. Si falta una copia reciente, consulta el [procedimiento de recuperación](recovery.md). El computador y WSL deben estar encendidos para ejecutar el respaldo diario.
+
 - La instalación se centra en la impresora Windows y el lector existentes. No requiere probar otros modelos.
 - El navegador no permite al sitio imponer silenciosamente márgenes, cola, encabezados o tamaño del controlador. Esas opciones se conservan en el navegador/controlador.
 - Oculta QR y datos de contacto que no necesites para reducir papel; las opciones son independientes por negocio.
@@ -158,6 +160,8 @@ Consulta el manual mientras trabajas o repite una guía.
 ![Captura ficticia: Ayuda](../open_multi_pos/public/manual/screenshots/help.png)
 
 ## Si algo no responde
+
+Después de encender Windows, usa `scripts/start-openmultipos.cmd` para iniciar el programa. El [manual de respaldo y recuperación](recovery.md) explica cómo crear/verificar copias, ensayar su restauración y actuar si falla el disco o el sitio.
 
 - **Venta pendiente:** conserva la sesión y el almacenamiento. Consultar estado recupera el resultado; Reintentar conserva la misma clave. Resolver sin crear venta recupera lo guardado o bloquea el intento. No vuelvas a cobrar por una respuesta perdida.
 - **Entrada pendiente:** revisa la misma entrada o resuélvela antes de crear otra. No combines recepción directa y compra con stock para la misma mercancía.

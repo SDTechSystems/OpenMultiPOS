@@ -2,6 +2,7 @@
 
 import argparse
 import ast
+import json
 import os
 import secrets
 import sys
@@ -23,6 +24,78 @@ MANAGER = "omp-http-manager@example.invalid"
 
 
 class XPOSHTTPTests(unittest.TestCase):
+    def test_remaining_upstream_http_surface_is_closed(self):
+        from open_multi_pos.upstream_gate import REVIEWED
+        from open_multi_pos.upstream_inventory import inventory
+
+        entries = inventory(OPTIONS.bench / "apps" / "xpos")
+        self.assertEqual(len(entries), 227, "Cambió upstream; revisar el inventario y la política.")
+        denied = sorted({entry["method"] for entry in entries} - REVIEWED)
+        for method in denied:
+            for version in ("v1", "v2"):
+                with self.subTest(method=method, version=version):
+                    response = self.call(method, version=version, user=self.a["user"])
+                    self.assertEqual(response.status_code, 403, response.text[-250:])
+        # Scope is independent of role, authentication, verb, cmd and future methods.
+        for user in (None, self.a["user"], MANAGER):
+            for method in ("xpos.api.sync.get_child_table_data", "xpos.future.unreviewed"):
+                for version in ("v1", "v2"):
+                    self.assertEqual(self.call(method, version=version, user=user).status_code, 403)
+        session = requests.Session()
+        session.headers.update({"Host": OPTIONS.site, "Authorization": self.tokens[MANAGER]})
+        for path, payload in (
+            ("/", {"cmd": "xpos.api.shifts.get_opening_data"}),
+            ("/api/method/frappe.client.get_list", {"cmd": "xpos.api.customers.get_customers"}),
+            (
+                "/api/v2/method/run_doc_method",
+                {
+                    "method": "get_payment_reconciliation_details",
+                    "document": {"doctype": "POS Closing Shift"},
+                },
+            ),
+            (
+                "/api/method/run_doc_method",
+                {"dt": "POS Closing Shift", "method": "get_payment_reconciliation_details"},
+            ),
+            (
+                "/api/method/frappe.handler.run_doc_method",
+                {
+                    "docs": json.dumps({"doctype": "POS Closing Shift"}),
+                    "method": "get_payment_reconciliation_details",
+                },
+            ),
+            ("/api/v2/method/POS Closing Shift/get_payment_reconciliation_details", {}),
+            (
+                "/api/v2/document/POS Closing Shift/OMP-NOT-A-DOCUMENT/method/get_payment_reconciliation_details",
+                {},
+            ),
+            (
+                "/api/resource/POS Closing Shift/OMP-NOT-A-DOCUMENT",
+                {"run_method": "get_payment_reconciliation_details"},
+            ),
+        ):
+            self.assertEqual(
+                session.post(OPTIONS.base_url + path, json=payload, timeout=30).status_code, 403
+            )
+        for path in ("/xpos", "/xpos.html", "/xpos/sw.js", "/xpos/manifest.webmanifest"):
+            self.assertEqual(session.get(OPTIONS.base_url + path, timeout=30).status_code, 403)
+        from xpos.startup.boot import extend_bootinfo
+
+        from open_multi_pos.upstream_gate import filter_boot
+
+        previous_user = frappe.session.user
+        try:
+            frappe.set_user(self.a["user"])
+            boot = frappe._dict()
+            extend_bootinfo(boot)
+            self.assertIn("pos_settings", boot)
+            filter_boot(boot)
+            self.assertNotIn("pos_settings", boot)
+            self.assertNotIn("accounts_setting", boot)
+            self.assertFalse(any(key.startswith("xpos_") for key in boot))
+        finally:
+            frappe.set_user(previous_user)
+
     @classmethod
     def setUpClass(cls):
         os.chdir(OPTIONS.bench / "sites")
@@ -137,6 +210,12 @@ class XPOSHTTPTests(unittest.TestCase):
                 "Sales Invoice", {"pos_notes": "OMP HTTP security fixture " + profile.name}
             )
             fixture["invoice"] = existing or cls.invoice(profile).name
+            existing_pos = frappe.db.get_value(
+                "POS Invoice", {"pos_notes": "OMP HTTP security fixture " + profile.name}
+            )
+            if existing_pos:
+                fixture["pos_invoice"] = existing_pos
+                continue  # Reusing a fixture must not change a site's live invoice mode.
             mode = frappe.get_single("POS Settings")
             original_mode = mode.invoice_type
             mode.invoice_type = "POS Invoice"

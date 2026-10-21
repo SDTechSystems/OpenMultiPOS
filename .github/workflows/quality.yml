@@ -102,6 +102,21 @@ jobs:
           OMP_BROWSER_CHANNEL=chromium env/bin/python "$GITHUB_WORKSPACE/scripts/test-native-cashier.py" --bench "$RUNNER_TEMP/omp-bench"
           env/bin/python "$GITHUB_WORKSPACE/scripts/test-workspace-http.py" --bench "$RUNNER_TEMP/omp-bench"
           OMP_BROWSER_CHANNEL=chromium env/bin/python "$GITHUB_WORKSPACE/scripts/test-workspace-browser.py" --bench "$RUNNER_TEMP/omp-bench"
+      - name: Recover operations and restore a private isolated copy
+        env:
+          OMP_DB_PASSWORD: ci-only-database
+        working-directory: ${{ runner.temp }}/omp-bench
+        run: |
+          env/bin/python "$GITHUB_WORKSPACE/scripts/test-recovery-http.py" --bench "$RUNNER_TEMP/omp-bench"
+          env/bin/python - <<'PY'
+          import json, os
+          from pathlib import Path
+          path = Path(os.environ['RUNNER_TEMP']) / 'omp-drill-admin.json'
+          path.write_text(json.dumps({'username': 'root', 'password': os.environ['OMP_DB_PASSWORD'], 'host': '127.0.0.1', 'port': 3306}))
+          path.chmod(0o600)
+          PY
+          env/bin/python "$GITHUB_WORKSPACE/scripts/test-restore-drill.py" --bench "$RUNNER_TEMP/omp-bench" --db-admin-file "$RUNNER_TEMP/omp-drill-admin.json"
+          rm "$RUNNER_TEMP/omp-drill-admin.json"
       - uses: actions/upload-artifact@v4
         if: always()
         with:

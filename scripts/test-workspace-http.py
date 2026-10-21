@@ -236,6 +236,11 @@ class WorkspaceHTTP(unittest.TestCase):
 
     def test_01_admin_access_and_guest_rejection(self):
         self.assertEqual(self.request("workspace.boot", guest=True).status_code, 403)
+        self.assertEqual(self.request("workspace.recovery_status", guest=True).status_code, 403)
+        self.assertEqual(
+            set(self.result("workspace.recovery_status")),
+            {"backup_at", "restore_at", "backup_recent"},
+        )
         self.assertEqual(
             self.request("workspace.create_user", {"data": {}}, post=True, guest=True).status_code,
             403,

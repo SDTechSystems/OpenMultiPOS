@@ -34,7 +34,10 @@ has_permission = {
 override_whitelisted_methods = _METHOD_OVERRIDES
 
 # Runs after cookie/API authentication and before website rendering.
-auth_hooks = ["open_multi_pos.xpos_security.authorize_print_page"]
+auth_hooks = [
+    "open_multi_pos.upstream_gate.authorize_request",
+    "open_multi_pos.xpos_security.authorize_print_page",
+]
 
 doc_events = {
     doctype: {
@@ -51,4 +54,7 @@ extend_doctype_class = {
     "Sales Invoice": ["open_multi_pos.opening.WorkspaceInvoiceMixin"],
 }
 
-extend_bootinfo = ["open_multi_pos.localization.extend_boot"]
+extend_bootinfo = [
+    "open_multi_pos.localization.extend_boot",
+    "open_multi_pos.upstream_gate.filter_boot",
+]
