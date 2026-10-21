@@ -15,7 +15,7 @@ La identidad, los contactos, los NIT, los productos y las cuentas reales se conf
 | P0 | Compras, proveedores, clientes, pedidos y finanzas | [F26 · #14](https://github.com/JSX2011/OpenMultiPOS/issues/14). Formularios e informes nativos accesibles en el menú; empresa, permisos y documentos conservados. |
 | P0 | Manual, capturas, guías y ayuda por opción | [F27 · #15](https://github.com/JSX2011/OpenMultiPOS/issues/15). Diez secciones documentadas, tutoriales opcionales y capturas exclusivamente ficticias. |
 | P0 | SKU automático por negocio y datos del producto | [F28 · #16](https://github.com/JSX2011/OpenMultiPOS/issues/16). Prefijo editable, nombre normalizado y consecutivo; no modifica códigos existentes y recupera el alta con la misma clave. |
-| P0 implementado | Recuperación operativa y cierre de APIs anteriores | [#7](https://github.com/JSX2011/OpenMultiPOS/issues/7). Reinicio real de servicios, sesiones/intentos; copia privada diaria y restauración aislada de 18 tablas/archivos/secretos con conciliación; gate HTTP de X POS. Pendiente de revisión y merge, sin reemplazar el sitio operativo. |
+| P0 implementado | Recuperación operativa y cierre de APIs anteriores | [#7](https://github.com/JSX2011/OpenMultiPOS/issues/7). Reinicio real de servicios, sesiones/intentos; copia privada diaria y restauración aislada de 18 tablas/archivos/secretos con conciliación; gate HTTP de X POS. Fusionado en `main` mediante #17, sin reemplazar el sitio operativo. |
 | P1 | Devoluciones, importaciones, garantías y costos | [#19](https://github.com/JSX2011/OpenMultiPOS/issues/19), [#20](https://github.com/JSX2011/OpenMultiPOS/issues/20), [#21](https://github.com/JSX2011/OpenMultiPOS/issues/21), [#22](https://github.com/JSX2011/OpenMultiPOS/issues/22). Incrementos posteriores separados de #7. |
 | P1 | Vista previa del recibo en Impresión de ERPNext | [#18](https://github.com/JSX2011/OpenMultiPOS/issues/18). Selección autorizada, instantánea histórica, vista compacta sin cobrar ni marcar como impreso. |
 | P1 | Ferias y operación sin conexión | [#6](https://github.com/JSX2011/OpenMultiPOS/issues/6). Fuera del checkout actual: reserva, cola, conflictos y conciliación requieren su propia implementación y pruebas. |
@@ -23,7 +23,7 @@ La identidad, los contactos, los NIT, los productos y las cuentas reales se conf
 
 ## Entrega actual
 
-La rama `codex/business-workspace` parte de `main` e incorpora la base validada de caja. Añade el espacio administrativo y los requisitos F20-F28. [El informe de auditoría](audit-report.md) registra pruebas y límites; [el manual](manual.md) explica la operación. El acceso de cajero existente `/omp_pos` sigue disponible.
+El espacio administrativo y los requisitos F20-F28 están integrados en `main` mediante #17. La rama `codex/receipt-preview` continúa con #18: vista previa desde Configuración de impresión nativa y Ajustes, muestra sin venta e instantáneas históricas autorizadas. [El informe de auditoría](audit-report.md) registra pruebas y límites; [el manual](manual.md) explica la operación. El acceso de cajero existente `/omp_pos` sigue disponible.
 
 Los administradores pueden mantener una apertura personal por negocio. La extensión conserva las comprobaciones nativas de perfil, empresa y cuentas; el cierre consulta facturas por usuario y perfil. Una cesta conjunta solo admite la misma moneda y mantiene una factura por negocio, incluso cuando comparten entidad legal.
 

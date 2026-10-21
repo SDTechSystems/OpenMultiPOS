@@ -591,6 +591,22 @@ class WorkspaceHTTP(unittest.TestCase):
         self.assertEqual(
             self.request("batch.get_status", {"request_id": data["request_id"]}).status_code, 409
         )
+        self.assertEqual(
+            self.request(
+                "receipt_preview.preview",
+                {"brand": self.businesses[0]["brand"], "kind": "invoice", "document": invoice.name},
+            ).status_code,
+            403,
+        )
+        self.assertNotIn(
+            invoice.name,
+            [
+                row["document"]
+                for row in self.result(
+                    "receipt_preview.documents", {"brand": self.businesses[0]["brand"]}
+                )
+            ],
+        )
 
     def test_13_second_administrator_personal_opening_and_closing_scope(self):
         email = "omp-second-" + uuid4().hex[:8] + "@example.invalid"
@@ -804,6 +820,109 @@ class WorkspaceHTTP(unittest.TestCase):
             ),
             1,
         )
+
+    def test_16_receipt_preview_sample_and_saved_snapshot_are_read_only(self):
+        brand = self.businesses[0]
+        data = self.sale(brand, self.product(brand))
+        sale = self.result("checkout.checkout", {"data": data}, post=True)
+        args = {"brand": brand["brand"], "kind": "invoice", "document": sale["invoice"]}
+        original = self.result("receipt_preview.preview", args)["html"]
+        before = self.counts()
+        journal_counts = {
+            dt: frappe.db.count(dt) for dt in ("OMP Checkout Request", "OMP Sale Batch")
+        }
+        old_name = frappe.db.get_value("OMP Business Brand", brand["brand"], "display_name")
+        frappe.db.set_value(
+            "OMP Business Brand", brand["brand"], "display_name", "Nombre ficticio cambiado"
+        )
+        frappe.db.commit()
+        try:
+            sample = self.result("receipt_preview.preview", {"brand": brand["brand"]})
+            self.assertTrue(sample["sample"])
+            self.assertIn("MUESTRA · NO ES UNA VENTA", sample["html"])
+            self.assertIn("Nombre ficticio cambiado", sample["html"])
+            self.assertEqual(self.result("receipt_preview.preview", args)["html"], original)
+            self.assertEqual(self.counts(), before)
+            for dt, count in journal_counts.items():
+                self.assertEqual(frappe.db.count(dt), count)
+            listing = self.result("receipt_preview.documents", {"brand": brand["brand"]})
+            self.assertIn(sale["invoice"], [row["document"] for row in listing])
+        finally:
+            frappe.db.set_value("OMP Business Brand", brand["brand"], "display_name", old_name)
+            frappe.db.commit()
+
+    def test_17_receipt_preview_mixed_requires_every_business(self):
+        data = self.batch()
+        sale = self.result("batch.checkout", {"data": data}, post=True)
+        frappe.db.rollback()
+        batch_name = frappe.db.get_value(
+            "OMP Sale Batch", {"request_id": data["request_id"]}, "name"
+        )
+        args = {"brand": self.businesses[0]["brand"], "kind": "batch", "document": batch_name}
+        html = self.result("receipt_preview.preview", args)["html"]
+        for part in sale["receipt"]["sales"]:
+            self.assertIn(part["id"], html)
+        self.assertEqual(
+            self.request(
+                "receipt_preview.preview", {**args, "brand": self.businesses[2]["brand"]}
+            ).status_code,
+            403,
+        )
+        other = self.businesses[1]["brand"]
+        frappe.db.set_value("OMP Business Brand", other, "enabled", 0)
+        frappe.db.commit()
+        try:
+            self.assertEqual(self.request("receipt_preview.preview", args).status_code, 403)
+            self.assertNotIn(
+                batch_name,
+                [
+                    r["document"]
+                    for r in self.result("receipt_preview.documents", {"brand": args["brand"]})
+                ],
+            )
+        finally:
+            frappe.db.set_value("OMP Business Brand", other, "enabled", 1)
+            frappe.db.commit()
+
+    def test_18_receipt_preview_rejects_cross_business_and_missing_snapshot(self):
+        brand = self.businesses[0]
+        data = self.sale(brand, self.product(brand))
+        sale = self.result("checkout.checkout", {"data": data}, post=True)
+        args = {
+            "brand": self.businesses[1]["brand"],
+            "kind": "invoice",
+            "document": sale["invoice"],
+        }
+        self.assertEqual(self.request("receipt_preview.preview", args).status_code, 403)
+        args["brand"] = brand["brand"]
+        args["document"] = "NONEXISTENT-FICTIONAL-INVOICE"
+        self.assertEqual(self.request("receipt_preview.preview", args).status_code, 403)
+        self.assertEqual(
+            self.request(
+                "receipt_preview.preview", {"brand": brand["brand"]}, post=True
+            ).status_code,
+            403,
+        )
+
+    def test_19_receipt_preview_admin_only(self):
+        args = {"brand": self.businesses[0]["brand"]}
+        for method in ("receipt_preview.preview", "receipt_preview.documents"):
+            self.assertIn(self.request(method, args, guest=True).status_code, (401, 403))
+        user = frappe.get_doc("User", self.user)
+        roles = [r.role for r in user.roles]
+        user.set("roles", [{"role": "OMP Cashier"}])
+        user.save()
+        frappe.db.commit()
+        frappe.clear_cache(user=self.user)
+        try:
+            for method in ("receipt_preview.preview", "receipt_preview.documents"):
+                self.assertEqual(self.request(method, args).status_code, 403)
+        finally:
+            user = frappe.get_doc("User", self.user)
+            user.set("roles", [{"role": role} for role in roles])
+            user.save()
+            frappe.db.commit()
+            frappe.clear_cache(user=self.user)
 
 
 if __name__ == "__main__":

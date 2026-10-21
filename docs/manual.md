@@ -146,6 +146,16 @@ Configura la presentación y los equipos de esta instalación.
 
 ![Captura ficticia: Ajustes](../open_multi_pos/public/manual/screenshots/settings.png)
 
+### Vista previa en Impresión de ERPNext
+
+1. En **Configuración de impresión** de ERPNext, pulsa **Vista previa del recibo**. También puedes abrirla desde **Administración > Ajustes > Recibo del negocio activo**. Se requiere una cuenta administrativa.
+2. Selecciona el negocio. **Muestra con las opciones guardadas** usa sus datos actuales con un producto y un importe de ejemplo. Guarda los cambios del perfil antes de abrirla.
+3. Para revisar una venta, selecciona **Recibo de una venta guardada** y elige una factura o un recibo conjunto reciente. La lista consulta hasta 30 facturas del negocio y 30 cestas recientes del sitio. Para una factura anterior, escribe su número completo; ese campo tiene prioridad sobre la lista.
+4. Pulsa **Ver recibo**. La venta guardada usa su instantánea original; cambiar contactos o visibilidad después no reescribe el historial. Un recibo conjunto exige permiso para todas sus facturas y negocios. Las facturas deben estar enviadas y conservar su contexto original; una factura anulada no se ofrece.
+5. Si necesitas una copia, pulsa **Imprimir este recibo**. Se vuelve a comprobar el acceso antes de abrir el diálogo del navegador. Conserva el preset de la impresora instalada. Abrir la vista previa no crea ventas, mueve existencias ni marca documentos como impresos.
+
+![Captura ficticia: vista previa del recibo](../open_multi_pos/public/manual/screenshots/receipt-preview.png)
+
 ## Ayuda
 
 Consulta el manual mientras trabajas o repite una guía.

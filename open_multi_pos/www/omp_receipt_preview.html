@@ -1,0 +1,82 @@
+<!doctype html>
+<html lang="es-CO">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width,initial-scale=1" />
+    <title>Vista previa del recibo</title>
+    <link rel="stylesheet" href="/assets/open_multi_pos/workspace.css" />
+    <link rel="stylesheet" href="/assets/open_multi_pos/receipt-preview.css" />
+    <script src="/assets/open_multi_pos/receipt-preview.js" defer></script>
+  </head>
+  <body>
+    <a class="skip" href="#main">Ir al contenido</a>
+    <main id="main" class="preview-shell">
+      <a href="/omp#settings">Volver a Ajustes</a>
+      <h1>Vista previa del recibo</h1>
+      <p>
+        Revisa el contenido antes de imprimir. Abrir una vista previa no crea
+        ventas ni las marca como impresas.
+      </p>
+      <div class="preview-layout">
+        <form id="preview-form" class="form-sheet">
+          <label for="preview-brand">Negocio</label>
+          <select id="preview-brand" required></select>
+          <label for="preview-source">Contenido</label>
+          <select id="preview-source">
+            <option value="sample">Muestra con las opciones guardadas</option>
+            <option value="saved">Recibo de una venta guardada</option>
+          </select>
+          <div id="saved-options" hidden>
+            <label for="preview-document">Ventas recientes</label>
+            <select id="preview-document"></select>
+            <label for="invoice-name">Factura anterior (opcional)</label>
+            <input
+              id="invoice-name"
+              autocomplete="off"
+              aria-describedby="invoice-help"
+            />
+            <p id="invoice-help">
+              Para una factura anterior, escribe su número completo. Déjalo
+              vacío para usar la selección de ventas recientes.
+            </p>
+          </div>
+          <p id="preview-help">
+            La muestra usa los datos y opciones guardados del negocio
+            seleccionado, con un producto y un importe de ejemplo. No es una
+            venta.
+          </p>
+          <button id="show-preview" type="submit">Ver recibo</button>
+          <button id="print-preview" class="secondary" type="button" disabled>
+            Imprimir este recibo
+          </button>
+          <details>
+            <summary>Ayuda de impresión</summary>
+            <p>
+              Página de 48 mm, contenido de 44 mm y altura ajustada. Elige la
+              impresora instalada, Márgenes Mínimo y desactiva Encabezados y
+              pies de página. Usa el tamaño adaptable del controlador si está
+              disponible.
+            </p>
+            <p>
+              Las facturas guardadas conservan los datos originales del recibo,
+              aunque después cambies el perfil del negocio. Un recibo conjunto
+              requiere permiso para todas sus facturas.
+            </p>
+          </details>
+        </form>
+        <section aria-labelledby="preview-title" class="preview-paper">
+          <h2 id="preview-title">Recibo</h2>
+          <p id="preview-status" role="status" aria-live="polite">
+            Selecciona un negocio y pulsa Ver recibo.
+          </p>
+          <iframe
+            id="preview-frame"
+            title="Contenido del recibo"
+            sandbox="allow-scripts allow-same-origin allow-modals"
+            hidden
+          ></iframe>
+        </section>
+      </div>
+    </main>
+  </body>
+</html>

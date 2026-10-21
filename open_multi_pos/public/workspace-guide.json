@@ -313,6 +313,11 @@
         "target": "#receipt-settings-form"
       },
       {
+        "title": "Revisa antes de imprimir",
+        "body": "Guarda las opciones y pulsa Vista previa del recibo. También está disponible en Configuración de impresión de ERPNext. Elige una muestra o una venta guardada; los recibos conjuntos requieren acceso a ambos negocios. Ver recibo no crea ventas ni marca documentos como impresos. Imprimir este recibo abre el diálogo solo cuando lo solicitas.",
+        "target": "#open-receipt-preview"
+      },
+      {
         "title": "Conserva el ajuste de impresión",
         "body": "En el diálogo del navegador selecciona la cola instalada, Márgenes Mínimo y desactiva Encabezados y pies de página. Usa papel adaptable si el controlador lo ofrece. El documento ajusta su altura al contenido; el controlador puede conservar su longitud fija.",
         "target": "#printer-preset"
