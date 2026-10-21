@@ -1,0 +1,362 @@
+[
+  {
+    "id": "home",
+    "title": "Inicio",
+    "intro": "Revisa el negocio activo y entra a la tarea que necesitas.",
+    "steps": [
+      {
+        "title": "Crea tu acceso",
+        "body": "En la primera instalación, entra con la cuenta de instalación y usa Crear mi perfil de administrador. Escribe tu correo y una contraseña. Después, inicia sesión con tu cuenta personal. Solo un administrador puede crear otros perfiles.",
+        "target": "#setup"
+      },
+      {
+        "title": "Configura los negocios",
+        "body": "En Negocios, crea cada negocio. Puedes elegir la misma entidad legal si comparten NIT y contabilidad, o crear entidades distintas. Esta decisión se configura durante el alta.",
+        "target": "#navigation"
+      },
+      {
+        "title": "Selecciona el contexto",
+        "body": "El selector cambia el inventario, las compras, las finanzas y los ajustes que estás consultando. En ventas, cada producto conserva su negocio aunque cambies el selector.",
+        "target": "#business-picker"
+      },
+      {
+        "title": "Consulta la operación",
+        "body": "Ventas de hoy cuenta las facturas enviadas del perfil activo. Importe vendido suma esas facturas. Ventas recientes permite revisar sus documentos, fechas y clientes. No representa utilidad ni saldo bancario.",
+        "target": "#home-content"
+      },
+      {
+        "title": "Encuentra herramientas",
+        "body": "Usa el menú izquierdo o presiona Ctrl K y escribe el nombre de una sección. Mi perfil abre tu cuenta para actualizar datos o contraseña.",
+        "target": "#tool-search"
+      }
+    ],
+    "notes": [
+      "El sitio requiere conexión con el servidor. Una respuesta perdida se resuelve consultando el mismo intento.",
+      "Todos los datos de las capturas del manual son ficticios."
+    ]
+  },
+  {
+    "id": "sales",
+    "title": "Ventas",
+    "intro": "Vende productos de uno o ambos negocios y conserva una factura nativa por negocio.",
+    "steps": [
+      {
+        "title": "Abre las cajas",
+        "body": "Usa Abrir caja para cada negocio que participará. Registra el saldo inicial de efectivo y transferencia; cero es válido. No se puede vender con la caja cerrada.",
+        "target": "#shift-strip"
+      },
+      {
+        "title": "Escanea o busca",
+        "body": "Deja el cursor en Escanea o busca un producto. El lector busca códigos en los negocios habilitados. Una coincidencia exacta se agrega; si hay varias, selecciona la correspondiente. También puedes escribir un nombre y usar Buscar.",
+        "target": "#scan-form"
+      },
+      {
+        "title": "Comprueba cada línea",
+        "body": "La cesta muestra nombre, código, cantidad y negocio propietario. Cambia la cantidad o retira una línea antes de calcular. El código interno debe distinguir productos independientes, incluso si comparten código de barras.",
+        "target": "#basket"
+      },
+      {
+        "title": "Calcula y registra los pagos",
+        "body": "Calcular total consulta precios, impuestos y existencias nativos. Registra el dinero recibido en cada negocio y medio. El efectivo puede generar cambio. Una transferencia requiere tu confirmación en el banco; el programa no la verifica.",
+        "target": "#calculate"
+      },
+      {
+        "title": "Guarda una sola vez",
+        "body": "Guardar venta conserva una clave antes de enviar. Si se pierde la respuesta, usa Consultar estado o Reintentar el mismo intento. Resolver sin crear venta recupera lo guardado o bloquea el intento para impedir que una solicitud tardía venda. No devuelve pagos externos.",
+        "target": "#sale-recovery"
+      },
+      {
+        "title": "Imprime y cierra",
+        "body": "Imprimir recibo usa la venta guardada, sin volver a cobrar. Nueva venta limpia la cesta solo después de un resultado definitivo. Al terminar, Resumen y cierre permite contar cada medio y conservar diferencias.",
+        "target": "#print-receipt"
+      }
+    ],
+    "notes": [
+      "Una cesta conjunta exige la misma moneda. Los documentos, el inventario y las cuentas permanecen en la empresa de cada negocio.",
+      "El recibo es interno y no tiene validez fiscal. DIAN no está configurada.",
+      "Conserva la pestaña y sus datos locales mientras haya un intento pendiente. No borres el almacenamiento para repetir una operación."
+    ]
+  },
+  {
+    "id": "inventory",
+    "title": "Inventario",
+    "intro": "Crea productos con propietario y registra unidades en el almacén correcto.",
+    "steps": [
+      {
+        "title": "Confirma el negocio",
+        "body": "Verifica el selector y el almacén mostrado. Los productos nuevos quedan vinculados a este negocio.",
+        "target": "#business-picker"
+      },
+      {
+        "title": "Crea el producto",
+        "body": "Nuevo producto pide nombre, código de barras, precio y grupo. El SKU se genera al guardar con el prefijo del negocio, el nombre sin tildes y un consecutivo único. La vista previa muestra los componentes; el servidor asigna el número final. El producto comienza sin existencias.",
+        "target": "#add-product"
+      },
+      {
+        "title": "Recupera el alta si se interrumpe",
+        "body": "Si se pierde la respuesta al crear el producto, usa Revisar producto pendiente. El intento conserva el mismo SKU y no crea otro producto.",
+        "target": "#product-recovery"
+      },
+      {
+        "title": "Registra unidades",
+        "body": "Ingresar existencias crea y envía una Entrada de inventario nativa. Elige producto, unidades enteras y costo por unidad. El costo valora las existencias; no cambia su precio de venta.",
+        "target": "#add-stock"
+      },
+      {
+        "title": "Recupera una entrada",
+        "body": "Si la conexión se interrumpe, Revisar entrada pendiente usa la misma clave. Resolver sin registrar otra entrada recupera el documento si existe o bloquea una solicitud tardía. No crea dos entradas por un reintento.",
+        "target": "#stock-recovery"
+      },
+      {
+        "title": "Consulta existencias",
+        "body": "Busca por nombre y revisa código, código de barras, disponible y precio. Para mercancía con factura de proveedor, usa Compras para conservar el vínculo contable.",
+        "target": "#inventory-table"
+      }
+    ],
+    "notes": [
+      "Esta entrada directa no admite lotes ni números de serie; esos casos se gestionan con formularios nativos.",
+      "No registres la misma recepción mediante entrada directa y factura/recepción de compra con actualización de existencias.",
+      "En Negocios puedes editar Prefijo de SKU. Se propone a partir de las iniciales del nombre comercial. Cambiar el prefijo o el nombre del producto no modifica los códigos existentes. El código de barras del empaque y el SKU interno son campos distintos."
+    ]
+  },
+  {
+    "id": "purchases",
+    "title": "Compras",
+    "intro": "Registra proveedores y compras con documentos de ERPNext.",
+    "steps": [
+      {
+        "title": "Selecciona la empresa",
+        "body": "El selector aplica el contexto de la entidad legal del negocio activo. Revisa Empresa y Almacén dentro de cada documento antes de enviarlo.",
+        "target": "#business-picker"
+      },
+      {
+        "title": "Crea el proveedor",
+        "body": "Proveedores abre la lista nativa. Usa Nuevo, completa nombre y tipo, y guarda. Los datos permanecen en este sitio.",
+        "target": "#purchase-tools"
+      },
+      {
+        "title": "Registra la compra",
+        "body": "Facturas de compra registra factura, proveedor, fechas, productos, costos e impuestos. Guardar conserva un borrador; Enviar registra los efectos contables. Activa actualizar existencias solo si corresponde a esa recepción.",
+        "target": "#purchase-native"
+      },
+      {
+        "title": "Usa pedidos y recepciones",
+        "body": "Órdenes de compra conserva lo solicitado. Recepción de mercancía registra lo recibido y permite crear la factura relacionada. Usa Crear en el documento nativo para conservar los vínculos.",
+        "target": "#purchase-tools"
+      },
+      {
+        "title": "Revisa antes de enviar",
+        "body": "Comprueba totales, moneda, impuestos, empresa, almacén y documentos vinculados. Un documento enviado requiere el procedimiento nativo de cancelación y corrección.",
+        "target": "#purchase-native"
+      }
+    ],
+    "notes": [
+      "Los campos y acciones de estos formularios conservan la ayuda y los permisos de ERPNext.",
+      "El menú muestra la entidad activa, pero cada documento conserva su empresa; cambiar el selector no traslada documentos."
+    ]
+  },
+  {
+    "id": "finances",
+    "title": "Finanzas",
+    "intro": "Consulta cuentas y registra movimientos en la entidad seleccionada.",
+    "steps": [
+      {
+        "title": "Comprueba la entidad",
+        "body": "Revisa el negocio activo y el nombre de la entidad que aparece sobre el formulario. Dos negocios con la misma entidad comparten su contabilidad; las ventas siguen identificadas por perfil.",
+        "target": "#business-picker"
+      },
+      {
+        "title": "Registra cobros y pagos",
+        "body": "Cobros y pagos abre Comprobante de pago. Elige Recibir o Pagar, tercero, cuenta, importe y facturas a conciliar. Guarda y envía cuando los datos coincidan con el movimiento real.",
+        "target": "#finance-tools"
+      },
+      {
+        "title": "Registra gastos",
+        "body": "Gastos y facturas abre Factura de compra. Para un gasto sin inventario, usa el producto/servicio y la cuenta de gasto correspondientes. No lo registres de nuevo si ya existe la factura.",
+        "target": "#finance-tools"
+      },
+      {
+        "title": "Consulta saldos",
+        "body": "Libro mayor muestra movimientos por cuenta y fechas. Cuentas por cobrar y Cuentas por pagar muestran obligaciones y vencimientos. Resultados compara ingresos y gastos. Ajusta los filtros del informe y actualiza.",
+        "target": "#finance-native"
+      },
+      {
+        "title": "Usa las herramientas contables",
+        "body": "Asientos contables registra ajustes mediante Comprobante de diario. Plan de cuentas permite revisar las cuentas nativas. Envía ajustes solo después de comprobar débitos, créditos y documentos relacionados.",
+        "target": "#finance-tools"
+      }
+    ],
+    "notes": [
+      "Los informes usan los asientos enviados, no los borradores. Importe vendido y saldo disponible son medidas distintas.",
+      "Cambiar la moneda predeterminada en Ajustes afecta nuevas entidades. No convierte saldos históricos ni cambia la moneda contable de una entidad con movimientos."
+    ]
+  },
+  {
+    "id": "customers",
+    "title": "Clientes y pedidos",
+    "intro": "Organiza clientes, pedidos y entregas con documentos relacionados.",
+    "steps": [
+      {
+        "title": "Gestiona clientes",
+        "body": "Clientes abre la lista nativa. Nuevo permite registrar nombre, tipo, grupo y contactos. Busca primero para evitar duplicados.",
+        "target": "#customer-tools"
+      },
+      {
+        "title": "Crea un pedido",
+        "body": "Pedidos de venta registra cliente, empresa, productos, cantidades y fecha de entrega. Guarda como borrador o envía cuando esté confirmado.",
+        "target": "#customer-native"
+      },
+      {
+        "title": "Registra entregas",
+        "body": "Desde un pedido enviado, usa Crear para generar la entrega relacionada. Revisa el almacén y las cantidades pendientes. También puedes abrir Entregas desde este menú.",
+        "target": "#customer-tools"
+      },
+      {
+        "title": "Conserva la relación",
+        "body": "Usa los botones Crear de los documentos nativos para relacionar pedido, entrega y factura. No vuelvas a facturar una venta que ya se guardó en caja.",
+        "target": "#customer-native"
+      }
+    ],
+    "notes": [
+      "La venta rápida de caja usa el cliente de mostrador del perfil. Los pedidos con seguimiento se gestionan aquí."
+    ]
+  },
+  {
+    "id": "businesses",
+    "title": "Negocios",
+    "intro": "Edita la identificación de cada negocio y su relación con una entidad legal.",
+    "steps": [
+      {
+        "title": "Agrega un negocio",
+        "body": "Agregar negocio pide nombre comercial. Selecciona una entidad existente si comparte NIT y contabilidad, o crea otra con nombre, abreviatura y moneda. Se crean almacén, lista de precios, cliente de mostrador, medios de pago y perfil de caja nativos.",
+        "target": "#new-business"
+      },
+      {
+        "title": "Edita el perfil",
+        "body": "Nombre comercial identifica el selector y el recibo. Razón social, NIT, teléfono, correo y dirección son textos del perfil. El mensaje final y el enlace HTTPS del QR son opcionales. Prefijo de SKU define las iniciales que llevarán los productos nuevos. Se proponen automáticamente y puedes cambiarlas; los códigos existentes permanecen iguales.",
+        "target": "#business-fields"
+      },
+      {
+        "title": "Guarda los datos",
+        "body": "Guardar perfil cambia los nuevos recibos. Los recibos guardados conservan la información y las opciones seleccionadas al vender.",
+        "target": "#business-form"
+      },
+      {
+        "title": "Configura la impresión",
+        "body": "En Ajustes, decide qué datos se imprimen para este negocio. El nombre comercial siempre identifica las líneas de su sección en una cesta mixta.",
+        "target": "#navigation"
+      },
+      {
+        "title": "Edita la entidad contable",
+        "body": "Editar entidad legal abre Empresa en ERPNext. Los datos contables se gestionan allí; cambiar el NIT escrito para el recibo no modifica automáticamente la empresa.",
+        "target": "#legal-entity"
+      }
+    ],
+    "notes": [
+      "No es necesario publicar nombres, NIT ni contactos en el repositorio para configurar el programa. Se guardan en la base de datos privada."
+    ]
+  },
+  {
+    "id": "team",
+    "title": "Equipo",
+    "intro": "Crea cuentas personales y asigna el nivel de acceso.",
+    "steps": [
+      {
+        "title": "Crea una cuenta",
+        "body": "Crear perfil solicita nombre, correo de acceso y contraseña inicial de 12 a 128 caracteres. No envía correos ni guarda la contraseña en el navegador.",
+        "target": "#add-user"
+      },
+      {
+        "title": "Selecciona el permiso",
+        "body": "Administrador puede gestionar configuración y otras cuentas. Cajero opera solo las terminales y negocios asignados. La autorización se comprueba también en el servidor.",
+        "target": "#team-table"
+      },
+      {
+        "title": "Asigna negocios",
+        "body": "En el formulario, marca los negocios que podrá usar. Se asignan permisos nativos y una terminal personal por negocio. No compartas una misma cuenta entre personas.",
+        "target": "#add-user"
+      },
+      {
+        "title": "Mantén tu perfil",
+        "body": "Mi perfil abre tu cuenta nativa para actualizar datos y contraseña. Una cuenta administrativa permite mantener las cuentas desde Usuario y sus permisos nativos.",
+        "target": "#profile"
+      }
+    ],
+    "notes": [
+      "El primer perfil humano se crea desde una sesión administrativa de instalación. No hay registro público de administradores.",
+      "Los permisos administrativos son amplios en las entidades del sitio; usa Cajero cuando no sea necesario gestionar la configuración."
+    ]
+  },
+  {
+    "id": "settings",
+    "title": "Ajustes",
+    "intro": "Configura la presentación y los equipos de esta instalación.",
+    "steps": [
+      {
+        "title": "Elige idioma y formato",
+        "body": "Idioma del programa cambia la interfaz. Formato regional controla la presentación de números. Los valores iniciales son español y Colombia.",
+        "target": "#settings-fields"
+      },
+      {
+        "title": "Define moneda y hora",
+        "body": "Moneda de nuevos negocios se propone al crear una entidad; no convierte documentos existentes. Zona horaria controla nuevas fechas operativas. El valor inicial es America/Bogota.",
+        "target": "#settings-form"
+      },
+      {
+        "title": "Configura el lector",
+        "body": "Lector con teclado US interpreta los códigos físicos solo en campos de escaneo. Terminador indica si el equipo termina con Enter o Tab. Conserva la opción que usa el lector instalado.",
+        "target": "#settings-fields"
+      },
+      {
+        "title": "Elige datos del recibo",
+        "body": "Activa razón social, NIT, teléfono, correo, dirección, mensaje final o QR de forma independiente para el negocio activo. Guarda las opciones y cambia de negocio para configurar el otro.",
+        "target": "#receipt-settings-form"
+      },
+      {
+        "title": "Conserva el ajuste de impresión",
+        "body": "En el diálogo del navegador selecciona la cola instalada, Márgenes Mínimo y desactiva Encabezados y pies de página. Usa papel adaptable si el controlador lo ofrece. El documento ajusta su altura al contenido; el controlador puede conservar su longitud fija.",
+        "target": "#printer-preset"
+      },
+      {
+        "title": "Consulta el respaldo",
+        "body": "En Respaldo y recuperación revisa la fecha de la última copia verificada y del último ensayo de restauración. Si falta una copia reciente, consulta el manual de recuperación. El computador y WSL deben estar encendidos para ejecutar el respaldo diario.",
+        "target": "#recovery-title"
+      }
+    ],
+    "notes": [
+      "La instalación se centra en la impresora Windows y el lector existentes. No requiere probar otros modelos.",
+      "El navegador no permite al sitio imponer silenciosamente márgenes, cola, encabezados o tamaño del controlador. Esas opciones se conservan en el navegador/controlador.",
+      "Oculta QR y datos de contacto que no necesites para reducir papel; las opciones son independientes por negocio."
+    ]
+  },
+  {
+    "id": "help",
+    "title": "Ayuda",
+    "intro": "Consulta el manual mientras trabajas o repite una guía.",
+    "steps": [
+      {
+        "title": "Busca por tarea",
+        "body": "Escribe una palabra como cierre, código de barras o proveedor. El manual filtra secciones y pasos relacionados.",
+        "target": "#help-search"
+      },
+      {
+        "title": "Lee los pasos y capturas",
+        "body": "Cada sección incluye instrucciones, límites y una captura generada con datos ficticios. Despliega Ver captura de esta sección para verla.",
+        "target": "#manual-content"
+      },
+      {
+        "title": "Abre la guía",
+        "body": "Abrir tutorial lleva a la sección y resalta los controles. Usa Anterior, Siguiente o Terminar. Puedes omitirla y volver a abrirla cuando quieras.",
+        "target": "#tutorial"
+      },
+      {
+        "title": "Consulta cada opción",
+        "body": "Los botones de ayuda con signo de interrogación explican campos y consecuencias. Se pueden abrir con teclado y cerrar con Escape. Los formularios nativos conservan su propia ayuda contextual.",
+        "target": "#navigation"
+      }
+    ],
+    "notes": [
+      "Las guías no bloquean la operación ni marcan tareas como realizadas. Guardar y Enviar siguen siendo acciones explícitas."
+    ]
+  }
+]

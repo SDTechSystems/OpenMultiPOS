@@ -1,0 +1,157 @@
+name: Quality
+on:
+  push:
+  pull_request:
+permissions:
+  contents: read
+jobs:
+  privacy:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.14"
+      - run: python scripts/check-public-files.py
+  python:
+    needs: privacy
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.14"
+      - run: python -m pip install '.[dev]'
+      - run: ruff check .
+      - run: ruff format --check .
+      - run: python -m unittest discover -s tests -v
+      - run: python -m build
+      - run: pip-audit --no-deps --disable-pip -r requirements-runtime.txt
+  bench:
+    if: github.event_name == 'pull_request' || github.ref == 'refs/heads/main'
+    needs: privacy
+    runs-on: ubuntu-24.04
+    timeout-minutes: 30
+    services:
+      mariadb:
+        image: mariadb:11.8.6@sha256:78a5047d3ba33975f183f183c2464cc7f1eab13ec8667e57cc9a5821d6da7577
+        env:
+          MARIADB_ROOT_PASSWORD: ci-only-database
+        ports:
+          - 3306:3306
+        options: >-
+          --health-cmd="healthcheck.sh --connect --innodb_initialized"
+          --health-interval=5s --health-timeout=5s --health-retries=20
+      redis:
+        image: redis:8.0.5@sha256:dbd4be0dd40f16bd91486087680fc2d25666e807b937774906dc111a621ce556
+        ports:
+          - 6379:6379
+        options: --health-cmd="redis-cli ping" --health-interval=5s --health-retries=10
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.14"
+      - uses: actions/setup-node@v4
+        with:
+          node-version: "24.22.0"
+      - name: Install development tools
+        run: |
+          sudo apt-get update -qq
+          sudo apt-get install -y --no-install-recommends build-essential pkg-config libmariadb-dev mariadb-client redis-server libpango-1.0-0 libpangocairo-1.0-0
+          python -m pip install frappe-bench==5.29.1
+          npm install --global yarn@1.22.22
+      - name: Install pinned applications
+        run: python scripts/prepare-bench.py --bench "$RUNNER_TEMP/omp-bench" --sources "$RUNNER_TEMP/omp-sources"
+      - name: Install native cashier browser checks
+        run: |
+          npm ci --ignore-scripts
+          npx playwright install --with-deps chromium
+      - name: Create disposable site and test permissions
+        env:
+          OMP_DB_PASSWORD: ci-only-database
+          OMP_ADMIN_PASSWORD: ci-only-administrator
+        working-directory: ${{ runner.temp }}/omp-bench
+        run: |
+          bench set-config -g redis_cache redis://127.0.0.1:6379/1
+          bench set-config -g redis_queue redis://127.0.0.1:6379/2
+          bench new-site omp.localhost --db-host 127.0.0.1 --db-root-username root --db-root-password "$OMP_DB_PASSWORD" --admin-password "$OMP_ADMIN_PASSWORD" --mariadb-user-host-login-scope '%'
+          bench --site omp.localhost install-app erpnext
+          bench --site omp.localhost install-app xpos
+          bench --site omp.localhost install-app open_multi_pos
+          bench --site omp.localhost migrate
+          bench --site omp.localhost set-config allow_tests True --parse
+          bench --site omp.localhost execute frappe.db.set_single_value --args '["System Settings", "time_zone", "America/Bogota"]'
+          uv pip install --python env/bin/python -e './apps/frappe[test]'
+          bench --site omp.localhost run-tests --module open_multi_pos.integration.test_permissions --skip-before-tests
+          # Native Installed Applications derives setup readiness from these real users/companies.
+          bench --site omp.localhost migrate
+      - name: Build native pages for HTML permission checks
+        working-directory: ${{ runner.temp }}/omp-bench
+        run: bench build --apps frappe,erpnext
+      - name: Exercise secured X POS over HTTP v1 and v2
+        working-directory: ${{ runner.temp }}/omp-bench
+        run: |
+          bench worker --queue short,default,long --quiet > "$RUNNER_TEMP/omp-worker.log" 2>&1 &
+          omp_worker_pid=$!
+          env/bin/gunicorn --chdir sites --bind 127.0.0.1:8000 --workers 2 --threads 2 --pid "$RUNNER_TEMP/omp-http.pid" --daemon 'frappe.app:application_with_statics()'
+          trap 'kill "$omp_worker_pid" "$(cat "$RUNNER_TEMP/omp-http.pid")"' EXIT
+          for attempt in $(seq 1 30); do curl -fsS -H 'Host: omp.localhost' -o /dev/null http://127.0.0.1:8000/api/method/ping && break || sleep 1; done
+          env/bin/python "$GITHUB_WORKSPACE/scripts/test-xpos-http.py" --bench "$RUNNER_TEMP/omp-bench"
+          env/bin/python "$GITHUB_WORKSPACE/scripts/test-native-checkout-http.py" --bench "$RUNNER_TEMP/omp-bench"
+          OMP_BROWSER_CHANNEL=chromium env/bin/python "$GITHUB_WORKSPACE/scripts/test-native-cashier.py" --bench "$RUNNER_TEMP/omp-bench"
+          env/bin/python "$GITHUB_WORKSPACE/scripts/test-workspace-http.py" --bench "$RUNNER_TEMP/omp-bench"
+          OMP_BROWSER_CHANNEL=chromium env/bin/python "$GITHUB_WORKSPACE/scripts/test-workspace-browser.py" --bench "$RUNNER_TEMP/omp-bench"
+      - name: Recover operations and restore a private isolated copy
+        env:
+          OMP_DB_PASSWORD: ci-only-database
+        working-directory: ${{ runner.temp }}/omp-bench
+        run: |
+          env/bin/python "$GITHUB_WORKSPACE/scripts/test-recovery-http.py" --bench "$RUNNER_TEMP/omp-bench"
+          env/bin/python - <<'PY'
+          import json, os
+          from pathlib import Path
+          path = Path(os.environ['RUNNER_TEMP']) / 'omp-drill-admin.json'
+          path.write_text(json.dumps({'username': 'root', 'password': os.environ['OMP_DB_PASSWORD'], 'host': '127.0.0.1', 'port': 3306}))
+          path.chmod(0o600)
+          PY
+          env/bin/python "$GITHUB_WORKSPACE/scripts/test-restore-drill.py" --bench "$RUNNER_TEMP/omp-bench" --db-admin-file "$RUNNER_TEMP/omp-drill-admin.json"
+          rm "$RUNNER_TEMP/omp-drill-admin.json"
+      - uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: native-cashier-browser-results
+          path: |
+            test-results/native-cashier/
+            test-results/workspace/
+  browser:
+    needs: privacy
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.14"
+      - uses: actions/setup-node@v4
+        with:
+          node-version: "24"
+          cache: npm
+      - run: python -m pip install . pypdf==6.15.0
+      - run: npm ci --ignore-scripts
+      - run: npm run format:check
+      - run: npx playwright install --with-deps chromium
+      - name: Exercise demo
+        env:
+          OMP_BROWSER_CHANNEL: chromium
+          OMP_AXE_MODULE: "@axe-core/playwright"
+        run: |
+          python -m open_multi_pos.demo.server --db /tmp/ci-demo.sqlite3 > /tmp/demo.log 2>&1 &
+          trap 'kill $!' EXIT
+          for attempt in $(seq 1 30); do curl -fsS -o /dev/null http://127.0.0.1:8765/api/context && break || sleep 1; done
+          npm run test:ui
+          python scripts/check-receipt-pdfs.py
+      - uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: demo-browser-results
+          path: test-results/

@@ -1,0 +1,39 @@
+{
+  "doctype": "DocType",
+  "name": "OMP Inventory Tombstone",
+  "module": "Open Multi POS",
+  "engine": "InnoDB",
+  "fields": [
+    {
+      "fieldname": "actor",
+      "fieldtype": "Link",
+      "options": "User",
+      "label": "Usuario",
+      "reqd": 1
+    },
+    {
+      "fieldname": "brand",
+      "fieldtype": "Link",
+      "options": "OMP Business Brand",
+      "label": "Negocio",
+      "reqd": 1
+    },
+    {
+      "fieldname": "payload_hash",
+      "fieldtype": "Data",
+      "label": "Huella de solicitud",
+      "reqd": 1
+    }
+  ],
+  "field_order": [
+    "actor",
+    "brand",
+    "payload_hash"
+  ],
+  "permissions": [
+    {
+      "role": "System Manager",
+      "read": 1
+    }
+  ]
+}

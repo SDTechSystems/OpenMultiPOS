@@ -1,0 +1,9 @@
+[Unit]
+Description=OpenMultiPOS private consistent backup
+
+[Service]
+Type=oneshot
+WorkingDirectory=%h/.local/share/openmultipos/bench
+ExecStart=%h/.local/share/openmultipos/bench/env/bin/python -m open_multi_pos.operations --bench %h/.local/share/openmultipos/bench backup --site omp.localhost --root %h/.local/share/openmultipos/recovery
+UMask=0077
+TimeoutStartSec=30min

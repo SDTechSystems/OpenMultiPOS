@@ -1,0 +1,187 @@
+{
+  "doctype": "DocType",
+  "name": "OMP Business Brand",
+  "module": "Open Multi POS",
+  "autoname": "hash",
+  "engine": "InnoDB",
+  "field_order": [
+    "display_name",
+    "enabled",
+    "company",
+    "warehouse",
+    "pos_profile",
+    "printer_profile",
+    "receipt_footer",
+    "qr_url",
+    "allowed_users",
+    "sku_prefix",
+    "legal_name",
+    "tax_id",
+    "phone",
+    "email",
+    "address",
+    "receipt_show_legal_name",
+    "receipt_show_tax_id",
+    "receipt_show_phone",
+    "receipt_show_email",
+    "receipt_show_address",
+    "receipt_show_footer",
+    "receipt_show_qr",
+    "workspace_visible"
+  ],
+  "fields": [
+    {
+      "fieldname": "display_name",
+      "fieldtype": "Data",
+      "label": "Nombre comercial",
+      "reqd": 1,
+      "in_list_view": 1
+    },
+    {
+      "fieldname": "enabled",
+      "fieldtype": "Check",
+      "label": "Habilitado",
+      "default": "1"
+    },
+    {
+      "fieldname": "company",
+      "fieldtype": "Link",
+      "options": "Company",
+      "label": "Entidad legal",
+      "reqd": 1
+    },
+    {
+      "fieldname": "warehouse",
+      "fieldtype": "Link",
+      "options": "Warehouse",
+      "label": "Almacén",
+      "reqd": 1
+    },
+    {
+      "fieldname": "pos_profile",
+      "fieldtype": "Link",
+      "options": "POS Profile",
+      "label": "Perfil POS",
+      "reqd": 1
+    },
+    {
+      "fieldname": "printer_profile",
+      "fieldtype": "Data",
+      "label": "ID del perfil de impresora",
+      "default": "generic-58",
+      "reqd": 1
+    },
+    {
+      "fieldname": "receipt_footer",
+      "fieldtype": "Small Text",
+      "label": "Pie del recibo"
+    },
+    {
+      "fieldname": "qr_url",
+      "fieldtype": "Data",
+      "label": "URL HTTPS del QR comercial"
+    },
+    {
+      "fieldname": "allowed_users",
+      "fieldtype": "Table",
+      "options": "OMP Brand User",
+      "label": "Usuarios autorizados"
+    },
+    {
+      "fieldname": "legal_name",
+      "label": "Razón social",
+      "fieldtype": "Data"
+    },
+    {
+      "fieldname": "tax_id",
+      "label": "NIT",
+      "fieldtype": "Data"
+    },
+    {
+      "fieldname": "phone",
+      "label": "Teléfono",
+      "fieldtype": "Data"
+    },
+    {
+      "fieldname": "email",
+      "label": "Correo electrónico",
+      "fieldtype": "Data"
+    },
+    {
+      "fieldname": "address",
+      "label": "Dirección",
+      "fieldtype": "Small Text"
+    },
+    {
+      "fieldname": "receipt_show_legal_name",
+      "label": "Mostrar razón social en recibo",
+      "fieldtype": "Check",
+      "default": "0"
+    },
+    {
+      "fieldname": "receipt_show_tax_id",
+      "label": "Mostrar NIT en recibo",
+      "fieldtype": "Check",
+      "default": "0"
+    },
+    {
+      "fieldname": "receipt_show_phone",
+      "label": "Mostrar teléfono en recibo",
+      "fieldtype": "Check",
+      "default": "0"
+    },
+    {
+      "fieldname": "receipt_show_email",
+      "label": "Mostrar correo en recibo",
+      "fieldtype": "Check",
+      "default": "0"
+    },
+    {
+      "fieldname": "receipt_show_address",
+      "label": "Mostrar dirección en recibo",
+      "fieldtype": "Check",
+      "default": "0"
+    },
+    {
+      "fieldname": "receipt_show_footer",
+      "label": "Mostrar mensaje final en recibo",
+      "fieldtype": "Check",
+      "default": "1"
+    },
+    {
+      "fieldname": "receipt_show_qr",
+      "label": "Mostrar QR en recibo",
+      "fieldtype": "Check",
+      "default": "1"
+    },
+    {
+      "fieldname": "workspace_visible",
+      "fieldtype": "Check",
+      "label": "Mostrar en el espacio de trabajo",
+      "default": "0"
+    },
+    {
+      "fieldname": "sku_prefix",
+      "fieldtype": "Data",
+      "label": "Prefijo de SKU",
+      "description": "Iniciales del negocio para los códigos nuevos. No cambia productos existentes."
+    }
+  ],
+  "track_changes": 1,
+  "permissions": [
+    {
+      "role": "System Manager",
+      "read": 1,
+      "write": 1,
+      "create": 1,
+      "delete": 1,
+      "report": 1
+    },
+    {
+      "role": "Sales User",
+      "read": 1
+    }
+  ],
+  "sort_field": "modified",
+  "sort_order": "DESC"
+}

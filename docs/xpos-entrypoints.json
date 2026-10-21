@@ -1,0 +1,1367 @@
+{
+  "commit": "6392895a955f91b8c7d55574dc01ac5f19459dc3",
+  "entries": [
+    {
+      "method": "xpos.api.auth.get_my_pos_permissions",
+      "line": 137,
+      "controller": null,
+      "policy": "denied"
+    },
+    {
+      "method": "xpos.api.auth.get_csrf_token",
+      "line": 170,
+      "controller": null,
+      "policy": "denied"
+    },
+    {
+      "method": "xpos.api.auth.get_pos_users",
+      "line": 181,
+      "controller": null,
+      "policy": "denied"
+    },
+    {
+      "method": "xpos.api.auth.get_role_permission_matrix",
+      "line": 258,
+      "controller": null,
+      "policy": "denied"
+    },
+    {
+      "method": "xpos.api.auth.set_role_permission",
+      "line": 298,
+      "controller": null,
+      "policy": "denied"
+    },
+    {
+      "method": "xpos.api.bundles.get_bundle_components",
+      "line": 10,
+      "controller": null,
+      "policy": "denied"
+    },
+    {
+      "method": "xpos.api.cash_movements.get_cash_movement_context",
+      "line": 110,
+      "controller": null,
+      "policy": "denied"
+    },
+    {
+      "method": "xpos.api.cash_movements.create_pos_expense",
+      "line": 157,
+      "controller": null,
+      "policy": "denied"
+    },
+    {
+      "method": "xpos.api.cash_movements.create_cash_deposit",
+      "line": 247,
+      "controller": null,
+      "policy": "denied"
+    },
+    {
+      "method": "xpos.api.cash_movements.get_shift_cash_movements",
+      "line": 336,
+      "controller": null,
+      "policy": "denied"
+    },
+    {
+      "method": "xpos.api.customers.get_customers",
+      "line": 15,
+      "controller": null,
+      "policy": "denied"
+    },
+    {
+      "method": "xpos.api.customers.get_customer_info",
+      "line": 82,
+      "controller": null,
+      "policy": "denied"
+    },
+    {
+      "method": "xpos.api.customers.create_customer",
+      "line": 197,
+      "controller": null,
+      "policy": "denied"
+    },
+    {
+      "method": "xpos.api.customers.update_customer",
+      "line": 281,
+      "controller": null,
+      "policy": "denied"
+    },
+    {
+      "method": "xpos.api.customers.get_customer_addresses",
+      "line": 324,
+      "controller": null,
+      "policy": "denied"
+    },
+    {
+      "method": "xpos.api.customers.make_address",
+      "line": 385,
+      "controller": null,
+      "policy": "denied"
+    },
+    {
+      "method": "xpos.api.customers.get_customer_credit",
+      "line": 431,
+      "controller": null,
+      "policy": "denied"
+    },
+    {
+      "method": "xpos.api.customers.sales_person_query",
+      "line": 495,
+      "controller": null,
+      "policy": "denied"
+    },
+    {
+      "method": "xpos.api.customers.get_sales_person_names",
+      "line": 524,
+      "controller": null,
+      "policy": "denied"
+    },
+    {
+      "method": "xpos.api.customers.get_loyalty_programs",
+      "line": 578,
+      "controller": null,
+      "policy": "denied"
+    },
+    {
+      "method": "xpos.api.customers.register_customer_loyalty",
+      "line": 611,
+      "controller": null,
+      "policy": "denied"
+    },
+    {
+      "method": "xpos.api.customers.unenroll_customer_loyalty",
+      "line": 664,
+      "controller": null,
+      "policy": "denied"
+    },
+    {
+      "method": "xpos.api.customers.get_customer_loyalty_info",
+      "line": 698,
+      "controller": null,
+      "policy": "denied"
+    },
+    {
+      "method": "xpos.api.customers.get_customer_groups",
+      "line": 770,
+      "controller": null,
+      "policy": "denied"
+    },
+    {
+      "method": "xpos.api.exchange.get_tender_rates",
+      "line": 180,
+      "controller": null,
+      "policy": "denied"
+    },
+    {
+      "method": "xpos.api.gift_cards.check_gift_card",
+      "line": 34,
+      "controller": null,
+      "policy": "denied"
+    },
+    {
+      "method": "xpos.api.gift_cards.claim_issued_gift_cards",
+      "line": 66,
+      "controller": null,
+      "policy": "denied"
+    },
+    {
+      "method": "xpos.api.gift_cards.adjust_gift_card",
+      "line": 74,
+      "controller": null,
+      "policy": "denied"
+    },
+    {
+      "method": "xpos.api.invoices.create_invoice",
+      "line": 309,
+      "controller": null,
+      "policy": "denied"
+    },
+    {
+      "method": "xpos.api.invoices.finalize_fiscal_invoice",
+      "line": 774,
+      "controller": null,
+      "policy": "denied"
+    },
+    {
+      "method": "xpos.api.invoices.discard_draft_invoice",
+      "line": 803,
+      "controller": null,
+      "policy": "denied"
+    },
+    {
+      "method": "xpos.api.invoices.save_draft_invoice",
+      "line": 824,
+      "controller": null,
+      "policy": "denied"
+    },
+    {
+      "method": "xpos.api.invoices.get_draft_invoices",
+      "line": 976,
+      "controller": null,
+      "policy": "denied"
+    },
+    {
+      "method": "xpos.api.invoices.get_unsettled_invoices",
+      "line": 1025,
+      "controller": null,
+      "policy": "denied"
+    },
+    {
+      "method": "xpos.api.invoices.get_past_orders",
+      "line": 1066,
+      "controller": null,
+      "policy": "denied"
+    },
+    {
+      "method": "xpos.api.invoices.get_invoices",
+      "line": 1274,
+      "controller": null,
+      "policy": "denied"
+    },
+    {
+      "method": "xpos.api.invoices.get_invoice_details",
+      "line": 1310,
+      "controller": null,
+      "policy": "adapter"
+    },
+    {
+      "method": "xpos.api.invoices.delete_draft_invoice",
+      "line": 1396,
+      "controller": null,
+      "policy": "denied"
+    },
+    {
+      "method": "xpos.api.invoices.search_invoices_for_return",
+      "line": 1417,
+      "controller": null,
+      "policy": "denied"
+    },
+    {
+      "method": "xpos.api.invoices.get_invoice_for_return",
+      "line": 1541,
+      "controller": null,
+      "policy": "denied"
+    },
+    {
+      "method": "xpos.api.invoices.fetch_exchange_rate",
+      "line": 1618,
+      "controller": null,
+      "policy": "denied"
+    },
+    {
+      "method": "xpos.api.invoices.get_last_invoice_rates",
+      "line": 1630,
+      "controller": null,
+      "policy": "denied"
+    },
+    {
+      "method": "xpos.api.invoices.search_invoices_for_repeat",
+      "line": 1810,
+      "controller": null,
+      "policy": "denied"
+    },
+    {
+      "method": "xpos.api.invoices.get_invoice_for_repeat",
+      "line": 1870,
+      "controller": null,
+      "policy": "denied"
+    },
+    {
+      "method": "xpos.api.items.get_pos_items",
+      "line": 48,
+      "controller": null,
+      "policy": "denied"
+    },
+    {
+      "method": "xpos.api.items.get_items_count",
+      "line": 208,
+      "controller": null,
+      "policy": "denied"
+    },
+    {
+      "method": "xpos.api.items.get_item_groups",
+      "line": 258,
+      "controller": null,
+      "policy": "denied"
+    },
+    {
+      "method": "xpos.api.items.search_barcode",
+      "line": 313,
+      "controller": null,
+      "policy": "denied"
+    },
+    {
+      "method": "xpos.api.items.get_item_detail",
+      "line": 429,
+      "controller": null,
+      "policy": "denied"
+    },
+    {
+      "method": "xpos.api.items.get_item_variants",
+      "line": 526,
+      "controller": null,
+      "policy": "denied"
+    },
+    {
+      "method": "xpos.api.items.get_item_attributes",
+      "line": 599,
+      "controller": null,
+      "policy": "denied"
+    },
+    {
+      "method": "xpos.api.items.get_stock_availability",
+      "line": 621,
+      "controller": null,
+      "policy": "denied"
+    },
+    {
+      "method": "xpos.api.items.get_price_for_uom",
+      "line": 681,
+      "controller": null,
+      "policy": "denied"
+    },
+    {
+      "method": "xpos.api.offers.get_offers",
+      "line": 15,
+      "controller": null,
+      "policy": "denied"
+    },
+    {
+      "method": "xpos.api.offers.get_pos_coupon",
+      "line": 66,
+      "controller": null,
+      "policy": "denied"
+    },
+    {
+      "method": "xpos.api.offers.get_active_gift_coupons",
+      "line": 106,
+      "controller": null,
+      "policy": "denied"
+    },
+    {
+      "method": "xpos.api.offers.get_applicable_delivery_charges",
+      "line": 125,
+      "controller": null,
+      "policy": "denied"
+    },
+    {
+      "method": "xpos.api.payments.get_available_credit",
+      "line": 24,
+      "controller": null,
+      "policy": "denied"
+    },
+    {
+      "method": "xpos.api.payments.get_outstanding_invoices",
+      "line": 76,
+      "controller": null,
+      "policy": "denied"
+    },
+    {
+      "method": "xpos.api.payments.get_unallocated_payments",
+      "line": 138,
+      "controller": null,
+      "policy": "denied"
+    },
+    {
+      "method": "xpos.api.payments.settle_outstanding_invoice",
+      "line": 250,
+      "controller": null,
+      "policy": "denied"
+    },
+    {
+      "method": "xpos.api.payments.create_payment_request",
+      "line": 315,
+      "controller": null,
+      "policy": "denied"
+    },
+    {
+      "method": "xpos.api.price_check.lookup",
+      "line": 74,
+      "controller": null,
+      "policy": "denied"
+    },
+    {
+      "method": "xpos.api.price_check.get_terminal_context",
+      "line": 121,
+      "controller": null,
+      "policy": "denied"
+    },
+    {
+      "method": "xpos.api.pricing_rules.reconcile_line_prices",
+      "line": 329,
+      "controller": null,
+      "policy": "denied"
+    },
+    {
+      "method": "xpos.api.pricing_rules.get_active_pricing_rules",
+      "line": 471,
+      "controller": null,
+      "policy": "denied"
+    },
+    {
+      "method": "xpos.api.print_formats.get_print_formats",
+      "line": 12,
+      "controller": null,
+      "policy": "denied"
+    },
+    {
+      "method": "xpos.api.print_formats.get_receipt_context",
+      "line": 41,
+      "controller": null,
+      "policy": "adapter"
+    },
+    {
+      "method": "xpos.api.print_formats.mark_invoice_printed",
+      "line": 82,
+      "controller": null,
+      "policy": "adapter"
+    },
+    {
+      "method": "xpos.api.reports.get_report_meta",
+      "line": 201,
+      "controller": null,
+      "policy": "denied"
+    },
+    {
+      "method": "xpos.api.sales_orders.search_orders",
+      "line": 23,
+      "controller": null,
+      "policy": "denied"
+    },
+    {
+      "method": "xpos.api.sales_orders.create_sales_order",
+      "line": 60,
+      "controller": null,
+      "policy": "denied"
+    },
+    {
+      "method": "xpos.api.sales_orders.submit_sales_order",
+      "line": 127,
+      "controller": null,
+      "policy": "denied"
+    },
+    {
+      "method": "xpos.api.sales_orders.create_sales_invoice_from_order",
+      "line": 148,
+      "controller": null,
+      "policy": "denied"
+    },
+    {
+      "method": "xpos.api.sales_orders.create_quotation",
+      "line": 164,
+      "controller": null,
+      "policy": "denied"
+    },
+    {
+      "method": "xpos.api.sales_orders.submit_quotation",
+      "line": 217,
+      "controller": null,
+      "policy": "denied"
+    },
+    {
+      "method": "xpos.api.settings.get_erp_settings",
+      "line": 11,
+      "controller": null,
+      "policy": "denied"
+    },
+    {
+      "method": "xpos.api.settings.get_xpos_branding",
+      "line": 180,
+      "controller": null,
+      "policy": "denied"
+    },
+    {
+      "method": "xpos.api.settings.get_currencies",
+      "line": 187,
+      "controller": null,
+      "policy": "denied"
+    },
+    {
+      "method": "xpos.api.settings.get_languages",
+      "line": 200,
+      "controller": null,
+      "policy": "denied"
+    },
+    {
+      "method": "xpos.api.shifts.get_opening_data",
+      "line": 217,
+      "controller": null,
+      "policy": "denied"
+    },
+    {
+      "method": "xpos.api.shifts.open_shift",
+      "line": 265,
+      "controller": null,
+      "policy": "denied"
+    },
+    {
+      "method": "xpos.api.shifts.check_open_shift",
+      "line": 302,
+      "controller": null,
+      "policy": "denied"
+    },
+    {
+      "method": "xpos.api.shifts.close_shift",
+      "line": 411,
+      "controller": null,
+      "policy": "denied"
+    },
+    {
+      "method": "xpos.api.shifts.get_shift_summary",
+      "line": 511,
+      "controller": null,
+      "policy": "denied"
+    },
+    {
+      "method": "xpos.api.shifts.create_opening_shift",
+      "line": 668,
+      "controller": null,
+      "policy": "denied"
+    },
+    {
+      "method": "xpos.api.shifts.create_closing_shift",
+      "line": 717,
+      "controller": null,
+      "policy": "denied"
+    },
+    {
+      "method": "xpos.api.sync.get_child_table_data",
+      "line": 27,
+      "controller": null,
+      "policy": "denied"
+    },
+    {
+      "method": "xpos.api.sync.get_item_prices",
+      "line": 82,
+      "controller": null,
+      "policy": "denied"
+    },
+    {
+      "method": "xpos.api.taxes.get_item_tax_template",
+      "line": 13,
+      "controller": null,
+      "policy": "denied"
+    },
+    {
+      "method": "xpos.api.taxes.get_item_tax_templates_bulk",
+      "line": 118,
+      "controller": null,
+      "policy": "denied"
+    },
+    {
+      "method": "xpos.api.utilities.get_version_info",
+      "line": 32,
+      "controller": null,
+      "policy": "denied"
+    },
+    {
+      "method": "xpos.api.utilities.get_selling_price_lists",
+      "line": 110,
+      "controller": null,
+      "policy": "denied"
+    },
+    {
+      "method": "xpos.api.utilities.get_pos_profile_tax_inclusive",
+      "line": 122,
+      "controller": null,
+      "policy": "denied"
+    },
+    {
+      "method": "xpos.api.utilities.get_active_pos_profile",
+      "line": 132,
+      "controller": null,
+      "policy": "denied"
+    },
+    {
+      "method": "xpos.api.utilities.get_default_warehouse",
+      "line": 164,
+      "controller": null,
+      "policy": "denied"
+    },
+    {
+      "method": "xpos.x_pos.api.barcode_generator.get_barcode_image",
+      "line": 302,
+      "controller": null,
+      "policy": "denied"
+    },
+    {
+      "method": "xpos.x_pos.api.barcode_generator.get_qrcode_image",
+      "line": 322,
+      "controller": null,
+      "policy": "denied"
+    },
+    {
+      "method": "xpos.x_pos.api.barcode_generator.get_item_barcode_labels",
+      "line": 340,
+      "controller": null,
+      "policy": "denied"
+    },
+    {
+      "method": "xpos.x_pos.api.barcode_generator.get_barcode_types",
+      "line": 400,
+      "controller": null,
+      "policy": "denied"
+    },
+    {
+      "method": "xpos.x_pos.api.barcode_generator.search_items_for_barcode",
+      "line": 406,
+      "controller": null,
+      "policy": "denied"
+    },
+    {
+      "method": "xpos.x_pos.api.bundles.get_bundle_components",
+      "line": 7,
+      "controller": null,
+      "policy": "denied"
+    },
+    {
+      "method": "xpos.x_pos.api.cash_movement.service.get_cash_movement_context",
+      "line": 104,
+      "controller": null,
+      "policy": "denied"
+    },
+    {
+      "method": "xpos.x_pos.api.cash_movement.service.create_pos_expense",
+      "line": 143,
+      "controller": null,
+      "policy": "denied"
+    },
+    {
+      "method": "xpos.x_pos.api.cash_movement.service.create_cash_deposit",
+      "line": 148,
+      "controller": null,
+      "policy": "denied"
+    },
+    {
+      "method": "xpos.x_pos.api.cash_movement.service.get_shift_cash_movements",
+      "line": 153,
+      "controller": null,
+      "policy": "denied"
+    },
+    {
+      "method": "xpos.x_pos.api.cash_movement.service.get_submitted_expenses",
+      "line": 173,
+      "controller": null,
+      "policy": "denied"
+    },
+    {
+      "method": "xpos.x_pos.api.cash_movement.service.delete_cash_movement",
+      "line": 183,
+      "controller": null,
+      "policy": "denied"
+    },
+    {
+      "method": "xpos.x_pos.api.cash_movement.service.duplicate_cash_movement",
+      "line": 198,
+      "controller": null,
+      "policy": "denied"
+    },
+    {
+      "method": "xpos.x_pos.api.customer.get_customer_balance",
+      "line": 63,
+      "controller": null,
+      "policy": "denied"
+    },
+    {
+      "method": "xpos.x_pos.api.customer.create_customer",
+      "line": 68,
+      "controller": null,
+      "policy": "denied"
+    },
+    {
+      "method": "xpos.x_pos.api.customers.get_customer_balance",
+      "line": 56,
+      "controller": null,
+      "policy": "denied"
+    },
+    {
+      "method": "xpos.x_pos.api.customers.get_customer_names",
+      "line": 84,
+      "controller": null,
+      "policy": "denied"
+    },
+    {
+      "method": "xpos.x_pos.api.customers.get_customers_count",
+      "line": 154,
+      "controller": null,
+      "policy": "denied"
+    },
+    {
+      "method": "xpos.x_pos.api.customers.get_customer_info",
+      "line": 164,
+      "controller": null,
+      "policy": "denied"
+    },
+    {
+      "method": "xpos.x_pos.api.customers.create_customer",
+      "line": 244,
+      "controller": null,
+      "policy": "denied"
+    },
+    {
+      "method": "xpos.x_pos.api.customers.set_customer_info",
+      "line": 376,
+      "controller": null,
+      "policy": "denied"
+    },
+    {
+      "method": "xpos.x_pos.api.customers.get_customer_addresses",
+      "line": 411,
+      "controller": null,
+      "policy": "denied"
+    },
+    {
+      "method": "xpos.x_pos.api.customers.make_address",
+      "line": 437,
+      "controller": null,
+      "policy": "denied"
+    },
+    {
+      "method": "xpos.x_pos.api.customers.get_sales_person_names",
+      "line": 457,
+      "controller": null,
+      "policy": "denied"
+    },
+    {
+      "method": "xpos.x_pos.api.invoice_processing.creation.update_invoice",
+      "line": 183,
+      "controller": null,
+      "policy": "denied"
+    },
+    {
+      "method": "xpos.x_pos.api.invoice_processing.creation.submit_invoice",
+      "line": 398,
+      "controller": null,
+      "policy": "denied"
+    },
+    {
+      "method": "xpos.x_pos.api.invoice_processing.creation.validate_cart_items",
+      "line": 623,
+      "controller": null,
+      "policy": "denied"
+    },
+    {
+      "method": "xpos.x_pos.api.invoice_processing.data.get_last_invoice_rates",
+      "line": 5,
+      "controller": null,
+      "policy": "denied"
+    },
+    {
+      "method": "xpos.x_pos.api.invoice_processing.returns.search_invoices_for_return",
+      "line": 18,
+      "controller": null,
+      "policy": "denied"
+    },
+    {
+      "method": "xpos.x_pos.api.invoice_processing.returns.get_invoice_for_return",
+      "line": 191,
+      "controller": null,
+      "policy": "denied"
+    },
+    {
+      "method": "xpos.x_pos.api.invoice_processing.returns.validate_return_items",
+      "line": 313,
+      "controller": null,
+      "policy": "denied"
+    },
+    {
+      "method": "xpos.x_pos.api.invoice_processing.utils.get_price_list_currency",
+      "line": 143,
+      "controller": null,
+      "policy": "denied"
+    },
+    {
+      "method": "xpos.x_pos.api.invoice_processing.utils.get_available_currencies",
+      "line": 148,
+      "controller": null,
+      "policy": "denied"
+    },
+    {
+      "method": "xpos.x_pos.api.invoices.get_draft_invoices",
+      "line": 16,
+      "controller": null,
+      "policy": "denied"
+    },
+    {
+      "method": "xpos.x_pos.api.invoices.get_draft_invoice_doc",
+      "line": 52,
+      "controller": null,
+      "policy": "denied"
+    },
+    {
+      "method": "xpos.x_pos.api.invoices.fetch_exchange_rate_pair",
+      "line": 66,
+      "controller": null,
+      "policy": "denied"
+    },
+    {
+      "method": "xpos.x_pos.api.invoices.create_sales_invoice_from_order",
+      "line": 88,
+      "controller": null,
+      "policy": "denied"
+    },
+    {
+      "method": "xpos.x_pos.api.invoices.update_invoice_from_order",
+      "line": 105,
+      "controller": null,
+      "policy": "denied"
+    },
+    {
+      "method": "xpos.x_pos.api.item_processing.barcode.parse_scale_barcode",
+      "line": 235,
+      "controller": null,
+      "policy": "denied"
+    },
+    {
+      "method": "xpos.x_pos.api.item_processing.barcode.build_scale_barcode",
+      "line": 253,
+      "controller": null,
+      "policy": "denied"
+    },
+    {
+      "method": "xpos.x_pos.api.item_processing.barcode.get_items_from_barcode",
+      "line": 376,
+      "controller": null,
+      "policy": "denied"
+    },
+    {
+      "method": "xpos.x_pos.api.item_processing.barcode.search_serial_or_batch_or_barcode_number",
+      "line": 440,
+      "controller": null,
+      "policy": "denied"
+    },
+    {
+      "method": "xpos.x_pos.api.item_processing.details.get_items_details",
+      "line": 13,
+      "controller": null,
+      "policy": "denied"
+    },
+    {
+      "method": "xpos.x_pos.api.item_processing.details.get_item_detail",
+      "line": 50,
+      "controller": null,
+      "policy": "denied"
+    },
+    {
+      "method": "xpos.x_pos.api.item_processing.details.get_item_variants",
+      "line": 189,
+      "controller": null,
+      "policy": "denied"
+    },
+    {
+      "method": "xpos.x_pos.api.item_processing.details.get_item_attributes",
+      "line": 277,
+      "controller": null,
+      "policy": "denied"
+    },
+    {
+      "method": "xpos.x_pos.api.item_processing.price.update_price_list_rate",
+      "line": 7,
+      "controller": null,
+      "policy": "denied"
+    },
+    {
+      "method": "xpos.x_pos.api.item_processing.price.get_price_for_uom",
+      "line": 41,
+      "controller": null,
+      "policy": "denied"
+    },
+    {
+      "method": "xpos.x_pos.api.item_processing.search.get_items",
+      "line": 535,
+      "controller": null,
+      "policy": "denied"
+    },
+    {
+      "method": "xpos.x_pos.api.item_processing.search.get_items_groups",
+      "line": 638,
+      "controller": null,
+      "policy": "denied"
+    },
+    {
+      "method": "xpos.x_pos.api.item_processing.search.get_items_count",
+      "line": 647,
+      "controller": null,
+      "policy": "denied"
+    },
+    {
+      "method": "xpos.x_pos.api.item_processing.stock.get_bulk_stock_availability",
+      "line": 79,
+      "controller": null,
+      "policy": "denied"
+    },
+    {
+      "method": "xpos.x_pos.api.item_processing.stock.get_available_qty",
+      "line": 153,
+      "controller": null,
+      "policy": "denied"
+    },
+    {
+      "method": "xpos.x_pos.api.items.get_item_brand",
+      "line": 18,
+      "controller": null,
+      "policy": "denied"
+    },
+    {
+      "method": "xpos.x_pos.api.offers.get_pos_coupon",
+      "line": 15,
+      "controller": null,
+      "policy": "denied"
+    },
+    {
+      "method": "xpos.x_pos.api.offers.get_active_gift_coupons",
+      "line": 21,
+      "controller": null,
+      "policy": "denied"
+    },
+    {
+      "method": "xpos.x_pos.api.offers.get_offers",
+      "line": 52,
+      "controller": null,
+      "policy": "denied"
+    },
+    {
+      "method": "xpos.x_pos.api.offers.get_applicable_delivery_charges",
+      "line": 104,
+      "controller": null,
+      "policy": "denied"
+    },
+    {
+      "method": "xpos.x_pos.api.payment_processing.data.get_outstanding_invoices",
+      "line": 62,
+      "controller": null,
+      "policy": "denied"
+    },
+    {
+      "method": "xpos.x_pos.api.payment_processing.data.get_unallocated_payments",
+      "line": 171,
+      "controller": null,
+      "policy": "denied"
+    },
+    {
+      "method": "xpos.x_pos.api.payment_processing.data.get_available_pos_profiles",
+      "line": 428,
+      "controller": null,
+      "policy": "denied"
+    },
+    {
+      "method": "xpos.x_pos.api.payment_processing.data.get_unreconciled_entries",
+      "line": 439,
+      "controller": null,
+      "policy": "denied"
+    },
+    {
+      "method": "xpos.x_pos.api.payment_processing.processor.process_pos_payment",
+      "line": 17,
+      "controller": null,
+      "policy": "denied"
+    },
+    {
+      "method": "xpos.x_pos.api.payment_processing.reconciliation.auto_reconcile_customer_invoices",
+      "line": 12,
+      "controller": null,
+      "policy": "denied"
+    },
+    {
+      "method": "xpos.x_pos.api.payment_processing.utils.get_mode_of_payment_accounts",
+      "line": 75,
+      "controller": null,
+      "policy": "denied"
+    },
+    {
+      "method": "xpos.x_pos.api.payments.create_payment_request",
+      "line": 24,
+      "controller": null,
+      "policy": "denied"
+    },
+    {
+      "method": "xpos.x_pos.api.payments.get_available_credit",
+      "line": 323,
+      "controller": null,
+      "policy": "denied"
+    },
+    {
+      "method": "xpos.x_pos.api.pricing_rules.get_active_pricing_rules",
+      "line": 171,
+      "controller": null,
+      "policy": "denied"
+    },
+    {
+      "method": "xpos.x_pos.api.pricing_rules.reconcile_line_prices",
+      "line": 289,
+      "controller": null,
+      "policy": "denied"
+    },
+    {
+      "method": "xpos.x_pos.api.purchase_orders.create_supplier",
+      "line": 232,
+      "controller": null,
+      "policy": "denied"
+    },
+    {
+      "method": "xpos.x_pos.api.purchase_orders.search_suppliers",
+      "line": 267,
+      "controller": null,
+      "policy": "denied"
+    },
+    {
+      "method": "xpos.x_pos.api.purchase_orders.create_purchase_item",
+      "line": 295,
+      "controller": null,
+      "policy": "denied"
+    },
+    {
+      "method": "xpos.x_pos.api.purchase_orders.create_purchase_order",
+      "line": 451,
+      "controller": null,
+      "policy": "denied"
+    },
+    {
+      "method": "xpos.x_pos.api.purchase_orders.create_purchase_invoice_direct",
+      "line": 626,
+      "controller": null,
+      "policy": "denied"
+    },
+    {
+      "method": "xpos.x_pos.api.purchase_orders.search_items",
+      "line": 794,
+      "controller": null,
+      "policy": "denied"
+    },
+    {
+      "method": "xpos.x_pos.api.purchase_orders.search_item_by_barcode",
+      "line": 875,
+      "controller": null,
+      "policy": "denied"
+    },
+    {
+      "method": "xpos.x_pos.api.purchase_orders.get_pending_receipts",
+      "line": 994,
+      "controller": null,
+      "policy": "denied"
+    },
+    {
+      "method": "xpos.x_pos.api.purchase_orders.get_purchase_order_detail",
+      "line": 1056,
+      "controller": null,
+      "policy": "denied"
+    },
+    {
+      "method": "xpos.x_pos.api.purchase_orders.receive_stock",
+      "line": 1096,
+      "controller": null,
+      "policy": "denied"
+    },
+    {
+      "method": "xpos.x_pos.api.purchase_orders.get_stock_and_transit",
+      "line": 1207,
+      "controller": null,
+      "policy": "denied"
+    },
+    {
+      "method": "xpos.x_pos.api.purchase_orders.get_category_items",
+      "line": 1273,
+      "controller": null,
+      "policy": "denied"
+    },
+    {
+      "method": "xpos.x_pos.api.purchase_orders.save_po_draft",
+      "line": 1517,
+      "controller": null,
+      "policy": "denied"
+    },
+    {
+      "method": "xpos.x_pos.api.purchase_orders.load_po_draft",
+      "line": 1636,
+      "controller": null,
+      "policy": "denied"
+    },
+    {
+      "method": "xpos.x_pos.api.purchase_orders.delete_po_draft",
+      "line": 1699,
+      "controller": null,
+      "policy": "denied"
+    },
+    {
+      "method": "xpos.x_pos.api.purchase_orders.list_po_drafts",
+      "line": 1721,
+      "controller": null,
+      "policy": "denied"
+    },
+    {
+      "method": "xpos.x_pos.api.purchase_orders.save_pi_draft",
+      "line": 1755,
+      "controller": null,
+      "policy": "denied"
+    },
+    {
+      "method": "xpos.x_pos.api.purchase_orders.load_pi_draft",
+      "line": 1875,
+      "controller": null,
+      "policy": "denied"
+    },
+    {
+      "method": "xpos.x_pos.api.purchase_orders.delete_pi_draft",
+      "line": 1962,
+      "controller": null,
+      "policy": "denied"
+    },
+    {
+      "method": "xpos.x_pos.api.purchase_orders.list_pi_drafts",
+      "line": 1976,
+      "controller": null,
+      "policy": "denied"
+    },
+    {
+      "method": "xpos.x_pos.api.purchase_orders.submit_pi_draft",
+      "line": 2010,
+      "controller": null,
+      "policy": "denied"
+    },
+    {
+      "method": "xpos.x_pos.api.purchase_orders.get_purchase_orders_for_invoice",
+      "line": 2037,
+      "controller": null,
+      "policy": "denied"
+    },
+    {
+      "method": "xpos.x_pos.api.purchase_orders.get_item_purchase_details",
+      "line": 2178,
+      "controller": null,
+      "policy": "denied"
+    },
+    {
+      "method": "xpos.x_pos.api.purchase_orders.get_purchase_tax_template",
+      "line": 2265,
+      "controller": null,
+      "policy": "denied"
+    },
+    {
+      "method": "xpos.x_pos.api.quotations.update_quotation",
+      "line": 48,
+      "controller": null,
+      "policy": "denied"
+    },
+    {
+      "method": "xpos.x_pos.api.quotations.submit_quotation",
+      "line": 68,
+      "controller": null,
+      "policy": "denied"
+    },
+    {
+      "method": "xpos.x_pos.api.qz.get_certificate",
+      "line": 57,
+      "controller": null,
+      "policy": "denied"
+    },
+    {
+      "method": "xpos.x_pos.api.qz.get_certificate_download",
+      "line": 70,
+      "controller": null,
+      "policy": "denied"
+    },
+    {
+      "method": "xpos.x_pos.api.qz.sign_message",
+      "line": 86,
+      "controller": null,
+      "policy": "denied"
+    },
+    {
+      "method": "xpos.x_pos.api.qz.setup_qz_certificate",
+      "line": 106,
+      "controller": null,
+      "policy": "denied"
+    },
+    {
+      "method": "xpos.x_pos.api.sales_orders.search_orders",
+      "line": 19,
+      "controller": null,
+      "policy": "denied"
+    },
+    {
+      "method": "xpos.x_pos.api.sales_orders.update_sales_order",
+      "line": 85,
+      "controller": null,
+      "policy": "denied"
+    },
+    {
+      "method": "xpos.x_pos.api.sales_orders.submit_sales_order",
+      "line": 139,
+      "controller": null,
+      "policy": "denied"
+    },
+    {
+      "method": "xpos.x_pos.api.shifts.get_opening_dialog_data",
+      "line": 14,
+      "controller": null,
+      "policy": "denied"
+    },
+    {
+      "method": "xpos.x_pos.api.shifts.create_opening_voucher",
+      "line": 60,
+      "controller": null,
+      "policy": "denied"
+    },
+    {
+      "method": "xpos.x_pos.api.shifts.check_opening_shift",
+      "line": 84,
+      "controller": null,
+      "policy": "denied"
+    },
+    {
+      "method": "xpos.x_pos.api.stock_transfer.get_in_transit_transfers",
+      "line": 25,
+      "controller": null,
+      "policy": "denied"
+    },
+    {
+      "method": "xpos.x_pos.api.stock_transfer.get_transfer_detail",
+      "line": 148,
+      "controller": null,
+      "policy": "denied"
+    },
+    {
+      "method": "xpos.x_pos.api.stock_transfer.receive_transit_stock",
+      "line": 197,
+      "controller": null,
+      "policy": "denied"
+    },
+    {
+      "method": "xpos.x_pos.api.stock_transfer.return_shortage_to_source",
+      "line": 329,
+      "controller": null,
+      "policy": "denied"
+    },
+    {
+      "method": "xpos.x_pos.api.utilities.get_selling_price_lists",
+      "line": 144,
+      "controller": null,
+      "policy": "denied"
+    },
+    {
+      "method": "xpos.x_pos.api.utilities.get_sales_person_names",
+      "line": 329,
+      "controller": null,
+      "policy": "denied"
+    },
+    {
+      "method": "xpos.x_pos.api.utilities.get_language_options",
+      "line": 334,
+      "controller": null,
+      "policy": "denied"
+    },
+    {
+      "method": "xpos.x_pos.api.utilities.get_translation_dict",
+      "line": 367,
+      "controller": null,
+      "policy": "denied"
+    },
+    {
+      "method": "xpos.x_pos.api.utilities.get_pos_profile_tax_inclusive",
+      "line": 402,
+      "controller": null,
+      "policy": "denied"
+    },
+    {
+      "method": "xpos.x_pos.api.utilities.get_database_usage",
+      "line": 410,
+      "controller": null,
+      "policy": "denied"
+    },
+    {
+      "method": "xpos.x_pos.api.utilities.get_server_usage",
+      "line": 497,
+      "controller": null,
+      "policy": "denied"
+    },
+    {
+      "method": "xpos.x_pos.api.utilities.get_available_languages",
+      "line": 664,
+      "controller": null,
+      "policy": "denied"
+    },
+    {
+      "method": "xpos.x_pos.api.utilities.get_current_user_language",
+      "line": 716,
+      "controller": null,
+      "policy": "denied"
+    },
+    {
+      "method": "xpos.x_pos.api.utilities.set_current_user_language",
+      "line": 750,
+      "controller": null,
+      "policy": "denied"
+    },
+    {
+      "method": "xpos.x_pos.api.utilities.get_language_info",
+      "line": 798,
+      "controller": null,
+      "policy": "denied"
+    },
+    {
+      "method": "xpos.x_pos.api.utilities.log_client_error",
+      "line": 832,
+      "controller": null,
+      "policy": "denied"
+    },
+    {
+      "method": "xpos.x_pos.api.utils.get_active_pos_profile",
+      "line": 81,
+      "controller": null,
+      "policy": "denied"
+    },
+    {
+      "method": "xpos.x_pos.api.utils.get_default_warehouse",
+      "line": 93,
+      "controller": null,
+      "policy": "denied"
+    },
+    {
+      "method": "xpos.x_pos.doctype.pos_closing_shift.closing_processing.creation.make_closing_shift_from_opening",
+      "line": 18,
+      "controller": null,
+      "policy": "denied"
+    },
+    {
+      "method": "xpos.x_pos.doctype.pos_closing_shift.closing_processing.creation.submit_closing_shift",
+      "line": 195,
+      "controller": null,
+      "policy": "denied"
+    },
+    {
+      "method": "xpos.x_pos.doctype.pos_closing_shift.closing_processing.data.get_cashiers",
+      "line": 31,
+      "controller": null,
+      "policy": "denied"
+    },
+    {
+      "method": "xpos.x_pos.doctype.pos_closing_shift.closing_processing.data.get_pos_invoices",
+      "line": 49,
+      "controller": null,
+      "policy": "denied"
+    },
+    {
+      "method": "xpos.x_pos.doctype.pos_closing_shift.closing_processing.data.get_payments_entries",
+      "line": 120,
+      "controller": null,
+      "policy": "denied"
+    },
+    {
+      "method": "xpos.x_pos.doctype.pos_closing_shift.closing_processing.overview.get_closing_shift_overview",
+      "line": 16,
+      "controller": null,
+      "policy": "denied"
+    },
+    {
+      "method": "xpos.x_pos.doctype.pos_closing_shift.closing_processing.overview.get_payment_reconciliation_details",
+      "line": 724,
+      "controller": null,
+      "policy": "denied"
+    },
+    {
+      "method": "xpos.x_pos.doctype.pos_closing_shift.pos_closing_shift.get_payment_reconciliation_details",
+      "line": 107,
+      "controller": "POSClosingShift",
+      "policy": "denied"
+    }
+  ]
+}

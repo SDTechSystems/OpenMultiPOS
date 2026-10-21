@@ -1,0 +1,15 @@
+[Unit]
+Description=OpenMultiPOS local development web (loopback only)
+After=network.target
+
+[Service]
+Type=simple
+WorkingDirectory=%h/.local/share/openmultipos/bench/sites
+Environment=SITES_PATH=.
+ExecStart=%h/.local/share/openmultipos/bench/env/bin/gunicorn --bind 127.0.0.1:8000 --workers 2 --threads 2 --timeout 120 "frappe.app:application_with_statics()"
+Restart=on-failure
+RestartSec=5
+UMask=0077
+
+[Install]
+WantedBy=default.target

@@ -1,0 +1,400 @@
+<!doctype html>
+<html lang="es-CO">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width,initial-scale=1" />
+    <meta name="csrf-token" content="{{ csrf_token | e }}" />
+    <title>Administración</title>
+    <link rel="stylesheet" href="/assets/open_multi_pos/workspace.css" />
+    <script src="/assets/open_multi_pos/scanner-input.js" defer></script>
+    <script src="/assets/open_multi_pos/workspace-english.js" defer></script>
+    <script src="/assets/open_multi_pos/workspace-core.js" defer></script>
+    <script src="/assets/open_multi_pos/workspace-sales.js" defer></script>
+    <script src="/assets/open_multi_pos/workspace.js" defer></script>
+  </head>
+  <body data-user="{{ workspace_user | e }}">
+    <a class="skip" href="#main">Ir al contenido</a>
+    <aside class="sidebar" id="sidebar">
+      <a href="#home" class="app-name"
+        ><svg viewBox="0 0 24 24" aria-hidden="true">
+          <path d="M4 20V6l8-3 8 3v14M8 20v-8h8v8M3 20h18M8 8h1m6 0h1" /></svg
+        ><span>Administración</span></a
+      >
+      <nav id="navigation" aria-label="Menú principal"></nav>
+      <div class="sidebar-bottom">
+        <button id="manual-link" type="button">Manual y tutoriales</button
+        ><button id="profile" type="button">Mi perfil</button
+        ><button id="logout" type="button">Cerrar sesión</button
+        ><small id="user-name"></small>
+      </div>
+    </aside>
+    <div class="shell">
+      <header class="toolbar">
+        <button
+          id="menu-toggle"
+          class="icon-button"
+          type="button"
+          aria-label="Abrir menú"
+          aria-expanded="false"
+        >
+          ☰
+        </button>
+        <div class="business-picker">
+          <label for="business-picker">Negocio activo</label
+          ><select
+            id="business-picker"
+            aria-describedby="business-context-help"
+          >
+            <option value="">Cargando…</option></select
+          ><span id="business-context-help" class="sr-only"
+            >Cambia el contexto de inventario, compras, finanzas y ajustes. La
+            cesta de ventas conserva el negocio de cada producto.</span
+          >
+        </div>
+        <div class="tool-search">
+          <label for="tool-search" class="sr-only">Buscar una herramienta</label
+          ><input
+            type="search"
+            id="tool-search"
+            placeholder="Buscar una herramienta"
+            list="tool-options"
+            autocomplete="off"
+          /><datalist id="tool-options"></datalist><kbd>Ctrl K</kbd>
+        </div>
+      </header>
+      <main id="main" tabindex="-1">
+        <div class="page-heading">
+          <div>
+            <h1 id="page-title">Inicio</h1>
+            <p id="page-description"></p>
+          </div>
+          <button id="tutorial" class="secondary" type="button">
+            Guía de esta sección
+          </button>
+        </div>
+        <p
+          id="notice"
+          role="status"
+          aria-live="polite"
+          aria-atomic="true"
+          hidden
+        ></p>
+        <section id="view-home" class="view">
+          <div id="setup" class="setup" hidden>
+            <h2>Configura tu espacio de trabajo</h2>
+            <p>
+              Crea tu perfil de administrador y agrega los negocios que vas a
+              gestionar.
+            </p>
+            <div id="setup-actions"></div>
+            <div id="setup-suggestions"></div>
+          </div>
+          <div id="home-content">
+            <div class="metric-strip">
+              <div>
+                <span>Ventas de hoy</span><strong id="today-count">—</strong>
+              </div>
+              <div>
+                <span>Importe vendido</span><strong id="today-total">—</strong>
+              </div>
+              <div>
+                <span>Moneda del negocio</span
+                ><strong id="today-currency">—</strong>
+              </div>
+            </div>
+            <div class="task-links">
+              <button data-go="sales">Registrar una venta</button
+              ><button data-go="inventory" class="secondary">
+                Agregar productos</button
+              ><button data-go="finances" class="secondary">
+                Consultar finanzas
+              </button>
+            </div>
+            <h2>Ventas recientes</h2>
+            <div id="recent-sales"></div>
+          </div>
+        </section>
+        <section id="view-sales" class="view" hidden>
+          <div id="shift-strip" class="shift-strip"></div>
+          <div id="sale-recovery" class="warning" hidden>
+            <h2>Hay una venta por resolver</h2>
+            <p id="sale-operation"></p>
+            <p>
+              Una respuesta perdida no confirma un fallo. Consulta el estado y
+              conserva este intento. No repitas un pago externo.
+            </p>
+            <div class="actions">
+              <button id="sale-status">Consultar estado</button
+              ><button id="sale-retry" class="secondary">
+                Reintentar el mismo intento</button
+              ><button id="sale-abandon" class="quiet">
+                Resolver sin crear venta
+              </button>
+            </div>
+            <small
+              >Resolver recupera la venta si existe o bloquea este intento. No
+              devuelve pagos externos.</small
+            >
+          </div>
+          <div class="sale-layout">
+            <div>
+              <fieldset id="sale-controls">
+                <legend class="sr-only">Productos de la venta</legend>
+                <form id="scan-form">
+                  <label for="scan">Escanea o busca un producto</label>
+                  <div class="search-line">
+                    <input
+                      id="scan"
+                      autocomplete="off"
+                      maxlength="140"
+                      placeholder="Código de barras, código o nombre"
+                      data-help="El lector busca en los negocios habilitados. Si hay más de una coincidencia exacta, elige el negocio antes de agregar el producto."
+                    /><button>Buscar</button>
+                  </div>
+                </form>
+                <div id="scan-results" class="results"></div>
+                <div class="section-heading">
+                  <h2>Cesta</h2>
+                  <span id="basket-count">0 productos</span>
+                </div>
+                <div id="basket"></div>
+                <button id="calculate" disabled>Calcular total</button>
+              </fieldset>
+              <form id="pay-form" hidden>
+                <div id="pay-groups"></div>
+                <p id="basket-total" class="grand-total"></p>
+                <button id="save-sale">Guardar venta</button>
+              </form>
+            </div>
+            <aside class="receipt-panel">
+              <h2>Recibo guardado</h2>
+              <p id="saved-receipt-label">
+                El recibo aparecerá después de guardar la venta.
+              </p>
+              <div class="actions">
+                <button id="print-receipt" disabled>Imprimir recibo</button
+                ><button id="reload-receipt" class="secondary" disabled>
+                  Cargar recibo</button
+                ><button id="next-sale" class="secondary" disabled>
+                  Nueva venta
+                </button>
+              </div>
+              <p class="hint">
+                La impresión usa el equipo instalado. El diálogo del navegador
+                no confirma que salió papel.
+              </p>
+              <iframe
+                id="receipt-preview"
+                title="Vista previa del recibo interno"
+                hidden
+              ></iframe>
+            </aside>
+          </div>
+        </section>
+        <section id="view-inventory" class="view" hidden>
+          <div class="section-heading">
+            <div>
+              <h2>Productos y existencias</h2>
+              <p id="inventory-warehouse" class="hint"></p>
+            </div>
+            <div class="actions">
+              <button id="add-product">Nuevo producto</button
+              ><button id="add-stock" class="secondary">
+                Ingresar existencias
+              </button>
+            </div>
+          </div>
+          <form id="inventory-search-form" class="search-line">
+            <label for="inventory-search" class="sr-only">Buscar producto</label
+            ><input
+              id="inventory-search"
+              placeholder="Buscar por nombre"
+              autocomplete="off"
+            /><button class="secondary">Buscar</button>
+          </form>
+          <div id="product-recovery" class="warning" hidden>
+            <p>
+              Hay un producto pendiente de confirmar. Conserva el intento para
+              recuperar su SKU sin crear otro producto.
+            </p>
+            <button id="retry-product" type="button">
+              Revisar producto pendiente
+            </button>
+          </div>
+          <div id="stock-recovery" class="warning" hidden>
+            <p>
+              Hay una entrada de inventario pendiente de confirmar. Revisa el
+              mismo intento antes de registrar otra entrada.
+            </p>
+            <button id="retry-stock">Revisar entrada pendiente</button
+            ><button id="resolve-stock" class="secondary">
+              Resolver sin registrar otra entrada
+            </button>
+          </div>
+          <div id="inventory-table"></div>
+        </section>
+        <section id="view-purchases" class="view" hidden>
+          <div class="tool-list" id="purchase-tools"></div>
+          <div class="native-container" id="purchase-native"></div>
+        </section>
+        <section id="view-finances" class="view" hidden>
+          <div class="tool-list" id="finance-tools"></div>
+          <div class="native-container" id="finance-native"></div>
+        </section>
+        <section id="view-customers" class="view" hidden>
+          <div class="tool-list" id="customer-tools"></div>
+          <div class="native-container" id="customer-native"></div>
+        </section>
+        <section id="view-businesses" class="view" hidden>
+          <div class="section-heading">
+            <h2>Perfil del negocio activo</h2>
+            <button id="new-business">Agregar negocio</button>
+          </div>
+          <p class="hint">
+            Cada negocio tiene un almacén y una caja. La entidad legal puede
+            compartirse o ser distinta.
+          </p>
+          <form id="business-form" class="form-sheet">
+            <div id="business-fields"></div>
+            <div class="actions">
+              <button>Guardar perfil</button
+              ><button id="legal-entity" type="button" class="secondary">
+                Editar entidad legal
+              </button>
+              <button
+                id="business-access"
+                type="button"
+                class="secondary"
+                title="Edita los usuarios autorizados en el formulario nativo del negocio."
+              >
+                Gestionar accesos
+              </button>
+            </div>
+          </form>
+          <div id="business-native" class="native-container"></div>
+        </section>
+        <section id="view-team" class="view" hidden>
+          <div class="section-heading">
+            <h2>Personas con acceso</h2>
+            <button id="add-user">Crear perfil</button>
+          </div>
+          <p class="hint">
+            Los administradores gestionan la operación. Los cajeros trabajan
+            solo con los negocios asignados.
+          </p>
+          <div id="team-table"></div>
+        </section>
+        <section id="view-settings" class="view" hidden>
+          <div class="settings-layout">
+            <form id="settings-form" class="form-sheet">
+              <h2>Idioma y operación</h2>
+              <div id="settings-fields"></div>
+              <p class="hint">
+                La moneda predeterminada se usa al crear una entidad nueva. Las
+                entidades existentes conservan su moneda contable. Los recibos
+                guardados no cambian.
+              </p>
+              <button>Guardar ajustes</button>
+            </form>
+            <div>
+              <div class="print-preset" aria-labelledby="recovery-title">
+                <h2 id="recovery-title">Respaldo y recuperación</h2>
+                <p id="recovery-backup" role="status">
+                  Consultando el respaldo…
+                </p>
+                <p id="recovery-restore"></p>
+                <details>
+                  <summary>Cómo proteger los datos</summary>
+                  <p>
+                    El respaldo diario se ejecuta cuando este computador y WSL
+                    están encendidos. Durante la copia, el programa se pausa
+                    unos instantes. Consulta el manual para verificar la copia,
+                    restaurarla en un sitio aislado y guardar otra copia fuera
+                    del computador.
+                  </p>
+                </details>
+              </div>
+              <form id="receipt-settings-form" class="form-sheet">
+                <h2>Recibo del negocio activo</h2>
+                <div id="receipt-fields"></div>
+                <button>Guardar opciones del recibo</button>
+              </form>
+              <div class="print-preset" id="printer-preset">
+                <h2>Impresora y lector instalados</h2>
+                <p>
+                  Página de 48 mm. Ancho útil de 44 mm. Margen superior de
+                  contenido de 0,5 mm. Altura ajustada al contenido.
+                </p>
+                <ol>
+                  <li>En el diálogo de impresión, elige la cola instalada.</li>
+                  <li>En Márgenes, selecciona Mínimo.</li>
+                  <li>Desactiva Encabezados y pies de página.</li>
+                  <li>
+                    Usa el tamaño adaptable del controlador si está disponible.
+                    Conserva la configuración que ya funciona en tu equipo.
+                  </li>
+                </ol>
+                <p class="hint">
+                  El programa prepara el documento. El navegador y el
+                  controlador conservan sus propias opciones de impresión.
+                </p>
+              </div>
+            </div>
+          </div>
+        </section>
+        <section id="view-help" class="view" hidden>
+          <label for="help-search">Buscar en el manual</label
+          ><input
+            id="help-search"
+            type="search"
+            placeholder="Por ejemplo, código de barras o cierre"
+          />
+          <div id="manual-content"></div>
+        </section>
+      </main>
+    </div>
+    <dialog id="form-dialog">
+      <form id="dialog-form">
+        <div class="dialog-heading">
+          <h2 id="dialog-title"></h2>
+          <button
+            id="close-dialog"
+            type="button"
+            class="icon-button"
+            aria-label="Cerrar formulario"
+          >
+            ×
+          </button>
+        </div>
+        <p id="dialog-description" class="hint"></p>
+        <div id="dialog-fields"></div>
+        <p id="dialog-error" role="alert" hidden></p>
+        <div class="actions">
+          <button id="dialog-save">Guardar</button
+          ><button type="button" id="dialog-cancel" class="secondary">
+            Cancelar
+          </button>
+        </div>
+      </form>
+    </dialog>
+    <aside id="tour" class="tour" aria-label="Tutorial de la sección" hidden>
+      <div class="section-heading">
+        <strong id="tour-count"></strong
+        ><button
+          id="tour-close"
+          class="icon-button"
+          aria-label="Cerrar tutorial"
+        >
+          ×
+        </button>
+      </div>
+      <h2 id="tour-title"></h2>
+      <p id="tour-text"></p>
+      <div class="actions">
+        <button id="tour-back" class="secondary">Anterior</button
+        ><button id="tour-next">Siguiente</button>
+      </div>
+      <button id="tour-skip" class="quiet">Omitir tutorial</button>
+    </aside>
+  </body>
+</html>
