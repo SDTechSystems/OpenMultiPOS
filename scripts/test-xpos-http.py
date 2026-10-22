@@ -156,8 +156,10 @@ class XPOSHTTPTests(unittest.TestCase):
             doc.api_secret = secrets.token_hex(24)
             cls.tokens[user] = f"token {doc.api_key}:{doc.api_secret}"
             doc.enabled = 1
-            if user == MANAGER and "Sales User" not in [row.role for row in doc.roles]:
-                doc.append("roles", {"role": "Sales User"})
+            for role in ("Sales User",) if user == MANAGER else ("Sales User", "OMP Cashier"):
+                # Cashiers must hold the native roles whose reads the hooks restrict.
+                if role not in [row.role for row in doc.roles]:
+                    doc.append("roles", {"role": role})
             doc.save()
         frappe.get_doc("User", cls.a["user"]).add_roles(PRINT_ROLE)
         if not frappe.db.exists("Price List", "OMP HTTP COP"):
@@ -519,6 +521,118 @@ class XPOSHTTPTests(unittest.TestCase):
                     )
                     self.assertEqual(response.status_code, 403)
                     self.assertNotIn("OMP HTTP Customer", response.text)
+
+    def test_native_catalog_customers_reports_and_sales_documents_respect_brand_scope(self):
+        a, b, user = self.a, self.b, self.a["user"]
+        profiles = {a["profile"]: None, b["profile"]: None}
+        created = {"Bin": [], "Item": [], "Customer": []}
+        suffix = secrets.token_hex(3)  # Survives leftovers from an interrupted run.
+
+        def restore():
+            frappe.set_user("Administrator")
+            frappe.db.rollback()
+            for profile, customer in profiles.items():
+                frappe.db.set_value("POS Profile", profile, "customer", customer)
+            for doctype in ("Bin", "Item", "Customer"):
+                for name in created[doctype]:
+                    frappe.delete_doc(doctype, name, force=1)
+            frappe.db.commit()
+            frappe.clear_cache()
+
+        self.addCleanup(restore)
+        for profile in profiles:
+            profiles[profile] = frappe.db.get_value("POS Profile", profile, "customer")
+        counters = {}
+        for key, fixture in (("a", a), ("b", b)):
+            counters[key] = frappe.get_doc(
+                {
+                    "doctype": "Customer",
+                    "customer_name": "OMP HTTP Counter " + key.upper() + " " + suffix,
+                    "customer_type": "Individual",
+                    "customer_group": "Commercial",
+                    "territory": "All Territories",
+                }
+            ).insert()
+            created["Customer"].append(counters[key].name)
+            frappe.db.set_value("POS Profile", fixture["profile"], "customer", counters[key].name)
+        items = {}
+        for key, brand in (("a", a["brand"]), ("b", b["brand"]), ("free", None)):
+            items[key] = frappe.get_doc(
+                {
+                    "doctype": "Item",
+                    "item_code": "OMP-HTTP-CAT-" + key.upper() + "-" + suffix,
+                    "item_name": "Catalogo ficticio " + key,
+                    "item_group": "Services",
+                    "stock_uom": "Nos",
+                    "is_stock_item": int(brand is None),  # Bin fixtures use the free item.
+                    "omp_business_brand": brand,
+                }
+            ).insert()
+            created["Item"].append(items[key].name)
+        for fixture in (a, b):
+            bin_doc = frappe.get_doc(
+                {
+                    "doctype": "Bin",
+                    "item_code": items["free"].name,
+                    "warehouse": fixture["warehouse"],
+                }
+            ).insert()
+            created["Bin"].append(bin_doc.name)
+        frappe.db.commit()
+        frappe.clear_cache()
+        headers = {"Host": OPTIONS.site, "Authorization": self.tokens[user]}
+
+        def resource(doctype, name, verb="GET", **options):
+            path = "/api/resource/" + quote(doctype, safe="") + "/" + quote(name, safe="")
+            return requests.request(
+                verb, OPTIONS.base_url + path, headers=headers, timeout=30, **options
+            )
+
+        def listing(doctype, filters, fields):
+            response = self.call(
+                "frappe.client.get_list",
+                {
+                    "doctype": doctype,
+                    "filters": json.dumps(filters),
+                    "fields": json.dumps(fields),
+                    "limit_page_length": 100,
+                },
+                user=user,
+            )
+            self.assertEqual(response.status_code, 200)
+            return response.json()["message"]
+
+        rows = listing("Item", [["item_code", "like", f"OMP-HTTP-CAT-%-{suffix}"]], ["name"])
+        self.assertEqual({row["name"] for row in rows}, {items["a"].name, items["free"].name})
+        for key, status in (("a", 200), ("free", 200), ("b", 403)):
+            self.assertEqual(resource("Item", items[key].name).status_code, status, key)
+        rows = listing("Customer", [["name", "in", [c.name for c in counters.values()]]], ["name"])
+        self.assertEqual({row["name"] for row in rows}, {counters["a"].name})
+        self.assertEqual(resource("Customer", counters["a"].name).status_code, 200)
+        self.assertEqual(resource("Customer", counters["b"].name).status_code, 403)
+        update = resource("Customer", counters["a"].name, "PUT", json={"mobile_no": "0"})
+        self.assertEqual(update.status_code, 403)
+        rows = listing("Bin", [["item_code", "=", items["free"].name]], ["name", "warehouse"])
+        self.assertEqual({row["warehouse"] for row in rows}, {a["warehouse"]})
+        for doctype in ("Sales Order", "Quotation", "Delivery Note"):
+            with self.subTest(doctype=doctype):
+                self.assertEqual(listing(doctype, [], ["name"]), [])
+                doc = frappe.new_doc(doctype)
+                self.assertFalse(frappe.has_permission(doctype, doc=doc, user=user))
+                self.assertTrue(frappe.has_permission(doctype, doc=doc, user=MANAGER))
+        report = {"report_name": "Item-wise Sales History"}
+        for method, payload, version in (
+            ("frappe.desk.query_report.run", report, "v1"),
+            ("frappe.desk.query_report.run", report, "v2"),
+            ("frappe.desk.query_report.background_enqueue_run", report, "v1"),
+            ("frappe.desk.query_report.export_query", report, "v1"),
+            ("frappe.desk.reportview.export_query", {"doctype": "Item"}, "v1"),
+        ):
+            with self.subTest(method=method, version=version):
+                response = self.call(method, payload, user=user, version=version)
+                self.assertEqual(response.status_code, 403)
+                # Proves the OpenMultiPOS gate denied it, not a native permission.
+                self.assertIn("no está habilitada", response.text)
 
     def test_unassigned_format_is_rejected(self):
         self.assertEqual(

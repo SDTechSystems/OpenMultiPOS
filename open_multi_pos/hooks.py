@@ -16,6 +16,12 @@ permission_query_conditions = {
     "POS Profile": "open_multi_pos.permissions.profile_query",
     "Sales Invoice": "open_multi_pos.permissions.sales_invoice_query",
     "POS Invoice": "open_multi_pos.permissions.pos_invoice_query",
+    "Item": "open_multi_pos.permissions.item_query",
+    "Customer": "open_multi_pos.permissions.customer_query",
+    "Bin": "open_multi_pos.permissions.bin_query",
+    "Sales Order": "open_multi_pos.permissions.deny_cashier_query",
+    "Quotation": "open_multi_pos.permissions.deny_cashier_query",
+    "Delivery Note": "open_multi_pos.permissions.deny_cashier_query",
     "OMP POS Terminal": "open_multi_pos.checkout_permissions.terminal_query",
     "POS Opening Entry": "open_multi_pos.checkout_permissions.opening_query",
     "POS Closing Entry": "open_multi_pos.checkout_permissions.closing_query",
@@ -25,6 +31,12 @@ has_permission = {
     "POS Profile": "open_multi_pos.permissions.profile_permission",
     "Sales Invoice": "open_multi_pos.permissions.invoice_permission",
     "POS Invoice": "open_multi_pos.permissions.invoice_permission",
+    "Item": "open_multi_pos.permissions.item_permission",
+    "Customer": "open_multi_pos.permissions.customer_permission",
+    "Bin": "open_multi_pos.permissions.bin_permission",
+    "Sales Order": "open_multi_pos.permissions.deny_cashier_permission",
+    "Quotation": "open_multi_pos.permissions.deny_cashier_permission",
+    "Delivery Note": "open_multi_pos.permissions.deny_cashier_permission",
     "OMP POS Terminal": "open_multi_pos.checkout_permissions.terminal_permission",
     "POS Opening Entry": "open_multi_pos.checkout_permissions.shift_permission",
     "POS Closing Entry": "open_multi_pos.checkout_permissions.shift_permission",
@@ -46,6 +58,9 @@ doc_events = {
     }
     for doctype in ("Sales Invoice", "POS Opening Entry", "POS Closing Entry")
 }
+
+# OMP estimates may be edited natively; guided submission preserves their reviewed snapshot.
+doc_events["Landed Cost Voucher"] = {"before_submit": "open_multi_pos.landed_costs.guard_submit"}
 
 # Administrators may operate one personal opening per workspace business.
 # Native closing queries already scope invoices by profile AND owner.

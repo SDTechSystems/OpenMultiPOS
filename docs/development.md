@@ -92,3 +92,9 @@ Las capturas de `test-results/workspace` no se publican automáticamente. Solo l
 
 
 Antes del navegador administrativo, ejecutar `bench --site omp.localhost migrate` después de crear los maestros de prueba. El controlador nativo Installed Applications reconoce los usuarios de sistema y empresas existentes y actualiza sus metadatos de instalación; no se escriben banderas de setup manualmente. Sin esa actualización, un sitio recién instalado puede enviar las pantallas nativas al asistente inicial aunque los contratos HTTP ya funcionen. El runner ahora comprueba `frappe.is_setup_complete()` explícitamente. En una instalación real, completar primero la configuración inicial de ERPNext.
+
+## Costos de compra
+
+Después de migrar y con web/worker activos, ejecutar `env/bin/python <checkout>/scripts/test-landed-costs-http.py --bench <bench>`. Son doce pruebas HTTP reales de LCV nativo con compras ficticias, separadas de las pruebas unitarias. Incluyen abandono tras rechazo, solicitudes tardías, carrera envío/abandono y reconocimiento de un LCV cancelado aunque su compra se cancele después. La suite prepara un ejercicio fiscal ficticio si hace falta; restaura roles y configuración temporal y conserva los documentos contables de prueba. No ejecutarla simultáneamente con otras suites del mismo sitio. Ver [contrato operativo](landed-costs.md).
+
+El recorrido de navegador específico se ejecuta con `OMP_BROWSER_EXECUTABLE=/usr/bin/chromium env/bin/python <checkout>/scripts/test-landed-costs-browser.py --bench <bench>` en Linux, o `OMP_BROWSER_CHANNEL=chromium` con el navegador instalado por Playwright en CI. Comprueba cookie/CSRF, teclado, recarga, envío de estimación, un único LCV, pérdida de la respuesta de abandono, recuperación y liberación del intento, axe y viewports 390/1366. Credenciales efímeras por stdin; restaura contraseña/sesiones. Capturas privadas en `test-results/landed-costs/`; solo `costs.png` revisada se publica mediante manifest.

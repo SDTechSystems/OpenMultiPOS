@@ -1,0 +1,78 @@
+{
+  "doctype": "DocType",
+  "name": "OMP Import Request",
+  "module": "Open Multi POS",
+  "engine": "InnoDB",
+  "fields": [
+    {
+      "fieldname": "actor",
+      "label": "Usuario",
+      "fieldtype": "Link",
+      "options": "User",
+      "reqd": 1
+    },
+    {
+      "fieldname": "brand",
+      "label": "Negocio",
+      "fieldtype": "Link",
+      "options": "OMP Business Brand",
+      "reqd": 1
+    },
+    {
+      "fieldname": "request_id",
+      "label": "Identificador de operación",
+      "fieldtype": "Data",
+      "reqd": 1
+    },
+    {
+      "fieldname": "source_hash",
+      "label": "Huella del contenido",
+      "fieldtype": "Data"
+    },
+    {
+      "fieldname": "source_json",
+      "label": "Filas originales",
+      "fieldtype": "Long Text"
+    },
+    {
+      "fieldname": "plan_json",
+      "label": "Vista previa",
+      "fieldtype": "Long Text"
+    },
+    {
+      "fieldname": "plan_hash",
+      "label": "Huella de vista previa",
+      "fieldtype": "Data"
+    },
+    {
+      "fieldname": "result_json",
+      "label": "Resultado",
+      "fieldtype": "Long Text"
+    },
+    {
+      "fieldname": "status",
+      "label": "Estado",
+      "fieldtype": "Select",
+      "options": "Prepared\nCompleted\nAbandoned",
+      "reqd": 1,
+      "default": "Prepared"
+    }
+  ],
+  "field_order": [
+    "actor",
+    "brand",
+    "request_id",
+    "source_hash",
+    "source_json",
+    "plan_json",
+    "plan_hash",
+    "result_json",
+    "status"
+  ],
+  "permissions": [
+    {
+      "role": "System Manager",
+      "read": 1
+    }
+  ]
+}

@@ -1,0 +1,29 @@
+{
+  "doctype": "DocType",
+  "name": "OMP Landed Cost Tombstone",
+  "module": "Open Multi POS",
+  "engine": "InnoDB",
+  "fields": [
+    {
+      "fieldname": "actor",
+      "fieldtype": "Link",
+      "options": "User",
+      "label": "Usuario",
+      "reqd": 1
+    },
+    {
+      "fieldname": "brand",
+      "fieldtype": "Link",
+      "options": "OMP Business Brand",
+      "label": "Negocio",
+      "reqd": 1
+    }
+  ],
+  "field_order": ["actor", "brand"],
+  "permissions": [
+    {
+      "role": "System Manager",
+      "read": 1
+    }
+  ]
+}
