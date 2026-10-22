@@ -16,15 +16,18 @@ La identidad, los contactos, los NIT, los productos y las cuentas reales se conf
 | P0 | Manual, capturas, guías y ayuda por opción | [F27 · #15](https://github.com/JSX2011/OpenMultiPOS/issues/15). Doce secciones documentadas, tutoriales opcionales y capturas exclusivamente ficticias. |
 | P0 | SKU automático por negocio y datos del producto | [F28 · #16](https://github.com/JSX2011/OpenMultiPOS/issues/16). Prefijo editable, nombre normalizado y consecutivo; no modifica códigos existentes y recupera el alta con la misma clave. |
 | P0 implementado | Recuperación operativa y cierre de APIs anteriores | [#7](https://github.com/JSX2011/OpenMultiPOS/issues/7). Reinicio real de servicios, sesiones/intentos; copia privada diaria y restauración aislada de 18 tablas/archivos/secretos con conciliación; gate HTTP de X POS. Fusionado en `main` mediante #17, sin reemplazar el sitio operativo. |
-| P1 | Garantías y costos | [#21](https://github.com/JSX2011/OpenMultiPOS/issues/21), [#22](https://github.com/JSX2011/OpenMultiPOS/issues/22). Incrementos posteriores separados de #7. |
+| P1 | Reclamaciones de garantía | [#21](https://github.com/JSX2011/OpenMultiPOS/issues/21). Vinculadas a venta/artículo, con estado, fechas y notas; alcance inicial confirmado, implementación pendiente. |
+| P1 parcialmente integrado | Costos de compra guiados | [#22](https://github.com/JSX2011/OpenMultiPOS/issues/22). LCV, estimaciones y recuperación integrados mediante #42; conciliación de recálculos y márgenes pendientes. |
 | P1 integrado | Vista previa del recibo en Impresión de ERPNext | [#18](https://github.com/JSX2011/OpenMultiPOS/issues/18). Integrado mediante #35. Selección autorizada, instantánea histórica y vista compacta sin cobrar ni marcar como impreso. |
 | P1 integrado | Devoluciones guiadas por negocio | [#19](https://github.com/JSX2011/OpenMultiPOS/issues/19). Notas crédito parciales/totales vinculadas, stock y reembolsos nativos, recuperación sin duplicados y comprobante histórico. Integrado mediante #36. |
 | P1 | Ferias y operación sin conexión | [#6](https://github.com/JSX2011/OpenMultiPOS/issues/6). Fuera del checkout actual: reserva, cola, conflictos y conciliación requieren su propia implementación y pruebas. |
+| Entrega | Edición portable e instalador Windows compartibles | [#37](https://github.com/JSX2011/OpenMultiPOS/issues/37). Paquetes limpios, componentes gestionados, actualización/recuperación y pruebas en Windows sin checkout de desarrollo. |
+| Entrega | Primera configuración guiada y reanudable | [#38](https://github.com/JSX2011/OpenMultiPOS/issues/38). Acceso inicial, negocios, preferencias, inventario, equipos, recibo y respaldo. Ver [criterios de entrega](release-onboarding.md). |
 | P3 | Integración fiscal separada | DIAN desactivada. Requiere un encargo independiente y validación vigente. |
 
 ## Entrega actual
 
-El espacio administrativo y los requisitos F20-F28 están integrados en `main` mediante #17. La vista previa #18 está integrada mediante #35. Las devoluciones #19 están integradas mediante #36. Importar inventario #20 está integrado mediante #40: preparación CSV, errores por fila, revisión y aplicación atómica de catálogo y entradas nativas. Las restricciones adicionales para cajeros de #3 están integradas mediante #41; la revisión de otras APIs sigue abierta. [El informe de auditoría](audit-report.md) registra pruebas y límites; [el manual](manual.md) explica la operación. El acceso de cajero existente `/omp_pos` sigue disponible.
+El espacio administrativo y los requisitos F20-F28 están integrados en `main` mediante #17. La vista previa #18 está integrada mediante #35. Las devoluciones #19 están integradas mediante #36. Importar inventario #20 está integrado mediante #40: preparación CSV, errores por fila, revisión y aplicación atómica de catálogo y entradas nativas. Las restricciones adicionales para cajeros de #3 están integradas mediante #41; la revisión de otras APIs sigue abierta. La primera entrega de costos de compra está integrada mediante #42; conciliación de recálculos y márgenes siguen pendientes. [El informe de auditoría](audit-report.md) registra pruebas y límites; [el manual](manual.md) explica la operación. El acceso de cajero existente `/omp_pos` sigue disponible.
 
 Los administradores pueden mantener una apertura personal por negocio. La extensión conserva las comprobaciones nativas de perfil, empresa y cuentas; el cierre consulta facturas por usuario y perfil. Una cesta conjunta solo admite la misma moneda y mantiene una factura por negocio, incluso cuando comparten entidad legal.
 
@@ -38,7 +41,7 @@ El navegador no puede imponer silenciosamente la cola, los márgenes o los encab
 
 ## Base conservada
 
-Nueve pruebas Bench, 19 HTTP de seguridad, 20 HTTP de caja y el recorrido previo de Chrome Windows cubren la base. Las 14 rutas originales de factura X POS continúan bloqueadas. [#2](https://github.com/JSX2011/OpenMultiPOS/issues/2) conserva el seguimiento maestro; [#3](https://github.com/JSX2011/OpenMultiPOS/issues/3), [#4](https://github.com/JSX2011/OpenMultiPOS/issues/4) y [#5](https://github.com/JSX2011/OpenMultiPOS/issues/5) mantienen la evidencia técnica anterior. No se fusiona a `main` automáticamente.
+Nueve pruebas Bench, 21 HTTP de seguridad, 20 HTTP de caja y el recorrido previo de Chrome Windows cubren la base. Las 14 rutas originales de factura X POS continúan bloqueadas. [#2](https://github.com/JSX2011/OpenMultiPOS/issues/2) conserva el seguimiento maestro; [#3](https://github.com/JSX2011/OpenMultiPOS/issues/3), [#4](https://github.com/JSX2011/OpenMultiPOS/issues/4) y [#5](https://github.com/JSX2011/OpenMultiPOS/issues/5) mantienen la evidencia técnica anterior. No se fusiona a `main` automáticamente.
 
 ## Recuperación y seguridad de la entrega
 
@@ -46,11 +49,15 @@ Ver [respaldo y restauración](recovery.md) y [revisión de APIs](upstream-api-r
 
 ## Próximas entregas
 
-- #22 / PR #42: completar e integrar Costos de compra, incluido abandono confirmado en servidor para intentos rechazados y bloqueo de solicitudes tardías. Conciliación de recálculos y márgenes permanecen pendientes.
-- #21: garantías y servicio, siguiente incremento funcional separado.
-- #37 y #38: versiones Windows portátil e instalable y configuración inicial guiada, reanudable y en español. Se construirán cuando la base funcional esté lista, con instalaciones limpias sin datos, claves ni respaldos privados. La propuesta documental #39 permanece en revisión separada.
+- #21: reclamaciones de garantía vinculadas a venta/artículo, con estado, fechas y notas; siguiente incremento funcional. No incluir servicios pagados ni automatizar periodos o plazos sin reglas definidas.
+- #22: conciliación de recálculos de valoración y márgenes. Costos de compra y su recuperación están integrados mediante #42.
+- #37 y #38: versiones Windows portátil e instalable y configuración inicial guiada, reanudable y en español. Se construirán cuando la base funcional esté lista, con instalaciones limpias sin datos, claves ni respaldos privados. Los requisitos y criterios de aceptación se registran en #39 y [release-onboarding.md](release-onboarding.md); los paquetes y el asistente integral siguen sin implementar.
 - #6: operación sin conexión, con su propia conciliación.
 
 ### Primera entrega de #22: distribución de costos
 
 Sección guiada Costos de compra con LCV nativo, moneda original ligada a la cuenta, tasa explícita, distribución y vista previa por artículo, estimación en borrador y recuperación por clave única. PR #42 incorpora la corrección del bloqueo de recuperación: abandono persistente en servidor, recuperación de su respuesta perdida y reconocimiento del comprobante cancelado aunque su compra también se cancele. [Guía y límites](landed-costs.md). Es un avance parcial del #22: conciliación de recálculos de valoración y márgenes permanecen pendientes; no cerrar el issue completo con este incremento.
+
+## Distribución final y primera ejecución
+
+Al completar el alcance acordado, entregar edición portable y edición instalable para compartir, con configuración inicial guiada. Los artefactos se generan limpios, sin datos ni credenciales del propietario, y se prueban en Windows sin el entorno de desarrollo. El asistente debe reanudar pasos, explicar errores y conducir a una operación preparada. [Diseño, etapas y criterios verificables](release-onboarding.md).

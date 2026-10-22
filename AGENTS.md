@@ -24,3 +24,9 @@
 - Priorizar operación de dos negocios y dos administradores, menú lateral con iconos, selector de negocio, datos/permisos reales y ayuda en cada tarea. Ver docs/design-context.md.
 - Relación negocio/entidad legal configurable en instalación. Un recibo interno puede agrupar ventas, pero documentos, stock y cuentas conservan su empresa/perfil.
 - Manual visual y tutorial por sección son parte de la entrega. Capturas públicas solo generadas desde fixtures ficticios y aprobadas por manifest de hashes; imágenes del propietario siempre privadas.
+
+## Requisito de entrega Windows
+
+- Al completar el alcance acordado, preparar edición portable y edición instalable compartibles, ambas con configuración inicial guiada y reanudable. Seguir docs/release-onboarding.md y las issues #37/#38.
+- Aplicar onboard, frontend-design, accessibility y unslop al asistente. Conservar el contexto visual y las validaciones nativas de ERPNext.
+- Los paquetes compartidos deben iniciar limpios y generar secretos propios; nunca incluir la instalación operativa ni datos/credenciales del propietario. Validar en Windows sin checkout de desarrollo y declarar requisitos reales antes de afirmar portabilidad.
