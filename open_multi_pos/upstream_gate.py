@@ -18,6 +18,13 @@ DOCUMENT_RUNNERS = {
     "frappe.handler.run_doc_method",
     "frappe.api.v2.run_doc_method",
 }
+# Raw report queries bypass record hooks; cashiers only use /omp_pos.
+CASHIER_DENIED_METHODS = {
+    "frappe.desk.query_report.run",
+    "frappe.desk.query_report.background_enqueue_run",
+    "frappe.desk.query_report.export_query",
+    "frappe.desk.reportview.export_query",
+}
 
 
 def deny():
@@ -71,6 +78,12 @@ def authorize_request():
             else:
                 method = method.split("/", 1)[0]  # Native v1 compatibility rule.
     check_method(method)
+    if isinstance(method, str) and method in CASHIER_DENIED_METHODS:
+        from open_multi_pos.permissions import manager
+
+        user = frappe.session.user
+        if not manager(user) and "OMP Cashier" in frappe.get_roles(user):
+            deny()
     if isinstance(method, str) and method in DOCUMENT_RUNNERS:
         document = args.get("document") or args.get("docs") or {}
         if isinstance(document, str):

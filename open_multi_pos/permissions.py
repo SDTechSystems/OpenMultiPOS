@@ -77,6 +77,110 @@ def profile_permission(doc, user=None, ptype="read"):
     )
 
 
+def _unrestricted(user):
+    return manager(user) or "OMP Cashier" not in frappe.get_roles(user)
+
+
+def _granted_brand_exists(user, column):
+    """SQL EXISTS for an enabled brand granted to the user whose column matches the outer row."""
+    return (
+        "EXISTS (SELECT 1 FROM `tabOMP Business Brand` b "
+        "INNER JOIN `tabOMP Brand User` u ON u.parent=b.name "
+        "AND u.parenttype='OMP Business Brand' AND u.parentfield='allowed_users' "
+        f"WHERE b.enabled=1 AND u.user={frappe.db.escape(user)} AND {column})"
+    )
+
+
+def _granted_brand(user, column, value):
+    # `column` is a fixed internal literal, never client input.
+    return bool(
+        frappe.db.sql(
+            "SELECT b.name FROM `tabOMP Business Brand` b "
+            "INNER JOIN `tabOMP Brand User` u ON u.parent=b.name "
+            "AND u.parenttype='OMP Business Brand' AND u.parentfield='allowed_users' "
+            f"WHERE b.enabled=1 AND u.user=%s AND b.{column}=%s LIMIT 1",
+            (user, value),
+        )
+    )
+
+
+def item_query(user=None):
+    user = user or frappe.session.user
+    if user == "Guest":
+        return "1=0"
+    if _unrestricted(user):
+        return ""
+    return (
+        "(IFNULL(`tabItem`.omp_business_brand,'')='' OR "
+        + _granted_brand_exists(user, "b.name=`tabItem`.omp_business_brand")
+        + ")"
+    )
+
+
+def item_permission(doc, user=None, ptype="read"):
+    user = user or frappe.session.user
+    if user == "Guest":
+        return False
+    if _unrestricted(user):
+        return True  # Native permissions still decide writes.
+    brand = doc.get("omp_business_brand")
+    return not brand or _granted_brand(user, "name", brand)
+
+
+def customer_query(user=None):
+    user = user or frappe.session.user
+    if user == "Guest":
+        return "1=0"
+    if _unrestricted(user):
+        return ""
+    return (
+        "EXISTS (SELECT 1 FROM `tabPOS Profile` WHERE `tabPOS Profile`.customer=`tabCustomer`.name "
+        f"AND {profile_query(user)})"
+    )
+
+
+def customer_permission(doc, user=None, ptype="read"):
+    user = user or frappe.session.user
+    if user == "Guest":
+        return False
+    if _unrestricted(user):
+        return True
+    if ptype not in ("read", "select", "print"):
+        return False  # The counter customer is read-only for cashiers.
+    return bool(
+        frappe.db.sql(
+            f"SELECT name FROM `tabPOS Profile` WHERE customer=%s AND {profile_query(user)} LIMIT 1",
+            (doc.name,),
+        )
+    )
+
+
+def bin_query(user=None):
+    user = user or frappe.session.user
+    if user == "Guest":
+        return "1=0"
+    if _unrestricted(user):
+        return ""
+    return _granted_brand_exists(user, "b.warehouse=`tabBin`.warehouse")
+
+
+def bin_permission(doc, user=None, ptype="read"):
+    user = user or frappe.session.user
+    if user == "Guest":
+        return False
+    return _unrestricted(user) or _granted_brand(user, "warehouse", doc.warehouse)
+
+
+def deny_cashier_query(user=None):
+    user = user or frappe.session.user
+    return "" if user != "Guest" and _unrestricted(user) else "1=0"
+
+
+def deny_cashier_permission(doc, user=None, ptype="read"):
+    user = user or frappe.session.user
+    return user != "Guest" and _unrestricted(user)  # The app never uses these doctypes.
+
+
 def _invoice_brand_condition(table, user):
     escaped = frappe.db.escape(user)
     return (
