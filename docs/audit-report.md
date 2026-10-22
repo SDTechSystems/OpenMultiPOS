@@ -250,8 +250,36 @@ Validación local: 64 pruebas Python, Ruff y formato; 11 pruebas HTTP contra ERP
 
 Límites: productos simples de stock en Nos; series, lotes, variantes, paquetes, fracciones y precios especiales requieren formularios nativos. La confirmación de contenido repetido no identifica entregas físicas con archivos distintos. No se amplía hardware, offline, DIAN, garantías ni costos de importación. Las versiones Windows portátil/instalable y su configuración inicial siguen en #37/#38.
 
+## Incremento #22: distribución de costos de compra (21/10/2026)
+
+Alcance: LCV nativo guiado, estimaciones en borrador, monedas/tasas explícitas y recuperación. Conciliación de recálculos y márgenes quedan pendientes. Inspección del LCV y de `init_landed_taxes_and_totals` en ERPNext `5af6561f5aa48104559692fb4fd82f2580e8d338`; no se modifica core. No se escriben directamente SLE/GL desde el servicio OMP.
+
+Entorno local nuevo en espacio de usuario: Python 3.14.8, Bench 5.29.1, MariaDB 11.8.6, Redis 8.0.5 y aplicaciones de `upstream.lock.json`, sitio desechable loopback. La instalación inicial falló por usuarios anónimos locales de MariaDB; se corrigió en esa instancia nueva y se recreó exclusivamente el sitio recién iniciado. La Papelera solo se usó como referencia de herramientas, sin restaurar su base de datos. Credenciales privadas fuera de Git.
+
+- Contratos/simulador: **68 pruebas sin Frappe**, aprobadas; no validan stock productivo.
+- Integración: **9 pruebas HTTP reales** de LCV: recepción/factura con stock, borrador sin efecto y edición nativa, envío y reintento, concurrencia (200 o rollback 409 con recuperación), unicidad, separación de negocios en la misma empresa, permisos de cajero, moneda USD/tasa explícita, vista obsoleta, cancelación, rechazo nativo sin LCV parcial e impuestos previos incluidos en valoración.
+- Navegador: **1 recorrido Chromium/Playwright** con cookie/CSRF, teclado, borrador/recarga/envío, UUID conservado y un solo LCV. Sin errores JS, sin desbordamiento a 390×844 y 1366×900; axe de la sección: cero hallazgos en reglas WCAG automatizadas. No certifica accesibilidad completa.
+- Captura del manual: generada del recorrido ficticio, inspeccionada y aprobada por ruta/hash en el manifest. El navegador colaborativo falló dos veces con `Preview automation snapshot timed out after 15000ms`; se validó con el flujo Playwright del repositorio.
+- Lint y formato Python/JS/HTML y guard de publicación revisados junto con el commit. La revisión de implementación se hizo en esta sesión; no se presenta como revisión independiente.
+
+Límites: no se verificó finalización de recálculos sobre ventas posteriores, no se certificó un nuevo restore de LCV ni hardware; conserva el preset confirmado. No se ejecutó la suite completa upstream ni se certifica compatibilidad universal. DIAN continúa desactivada; no hubo transmisión fiscal. La clave impide duplicar un intento, no identifica dos intentos nuevos del mismo flete físico. El cliente conserva el contenido del intento en su almacenamiento local hasta resolverlo y requiere el mismo usuario/sitio.
+
 ## P0 · Superficie nativa de cajeros (#3) · 22/10/2026
 
 Se restringen para `OMP Cashier` Item (marca sin dueño o concedida), Customer (solo cliente de mostrador del perfil accesible, solo lectura), Bin (almacén de marca concedida) y se deniegan Sales Order, Quotation y Delivery Note. Los ejecutores genéricos de reportes y exportaciones devuelven 403 a cajeros. Las descargas de adjuntos de Item/Customer siguen el permiso del documento. Detalle en [xpos-api-security.md](xpos-api-security.md).
 
 Validación: 64 pruebas Python, Ruff y formato. Bench desechable local con los SHAs fijados (MariaDB 11.8.6, Redis 8.0.5, Python 3.14): 9 pruebas Bench, 21 HTTP de seguridad X POS, 20 de caja nativa, 19 administrativas, 11 de devoluciones y 11 de importación, sin fallos. Sin los hooks y el bloqueo, solo la prueba nueva falla. No se ejecutaron los recorridos de navegador; CI del PR repite la instalación nueva. Pendiente: metadatos de File, Address/Contact, Price List, otros reportes. No se certifica aislamiento completo.
+
+## Recuperación de costos de compra · PR #42 · 21/10/2026
+
+La revisión reprodujo un bloqueo: el navegador conservaba el intento antes del POST, pero una compra cancelada podía impedir tanto el envío como una nueva vista previa. Consultar devolvía `not_found` y no existía abandono seguro. El servicio incorpora una marca privada por usuario/UUID/negocio bajo los mismos bloqueos de perfil y negocio del envío. Abandonar recupera un comprobante existente o bloquea envíos tardíos; no borra ni cancela documentos. La interfaz solo libera el intento tras observar un resultado del servidor y recupera el abandono aunque se pierda su respuesta. El estado de un LCV cancelado deja de depender de que su compra siga enviada.
+
+Validación local de la corrección: 68 pruebas de contratos/simulador sin Frappe y 12 pruebas HTTP contra ERPNext real en los SHAs fijados, aprobadas. Las HTTP incluyen compra cancelada, repetición del abandono, rechazo de Guest/cajero y negocio ajeno, solicitud tardía, carrera envío/abandono, recuperación de un comprobante existente y cancelación posterior de su compra. No hay mocks de permisos, stock ni GL en esa suite.
+
+La ejecución conjunta detectó un conflicto entre fixtures de ejercicio fiscal: la suite anterior ya creaba un ejercicio global que solapaba el de LCV. La preparación de LCV usa ahora `get_fiscal_year` nativo por empresa, renueva su lectura después de crear empresas por HTTP y crea un ejercicio acotado a la empresa solo si falta. Se repitieron los 12 casos en un sitio recién instalado y después de crear el ejercicio global de la suite anterior: ambas ejecuciones aprobaron en aislamiento, sin cambiar validaciones ni fuentes upstream.
+
+Los ensayos se ejecutaron con Bubblewrap, espacio de red aislado sin salida externa, entorno vacío con variables permitidas, fuentes y herramientas de solo lectura y escrituras limitadas a scratch. Los contratos tuvieron límite de 90 s, CPU 60 s y memoria de 1 GiB. La integración usó MariaDB/Redis propios del espacio aislado y datos ficticios; límite de 900 s, dos CPU, 4 GiB de memoria, 192 tareas y scratch tmpfs de 3 GiB. No se expusieron credenciales, sockets ni servicios del sitio operativo al proceso de prueba.
+
+El recorrido Chromium se amplía para comprobar pérdida de respuesta antes del envío y después de confirmar abandono, recarga, UUID y nueva operación. La ejecución local quedó bloqueada antes de abrir el navegador por ausencia de `libnspr4.so`; no se presenta como navegador aprobado. CI conserva el recorrido con sus dependencias de navegador y repite la instalación, regresiones y restauración. El comparador incorpora las cinco tablas nativas de LCV y su marca de abandono: 27 tablas previstas. Se revisarán los resultados remotos del commit publicado antes de integrar.
+
+Revisión de seguridad enfocada en autorización, aislamiento e idempotencia; no es una auditoría integral. Conciliación de recálculos posteriores y márgenes de #22 siguen pendientes. No se amplía hardware, offline, DIAN ni distribución Windows.

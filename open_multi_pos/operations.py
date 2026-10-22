@@ -34,6 +34,12 @@ TABLES = (
     "OMP Return Request",
     "OMP Import Request",
     "OMP Inventory Tombstone",
+    "OMP Landed Cost Tombstone",
+    "Landed Cost Voucher",
+    "Landed Cost Item",
+    "Landed Cost Taxes and Charges",
+    "Landed Cost Purchase Receipt",
+    "Landed Cost Vendor Invoice",
     "POS Opening Entry",
     "POS Closing Entry",
 )

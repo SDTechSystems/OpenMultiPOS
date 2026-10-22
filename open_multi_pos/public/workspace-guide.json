@@ -242,6 +242,44 @@
     ]
   },
   {
+    "id": "costs",
+    "title": "Costos de compra",
+    "intro": "Distribuye fletes y otros costos sobre recepciones nativas del negocio activo.",
+    "steps": [
+      {
+        "title": "Selecciona compras",
+        "body": "Marca recepciones enviadas o facturas que actualizaron stock. Todas las filas deben pertenecer al negocio y su almacén. Registra primero la compra en ERPNext.",
+        "target": "#cost-sources"
+      },
+      {
+        "title": "Ingresa costos y tasas",
+        "body": "Selecciona una cuenta de Gastos incluidos en valoración. Su moneda es la moneda original del costo. Escribe importe y tasa explícita en moneda contable por unidad original; para la misma moneda usa 1. Agrega filas para otros costos.",
+        "target": "#cost-charges"
+      },
+      {
+        "title": "Revisa la distribución",
+        "body": "Calcula la vista previa. Compara monedas, tasas, importes contables y costo unitario antes y después. La distribución usa cantidades o importes base nativos.",
+        "target": "#cost-preview"
+      },
+      {
+        "title": "Guarda o envía",
+        "body": "Confirma la revisión. Guardar estimación crea un LCV en borrador sin efecto en stock. Enviar distribución lo registra definitivamente con permisos nativos.",
+        "target": "#cost-review"
+      },
+      {
+        "title": "Recupera y ajusta",
+        "body": "Si se pierde la respuesta, consulta estado o reintenta la misma operación. Si el intento ya no es válido, usa Abandonar intento pendiente: el servidor recupera un comprobante existente o bloquea envíos tardíos antes de permitir otro intento. Si se pierde esa respuesta, recarga y consulta el estado. Para ajustar una estimación, abre el comprobante en ERPNext, guarda allí, consulta el estado y revisa antes de enviar la estimación.",
+        "target": "#cost-status"
+      }
+    ],
+    "notes": [
+      "ERPNext recalcula desde la recepción y puede dejar recálculos posteriores pendientes. Esta sección no certifica su finalización ni calcula márgenes.",
+      "No dupliques costos ni representes la misma mercancía mediante una recepción y otra factura con stock. Una clave nueva no identifica un flete físico repetido.",
+      "La vista muestra costo unitario de la recepción, no el saldo actual del almacén. Series, lotes, activos, unidades convertidas, filas de otros negocios y distribuciones manuales se revisan en ERPNext.",
+      "El borrador puede ajustarse en ERPNext. Consulta nuevamente su estado para revisar el importe vigente antes de enviar. No transmite documentos fiscales."
+    ]
+  },
+  {
     "id": "finances",
     "title": "Finanzas",
     "intro": "Consulta cuentas y registra movimientos en la entidad seleccionada.",

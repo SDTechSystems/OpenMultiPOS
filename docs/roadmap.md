@@ -24,7 +24,7 @@ La identidad, los contactos, los NIT, los productos y las cuentas reales se conf
 
 ## Entrega actual
 
-El espacio administrativo y los requisitos F20-F28 están integrados en `main` mediante #17. La vista previa #18 está integrada mediante #35. Las devoluciones #19 están integradas mediante #36. La rama `codex/guided-imports` implementa #20: preparación CSV, errores por fila, revisión y aplicación atómica de catálogo y entradas nativas. [El informe de auditoría](audit-report.md) registra pruebas y límites; [el manual](manual.md) explica la operación. El acceso de cajero existente `/omp_pos` sigue disponible.
+El espacio administrativo y los requisitos F20-F28 están integrados en `main` mediante #17. La vista previa #18 está integrada mediante #35. Las devoluciones #19 están integradas mediante #36. Importar inventario #20 está integrado mediante #40: preparación CSV, errores por fila, revisión y aplicación atómica de catálogo y entradas nativas. Las restricciones adicionales para cajeros de #3 están integradas mediante #41; la revisión de otras APIs sigue abierta. [El informe de auditoría](audit-report.md) registra pruebas y límites; [el manual](manual.md) explica la operación. El acceso de cajero existente `/omp_pos` sigue disponible.
 
 Los administradores pueden mantener una apertura personal por negocio. La extensión conserva las comprobaciones nativas de perfil, empresa y cuentas; el cierre consulta facturas por usuario y perfil. Una cesta conjunta solo admite la misma moneda y mantiene una factura por negocio, incluso cuando comparten entidad legal.
 
@@ -46,7 +46,11 @@ Ver [respaldo y restauración](recovery.md) y [revisión de APIs](upstream-api-r
 
 ## Próximas entregas
 
-- #20: Importar inventario implementado en rama, pendiente de revisión e integración. Archivos CSV de un negocio, SKU automático opcional, precios, códigos y cantidades adicionales; recuperación sin duplicados, guía y captura ficticia.
-- #21: garantías y servicio; #22: costos de importación y distribución de costos.
+- #22 / PR #42: completar e integrar Costos de compra, incluido abandono confirmado en servidor para intentos rechazados y bloqueo de solicitudes tardías. Conciliación de recálculos y márgenes permanecen pendientes.
+- #21: garantías y servicio, siguiente incremento funcional separado.
 - #37 y #38: versiones Windows portátil e instalable y configuración inicial guiada, reanudable y en español. Se construirán cuando la base funcional esté lista, con instalaciones limpias sin datos, claves ni respaldos privados. La propuesta documental #39 permanece en revisión separada.
 - #6: operación sin conexión, con su propia conciliación.
+
+### Primera entrega de #22: distribución de costos
+
+Sección guiada Costos de compra con LCV nativo, moneda original ligada a la cuenta, tasa explícita, distribución y vista previa por artículo, estimación en borrador y recuperación por clave única. PR #42 incorpora la corrección del bloqueo de recuperación: abandono persistente en servidor, recuperación de su respuesta perdida y reconocimiento del comprobante cancelado aunque su compra también se cancele. [Guía y límites](landed-costs.md). Es un avance parcial del #22: conciliación de recálculos de valoración y márgenes permanecen pendientes; no cerrar el issue completo con este incremento.

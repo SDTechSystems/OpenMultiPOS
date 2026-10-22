@@ -12,6 +12,10 @@
     <script src="/assets/open_multi_pos/workspace-sales.js" defer></script>
     <script src="/assets/open_multi_pos/workspace-returns.js" defer></script>
     <script src="/assets/open_multi_pos/workspace-imports.js" defer></script>
+    <script
+      src="/assets/open_multi_pos/workspace-landed-costs.js"
+      defer
+    ></script>
     <script src="/assets/open_multi_pos/workspace.js" defer></script>
   </head>
   <body data-user="{{ workspace_user | e }}">
@@ -477,6 +481,82 @@ crear;;Producto ficticio;;Products;2500,50;0;</pre
             </button>
           </div>
           <div id="inventory-table"></div>
+        </section>
+        <section id="view-costs" class="view" hidden>
+          <p class="warning">
+            Enviar un costo recalcula la valoración desde la recepción y puede
+            afectar ventas posteriores mediante tareas de ERPNext. Esta vista no
+            confirma que esos recálculos hayan terminado. No crea un documento
+            fiscal.
+          </p>
+          <div id="cost-inputs" class="form-sheet">
+            <fieldset id="cost-sources">
+              <legend>1. Selecciona las compras del negocio</legend>
+              <p class="hint">
+                Solo documentos completos del negocio y su almacén. No
+                selecciones una recepción y otra factura que representen la
+                misma mercancía.
+              </p>
+              <div id="cost-receipts"></div>
+            </fieldset>
+            <label
+              >2. Distribución<select id="cost-basis">
+                <option value="Amount">Por importe base</option>
+                <option value="Qty">Por cantidad</option>
+              </select></label
+            >
+            <p class="hint">
+              Por cantidad: usa artículos con unidades comparables. Por importe:
+              reparte en proporción al costo base de compra.
+            </p>
+            <div id="cost-charges"></div>
+            <button id="cost-add" type="button" class="secondary">
+              Agregar otro costo
+            </button>
+          </div>
+          <div class="actions">
+            <button id="cost-preview">3. Calcular vista previa</button
+            ><button id="cost-status" class="secondary">Consultar estado</button
+            ><button id="cost-refresh" class="secondary" hidden>
+              Actualizar vista previa del mismo intento</button
+            ><button id="cost-retry" hidden>
+              Reintentar la misma operación</button
+            ><button id="cost-abandon" class="secondary" hidden>
+              Abandonar intento pendiente
+            </button>
+          </div>
+          <p id="cost-state" role="status"></p>
+          <div id="cost-review" hidden>
+            <h2 id="cost-review-title">Revisa antes de guardar o enviar</h2>
+            <p id="cost-summary"></p>
+            <div id="cost-charge-preview"></div>
+            <div id="cost-item-preview"></div>
+            <p class="hint">
+              Costo unitario de la recepción, incluidos costos previos y esta
+              distribución, en moneda contable. No es el margen ni la valoración
+              actual de todo el almacén. Las estimaciones no afectan stock.
+            </p>
+            <label
+              ><input id="cost-confirm" type="checkbox" />Revisé documentos,
+              cuentas, monedas, tasas e importes. Estos costos no se han
+              distribuido antes.</label
+            >
+            <div class="actions">
+              <button id="cost-draft" class="secondary">
+                Guardar estimación en borrador</button
+              ><button id="cost-send">Enviar distribución definitiva</button
+              ><button id="cost-submit-draft" hidden>
+                Enviar estimación revisada
+              </button>
+            </div>
+          </div>
+          <div class="actions">
+            <a id="cost-native" hidden target="_blank" rel="noopener"
+              >Abrir comprobante en ERPNext</a
+            ><button id="cost-new" class="secondary">
+              Preparar otra distribución
+            </button>
+          </div>
         </section>
         <section id="view-purchases" class="view" hidden>
           <div class="tool-list" id="purchase-tools"></div>

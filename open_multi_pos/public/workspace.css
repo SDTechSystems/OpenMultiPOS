@@ -944,3 +944,37 @@ fieldset {
 #view-imports .table-wrap {
   max-width: 100%;
 }
+
+#view-costs .form-sheet {
+  display: grid;
+  gap: 20px;
+}
+#cost-charges {
+  display: grid;
+  gap: 24px;
+}
+#view-costs fieldset {
+  display: grid;
+  gap: 12px;
+}
+#view-costs label {
+  display: grid;
+  gap: 6px;
+  min-width: 0;
+}
+#cost-receipts {
+  display: grid;
+  gap: 12px;
+}
+#cost-receipts label,
+#cost-review > label {
+  display: flex;
+  align-items: flex-start;
+  gap: 10px;
+}
+#cost-review {
+  margin-top: 24px;
+}
+#cost-review .table-wrap {
+  margin-bottom: 20px;
+}

@@ -35,6 +35,10 @@
       "Inventario",
       "Crea productos y registra existencias en el almacén correcto.",
     ],
+    costs: [
+      "Costos de compra",
+      "Distribuye fletes y otros costos mediante ERPNext.",
+    ],
     purchases: [
       "Compras",
       "Gestiona proveedores, pedidos y facturas de compra.",
@@ -61,6 +65,7 @@
     returns: "M9 4L3 10l6 6M3 10h11a7 7 0 0 1 7 7v3",
     imports: "M12 3v12M7 10l5 5 5-5M4 17v4h16v-4",
     inventory: "M3 7l9-4 9 4-9 4-9-4v10l9 4 9-4V7M12 11v10M8 5l9 4",
+    costs: "M3 3h18v18H3zM7 8h10M7 12h10M7 16h4",
     purchases: "M5 3h14v18l-3-2-4 2-4-2-3 2V3M8 8h8M8 12h8M8 16h4",
     finances: "M3 21h18M5 21V10h4v11M11 21V6h4v15M17 21V3h4v18",
     customers:
@@ -1136,6 +1141,9 @@
     } else if (view === "imports") {
       W.needBrand();
       await window.OMPImports.enter();
+    } else if (view === "costs") {
+      W.needBrand();
+      await window.OMPLandedCosts.enter();
     } else if (view === "inventory") await inventory();
     else if (view === "businesses") await business();
     else if (view === "team") await team();

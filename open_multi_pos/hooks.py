@@ -59,6 +59,9 @@ doc_events = {
     for doctype in ("Sales Invoice", "POS Opening Entry", "POS Closing Entry")
 }
 
+# OMP estimates may be edited natively; guided submission preserves their reviewed snapshot.
+doc_events["Landed Cost Voucher"] = {"before_submit": "open_multi_pos.landed_costs.guard_submit"}
+
 # Administrators may operate one personal opening per workspace business.
 # Native closing queries already scope invoices by profile AND owner.
 extend_doctype_class = {
