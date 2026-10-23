@@ -27,6 +27,10 @@
       "Devoluciones",
       "Consulta la venta original y registra productos devueltos y reembolsos.",
     ],
+    warranties: [
+      "Garantías",
+      "Registra reclamaciones y consulta su seguimiento por venta y artículo.",
+    ],
     imports: [
       "Importar inventario",
       "Valida archivos y revisa productos, precios y unidades antes de aplicarlos.",
@@ -63,6 +67,7 @@
     home: "M3 10l9-7 9 7M5 9v11h5v-6h4v6h5V9",
     sales: "M3 4h3l2 12h10l2-8H7M10 21h.01M18 21h.01",
     returns: "M9 4L3 10l6 6M3 10h11a7 7 0 0 1 7 7v3",
+    warranties: "M12 3l9 4v6c0 5-9 9-9 9s-9-4-9-9V7l9-4M8 12l3 3 5-6",
     imports: "M12 3v12M7 10l5 5 5-5M4 17v4h16v-4",
     inventory: "M3 7l9-4 9 4-9 4-9-4v10l9 4 9-4V7M12 11v10M8 5l9 4",
     costs: "M3 3h18v18H3zM7 8h10M7 12h10M7 16h4",
@@ -1138,6 +1143,9 @@
     } else if (view === "returns") {
       W.needBrand();
       await window.OMPReturns.enter();
+    } else if (view === "warranties") {
+      W.needBrand();
+      await window.OMPWarranties.enter();
     } else if (view === "imports") {
       W.needBrand();
       await window.OMPImports.enter();

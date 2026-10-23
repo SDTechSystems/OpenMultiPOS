@@ -35,6 +35,8 @@ TABLES = (
     "OMP Import Request",
     "OMP Inventory Tombstone",
     "OMP Landed Cost Tombstone",
+    "Warranty Claim",
+    "OMP Warranty Request",
     "Landed Cost Voucher",
     "Landed Cost Item",
     "Landed Cost Taxes and Charges",

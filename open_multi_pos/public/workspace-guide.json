@@ -487,5 +487,32 @@
     "notes": [
       "Las guías no bloquean la operación ni marcan tareas como realizadas. Guardar y Enviar siguen siendo acciones explícitas."
     ]
+  },
+  {
+    "id": "warranties",
+    "title": "Garantías",
+    "steps": [
+      {
+        "title": "Consulta la venta",
+        "body": "Selecciona el negocio y escribe el número de la venta original. Elige el artículo y registra fecha y motivo; no se crean cobros ni movimientos de inventario.",
+        "target": "#view-warranties"
+      },
+      {
+        "title": "Recupera antes de repetir",
+        "body": "Si se interrumpe la conexión, conserva el intento. Consulta o reintenta con la misma clave. Abandonar confirma el resultado existente o bloquea una solicitud tardía.",
+        "target": "#view-warranties"
+      },
+      {
+        "title": "Actualiza el seguimiento",
+        "body": "Abre una reclamación reciente o búscala por número. Revisa estado y notas. Si alguien la cambió, consulta la versión actual antes de volver a guardar.",
+        "target": "#view-warranties"
+      },
+      {
+        "title": "Revisa las condiciones acordadas",
+        "body": "Registrar una reclamación no confirma cobertura. Los periodos y plazos no se calculan automáticamente. Reembolsos y existencias mantienen sus flujos separados.",
+        "target": "#view-warranties"
+      }
+    ],
+    "intro": "Reclamaciones vinculadas a una venta y un artículo, con estado, fechas y notas."
   }
 ]

@@ -62,6 +62,11 @@ doc_events = {
 # OMP estimates may be edited natively; guided submission preserves their reviewed snapshot.
 doc_events["Landed Cost Voucher"] = {"before_submit": "open_multi_pos.landed_costs.guard_submit"}
 
+doc_events["Warranty Claim"] = {
+    "validate": "open_multi_pos.warranties.guard_links",
+    "on_trash": "open_multi_pos.warranties.guard_delete",
+}
+
 # Administrators may operate one personal opening per workspace business.
 # Native closing queries already scope invoices by profile AND owner.
 extend_doctype_class = {

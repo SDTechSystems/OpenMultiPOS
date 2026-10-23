@@ -251,3 +251,13 @@ Después de encender Windows, usa `scripts/start-openmultipos.cmd` para iniciar 
 Los clientes y proveedores se comparten en el sitio; sus facturas, pedidos y movimientos conservan su empresa. Revisa Empresa al crear esos documentos.
 
 Una cuenta administrativa conserva acceso amplio a los documentos del sitio. Revisa Empresa dentro de cada formulario; el filtro del menú se puede cambiar y no representa una restricción de seguridad.
+
+## Garantías
+
+1. Selecciona el negocio y abre Garantías. Escribe el número de la venta original y usa Consultar venta.
+2. Selecciona el artículo, la fecha de recepción y el motivo. Registrar reclamación crea el documento nativo sin cobrar ni mover inventario.
+3. Si se pierde la respuesta, consulta o reintenta el mismo intento. Abandonar confirma el resultado o bloquea una solicitud tardía antes de permitir otra reclamación.
+4. Abre una reclamación reciente o búscala por número. Actualizar seguimiento permite revisar estado y notas; si alguien la cambió, vuelve a consultarla antes de guardar.
+5. Cerrar registra la fecha nativa de resolución. El seguimiento no confirma cobertura ni calcula periodos/plazos automáticos.
+
+[Recuperación, permisos y límites](warranties.md). Las reparaciones pagadas, devoluciones y cambios de existencias mantienen flujos separados.

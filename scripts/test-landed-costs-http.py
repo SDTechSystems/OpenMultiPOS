@@ -21,30 +21,6 @@ spec.loader.exec_module(fixtures)
 
 
 class LandedCostsHTTP(fixtures.WorkspaceHTTP):
-    @classmethod
-    def setUpClass(cls):
-        super().setUpClass()
-        # The HTTP-created companies committed through another database connection.
-        frappe.db.rollback()
-        from erpnext.accounts.utils import get_fiscal_year
-        from frappe.utils import nowdate
-
-        today = nowdate()
-        year = today[:4]
-        for company in sorted({brand["company"] for brand in cls.businesses}):
-            if get_fiscal_year(today, company=company, raise_on_missing=False):
-                continue
-            frappe.get_doc(
-                {
-                    "doctype": "Fiscal Year",
-                    "year": "OMP LCV HTTP " + year + " " + uuid4().hex[:8],
-                    "year_start_date": year + "-01-01",
-                    "year_end_date": year + "-12-31",
-                    "companies": [{"company": company}],
-                }
-            ).insert()
-        frappe.db.commit()
-
     def purchase(self, brand=None, doctype="Purchase Receipt", valuation_tax=0):
         brand = brand or self.businesses[0]
         code = self.product(brand, stock=False)
