@@ -1,6 +1,6 @@
 # Distribución Windows y primera configuración
 
-Requisito de entrega solicitado por el propietario: al completar y validar el alcance acordado, entregar una edición portable y una edición instalable que se puedan compartir, ambas con una primera configuración guiada. Seguimiento: [distribución Windows #37](https://github.com/JSX2011/OpenMultiPOS/issues/37) y [asistente inicial #38](https://github.com/JSX2011/OpenMultiPOS/issues/38).
+Requisito de entrega solicitado por el propietario: al completar y validar el alcance acordado, entregar una edición portable y una edición instalable que se puedan compartir, ambas con una primera configuración guiada. Seguimiento: [distribución Windows #37](https://github.com/SDTechSystems/OpenMultiPOS/issues/37) y [asistente inicial #38](https://github.com/SDTechSystems/OpenMultiPOS/issues/38).
 
 Este documento define el trabajo pendiente. El wheel, la demo, el lanzador local y las guías actuales no son los dos paquetes finales ni un asistente integral terminado.
 

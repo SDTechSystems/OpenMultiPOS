@@ -6,23 +6,23 @@ La identidad, los contactos, los NIT, los productos y las cuentas reales se conf
 
 | Prioridad | Entrega | Seguimiento y criterio |
 | --- | --- | --- |
-| P0 | Espacio administrativo `/omp`, menú con iconos, buscador y selector de negocio | [F20 · #8](https://github.com/JSX2011/OpenMultiPOS/issues/8). Acciones conectadas a documentos reales y contexto visible. |
-| P0 | Perfil comercial y datos de recibo por negocio | [F21 · #9](https://github.com/JSX2011/OpenMultiPOS/issues/9). Nombre, razón social, NIT, teléfono, correo, dirección, mensaje y QR editables; visibilidad independiente e historial inmutable. |
-| P0 | Primera cuenta humana y administración del equipo | [F22 · #10](https://github.com/JSX2011/OpenMultiPOS/issues/10). Alta desde sesión de instalación, sin registro administrativo público; perfiles posteriores solo por un administrador. |
-| P0 | Productos, precios, almacenes y lector instalado | [F23 · #11](https://github.com/JSX2011/OpenMultiPOS/issues/11). Propietario visible, entrada nativa y recuperación sin duplicados. |
-| P0 | Cesta de ambos negocios y recibo interno conjunto | [F24 · #12](https://github.com/JSX2011/OpenMultiPOS/issues/12). Una transacción; facturas/stock/cuentas separados; fallo de una parte revierte ambas. |
-| P0 | Papel eficiente con el equipo Windows existente | [F25 · #13](https://github.com/JSX2011/OpenMultiPOS/issues/13). Página 48 mm, contenido 44 mm, altura medida y margen superior 0,5 mm; navegador con Márgenes Mínimo y sin encabezados/pies. |
-| P0 | Compras, proveedores, clientes, pedidos y finanzas | [F26 · #14](https://github.com/JSX2011/OpenMultiPOS/issues/14). Formularios e informes nativos accesibles en el menú; empresa, permisos y documentos conservados. |
-| P0 | Manual, capturas, guías y ayuda por opción | [F27 · #15](https://github.com/JSX2011/OpenMultiPOS/issues/15). Doce secciones documentadas, tutoriales opcionales y capturas exclusivamente ficticias. |
-| P0 | SKU automático por negocio y datos del producto | [F28 · #16](https://github.com/JSX2011/OpenMultiPOS/issues/16). Prefijo editable, nombre normalizado y consecutivo; no modifica códigos existentes y recupera el alta con la misma clave. |
-| P0 implementado | Recuperación operativa y cierre de APIs anteriores | [#7](https://github.com/JSX2011/OpenMultiPOS/issues/7). Reinicio real de servicios, sesiones/intentos; copia privada diaria y restauración aislada de 18 tablas/archivos/secretos con conciliación; gate HTTP de X POS. Fusionado en `main` mediante #17, sin reemplazar el sitio operativo. |
-| P1 | Reclamaciones de garantía | [#21](https://github.com/JSX2011/OpenMultiPOS/issues/21). Vinculadas a venta/artículo, con estado, fechas y notas; alcance inicial confirmado, implementación pendiente. |
-| P1 parcialmente integrado | Costos de compra guiados | [#22](https://github.com/JSX2011/OpenMultiPOS/issues/22). LCV, estimaciones y recuperación integrados mediante #42; conciliación de recálculos y márgenes pendientes. |
-| P1 integrado | Vista previa del recibo en Impresión de ERPNext | [#18](https://github.com/JSX2011/OpenMultiPOS/issues/18). Integrado mediante #35. Selección autorizada, instantánea histórica y vista compacta sin cobrar ni marcar como impreso. |
-| P1 integrado | Devoluciones guiadas por negocio | [#19](https://github.com/JSX2011/OpenMultiPOS/issues/19). Notas crédito parciales/totales vinculadas, stock y reembolsos nativos, recuperación sin duplicados y comprobante histórico. Integrado mediante #36. |
-| P1 | Ferias y operación sin conexión | [#6](https://github.com/JSX2011/OpenMultiPOS/issues/6). Fuera del checkout actual: reserva, cola, conflictos y conciliación requieren su propia implementación y pruebas. |
-| Entrega | Edición portable e instalador Windows compartibles | [#37](https://github.com/JSX2011/OpenMultiPOS/issues/37). Paquetes limpios, componentes gestionados, actualización/recuperación y pruebas en Windows sin checkout de desarrollo. |
-| Entrega | Primera configuración guiada y reanudable | [#38](https://github.com/JSX2011/OpenMultiPOS/issues/38). Acceso inicial, negocios, preferencias, inventario, equipos, recibo y respaldo. Ver [criterios de entrega](release-onboarding.md). |
+| P0 | Espacio administrativo `/omp`, menú con iconos, buscador y selector de negocio | [F20 · #8](https://github.com/SDTechSystems/OpenMultiPOS/issues/8). Acciones conectadas a documentos reales y contexto visible. |
+| P0 | Perfil comercial y datos de recibo por negocio | [F21 · #9](https://github.com/SDTechSystems/OpenMultiPOS/issues/9). Nombre, razón social, NIT, teléfono, correo, dirección, mensaje y QR editables; visibilidad independiente e historial inmutable. |
+| P0 | Primera cuenta humana y administración del equipo | [F22 · #10](https://github.com/SDTechSystems/OpenMultiPOS/issues/10). Alta desde sesión de instalación, sin registro administrativo público; perfiles posteriores solo por un administrador. |
+| P0 | Productos, precios, almacenes y lector instalado | [F23 · #11](https://github.com/SDTechSystems/OpenMultiPOS/issues/11). Propietario visible, entrada nativa y recuperación sin duplicados. |
+| P0 | Cesta de ambos negocios y recibo interno conjunto | [F24 · #12](https://github.com/SDTechSystems/OpenMultiPOS/issues/12). Una transacción; facturas/stock/cuentas separados; fallo de una parte revierte ambas. |
+| P0 | Papel eficiente con el equipo Windows existente | [F25 · #13](https://github.com/SDTechSystems/OpenMultiPOS/issues/13). Página 48 mm, contenido 44 mm, altura medida y margen superior 0,5 mm; navegador con Márgenes Mínimo y sin encabezados/pies. |
+| P0 | Compras, proveedores, clientes, pedidos y finanzas | [F26 · #14](https://github.com/SDTechSystems/OpenMultiPOS/issues/14). Formularios e informes nativos accesibles en el menú; empresa, permisos y documentos conservados. |
+| P0 | Manual, capturas, guías y ayuda por opción | [F27 · #15](https://github.com/SDTechSystems/OpenMultiPOS/issues/15). Doce secciones documentadas, tutoriales opcionales y capturas exclusivamente ficticias. |
+| P0 | SKU automático por negocio y datos del producto | [F28 · #16](https://github.com/SDTechSystems/OpenMultiPOS/issues/16). Prefijo editable, nombre normalizado y consecutivo; no modifica códigos existentes y recupera el alta con la misma clave. |
+| P0 implementado | Recuperación operativa y cierre de APIs anteriores | [#7](https://github.com/SDTechSystems/OpenMultiPOS/issues/7). Reinicio real de servicios, sesiones/intentos; copia privada diaria y restauración aislada de 18 tablas/archivos/secretos con conciliación; gate HTTP de X POS. Fusionado en `main` mediante #17, sin reemplazar el sitio operativo. |
+| P1 | Reclamaciones de garantía | [#21](https://github.com/SDTechSystems/OpenMultiPOS/issues/21). Vinculadas a venta/artículo, con estado, fechas y notas; alcance inicial confirmado, implementación pendiente. |
+| P1 parcialmente integrado | Costos de compra guiados | [#22](https://github.com/SDTechSystems/OpenMultiPOS/issues/22). LCV, estimaciones y recuperación integrados mediante #42; conciliación de recálculos y márgenes pendientes. |
+| P1 integrado | Vista previa del recibo en Impresión de ERPNext | [#18](https://github.com/SDTechSystems/OpenMultiPOS/issues/18). Integrado mediante #35. Selección autorizada, instantánea histórica y vista compacta sin cobrar ni marcar como impreso. |
+| P1 integrado | Devoluciones guiadas por negocio | [#19](https://github.com/SDTechSystems/OpenMultiPOS/issues/19). Notas crédito parciales/totales vinculadas, stock y reembolsos nativos, recuperación sin duplicados y comprobante histórico. Integrado mediante #36. |
+| P1 | Ferias y operación sin conexión | [#6](https://github.com/SDTechSystems/OpenMultiPOS/issues/6). Fuera del checkout actual: reserva, cola, conflictos y conciliación requieren su propia implementación y pruebas. |
+| Entrega | Edición portable e instalador Windows compartibles | [#37](https://github.com/SDTechSystems/OpenMultiPOS/issues/37). Paquetes limpios, componentes gestionados, actualización/recuperación y pruebas en Windows sin checkout de desarrollo. |
+| Entrega | Primera configuración guiada y reanudable | [#38](https://github.com/SDTechSystems/OpenMultiPOS/issues/38). Acceso inicial, negocios, preferencias, inventario, equipos, recibo y respaldo. Ver [criterios de entrega](release-onboarding.md). |
 | P3 | Integración fiscal separada | DIAN desactivada. Requiere un encargo independiente y validación vigente. |
 
 ## Entrega actual
@@ -41,7 +41,7 @@ El navegador no puede imponer silenciosamente la cola, los márgenes o los encab
 
 ## Base conservada
 
-Nueve pruebas Bench, 21 HTTP de seguridad, 20 HTTP de caja y el recorrido previo de Chrome Windows cubren la base. Las 14 rutas originales de factura X POS continúan bloqueadas. [#2](https://github.com/JSX2011/OpenMultiPOS/issues/2) conserva el seguimiento maestro; [#3](https://github.com/JSX2011/OpenMultiPOS/issues/3), [#4](https://github.com/JSX2011/OpenMultiPOS/issues/4) y [#5](https://github.com/JSX2011/OpenMultiPOS/issues/5) mantienen la evidencia técnica anterior. No se fusiona a `main` automáticamente.
+Nueve pruebas Bench, 21 HTTP de seguridad, 20 HTTP de caja y el recorrido previo de Chrome Windows cubren la base. Las 14 rutas originales de factura X POS continúan bloqueadas. [#2](https://github.com/SDTechSystems/OpenMultiPOS/issues/2) conserva el seguimiento maestro; [#3](https://github.com/SDTechSystems/OpenMultiPOS/issues/3), [#4](https://github.com/SDTechSystems/OpenMultiPOS/issues/4) y [#5](https://github.com/SDTechSystems/OpenMultiPOS/issues/5) mantienen la evidencia técnica anterior. No se fusiona a `main` automáticamente.
 
 ## Recuperación y seguridad de la entrega
 
