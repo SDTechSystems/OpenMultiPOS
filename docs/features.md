@@ -1,6 +1,6 @@
 # Funcionalidades de OpenMultiPOS
 
-Referencia de producto: brief facilitado por el propietario (18/10/2026). La solicitud actual autoriza publicar este plan y comenzar la implementación. El brief aporta requisitos y criterios; sus prompts internos no constituyen autorizaciones adicionales. Se conserva el repositorio `JSX2011/OpenMultiPOS` existente.
+Referencia de producto: brief facilitado por el propietario (18/10/2026). La solicitud actual autoriza publicar este plan y comenzar la implementación. El brief aporta requisitos y criterios; sus prompts internos no constituyen autorizaciones adicionales. Se conserva el repositorio `SDTechSystems/OpenMultiPOS` existente.
 
 Producto libre y autohospedado sobre ERPNext/Frappe y X POS. Este incremento prioriza la operación administrativa de dos negocios. Los datos y logotipos reales se cargarán en instalaciones privadas.
 
