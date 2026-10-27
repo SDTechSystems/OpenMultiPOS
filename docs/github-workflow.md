@@ -4,7 +4,7 @@
 - **Commit**: una versión guardada con identificador y autor. Los commits de desarrollo usan alias y correo GitHub no-reply.
 - **Rama**: una línea de trabajo. Los cambios iniciales están en `codex/foundation-and-roadmap`; no se vuelven estables solo por enviarlos a GitHub.
 - **main**: la rama estable. Se protege para recibir cambios por PR y con comprobaciones correctas, sin sobrescrituras forzadas ni eliminación.
-- **Pull request / PR**: propuesta revisable para incorporar una rama en otra. [PR #1](https://github.com/JSX2011/OpenMultiPOS/pull/1) contiene el primer incremento. No está fusionado.
+- **Pull request / PR**: propuesta revisable para incorporar una rama en otra. [PR #1](https://github.com/SDTechSystems/OpenMultiPOS/pull/1) contiene el primer incremento. No está fusionado.
 - **Push**: subir commits de una rama. **Merge**: incorporar los cambios de un PR a main; es una acción distinta y se decide explícitamente.
 - **Checks / CI**: comprobaciones automáticas de privacidad, Python y navegador. Deben pasar antes de integrar.
 
