@@ -21,7 +21,7 @@ Las operaciones usan documentos, stock y contabilidad nativos; una cesta conjunt
 Requisito: Python **3.14** con pip/venv. No requiere ERPNext, impresora, cuentas bancarias ni DIAN. Linux/macOS:
 
 ```bash
-git clone https://github.com/JSX2011/OpenMultiPOS.git
+git clone https://github.com/SDTechSystems/OpenMultiPOS.git
 cd OpenMultiPOS
 git switch codex/business-workspace
 python3.14 -m venv .venv
