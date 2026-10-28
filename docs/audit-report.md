@@ -330,3 +330,15 @@ Chromium real aprobó la reanudación tras recarga, foco de teclado, recuperaci�
 
 
 La regresión completa de navegador del espacio administrativo aprobó compras/finanzas/clientes nativos, inventario, cobro mixto, devoluciones, importación, preferencias, manual, teclado, móvil y axe. La prueba de Print Settings ahora espera el selector de negocio poblado y el botón de vista previa habilitado, en lugar de depender del evento domcontentloaded de la ventana nueva. Mantiene la comprobación de la URL y verifica que la pantalla esté utilizable.
+
+## Construcción limpia del servidor WSL
+
+La validación completa de `374b0bd869a3f59dac5951f29e86f211cacf56cc` aprobó los cinco trabajos CI: [ejecución 40628651059](https://github.com/SDTechSystems/OpenMultiPOS/actions/runs/40628651059). El ensayo final informó restauración aprobada, 34 tablas, dos archivos de prueba, secreto cifrado conservado, rechazo de sobrescritura de sitio existente y aislamiento HTTP 503. Esto acredita la ampliación del respaldo de la preparación reanudable, no la distribución Windows del servidor.
+
+Se creó una distribución WSL2 Ubuntu 26.04.1 x64 nueva y exclusiva para construir el servidor, sin copiar la instalación operativa. Antes de ejecutar dependencias del proyecto se desactivaron montajes Windows e interoperabilidad, y se ejecutó el código de aplicaciones como usuario UID 1000 sin sudo, con entorno explícito y sin credenciales del host. Se exportaron las fuentes públicas de 374b0bd y el constructor. No se exportó todavía una imagen distribuible.
+
+`server/build-image.sh` reutiliza el preparador existente y sus tres SHA fijados. La construcción real completó dependencias y assets de Frappe, ERPNext, X POS y OpenMultiPOS con Python 3.14.4, Node 24.22.0, Bench 5.29.1 y Yarn 1.22.22. La descarga Node se verificó contra el SHA256 oficial. Se observaron avisos upstream de Browserslist y dependencias peer del frontend X POS, sin fallo de construcción. No se cambió core para eliminarlos.
+
+La primera inspección detectó Nginx iniciado por los paquetes, aunque existía policy-rc.d. Se detuvo únicamente en la distribución nueva y se cambió el constructor para enmascarar MariaDB, Redis y Nginx antes de instalar paquetes. Se repitió el constructor corregido con resultado cero. La comprobación posterior confirmó los tres servicios enmascarados e inactivos, los tres SHA esperados y ausencia de montajes Windows.
+
+El control `server/image_contract.py` aprobó la imagen de trabajo: cero sitios, cero esquemas comerciales y cero contraseñas Linux reutilizables. Tres nuevas pruebas verifican rechazo de un sitio, credenciales comunes/Redis, enlace de configuración, esquema comercial y contraseña Linux. Las 71 pruebas ordinarias, Ruff, formato, Prettier y sintaxis Bash aprobaron. Este control no sustituye la inspección completa de la imagen ni prueba el arranque de una aplicación: siguen pendientes inicialización privada, controles Windows, sellado/manifiesto/licencias, exportación y aceptación de instalación/actualización/recuperación/desinstalación. La distribución nueva permanece como entorno de construcción y sus servicios están detenidos.
