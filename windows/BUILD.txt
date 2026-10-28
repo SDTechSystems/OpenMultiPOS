@@ -19,3 +19,18 @@ ya están incluidos en el ZIP; no necesitas regenerarlos para compilar.
 
 Los compiladores pueden producir bytes y hashes diferentes. La construcción
 no se presenta como reproducible byte a byte. Los ejecutables están sin firma.
+
+Controlador del servidor, con .NET Framework 4.8 x64:
+
+& "$env:WINDIR\Microsoft.NET\Framework64\v4.0.30319\csc.exe" /nologo /target:winexe /platform:x64 /optimize+ /r:System.Windows.Forms.dll /r:System.Drawing.dll /r:System.Web.Extensions.dll /out:OpenMultiPOS-Server-Control.exe Server.cs
+
+En Linux usar mcs -sdk:4.8 -platform:x64 con las mismas referencias.
+El perfil 4.8 es obligatorio: compilar contra APIs Mono más recientes puede
+producir un programa que compile y falle en el runtime Windows.
+El constructor scripts/build-windows-controller.py requiere el Manual.html
+verificado que produce el constructor del cliente. El candidato no incluye
+aún la imagen del servidor. No es la distribución final.
+
+--self-test comprueba comillas y rechazo de una imagen corrupta, sin WSL.
+--verify-server OpenMultiPOS-<nombre>QA comprueba el transporte, protocolo y
+arranque/parada únicamente sobre una copia QA instalada. No usar datos reales.

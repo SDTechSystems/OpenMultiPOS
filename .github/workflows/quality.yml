@@ -148,10 +148,16 @@ jobs:
       - name: Install client build tools
         run: |
           sudo apt-get update -qq
-          sudo apt-get install -y mono-mcs libmono-system-windows-forms4.0-cil
+          sudo apt-get install -y mono-devel libmono-system-windows-forms4.0-cil libmono-system-web-extensions4.0-cil
           python -m pip install markdown2==2.5.5
       - name: Build clients and check URL contracts
         run: python scripts/build-windows-client.py --output test-results/windows-client
+      - name: Build server controller and check process contracts
+        run: python scripts/build-windows-controller.py --output test-results/windows-server-control --manual test-results/windows-client/OpenMultiPOS-Client-0.1.0/Manual.html
+      - uses: actions/upload-artifact@v4
+        with:
+          name: windows-server-controller-candidate
+          path: test-results/windows-server-control/
       - uses: actions/upload-artifact@v4
         with:
           name: windows-client-candidates
@@ -191,3 +197,17 @@ jobs:
         with:
           name: demo-browser-results
           path: test-results/
+
+  windows-controller-contracts:
+    needs: windows-client
+    runs-on: windows-latest
+    steps:
+      - uses: actions/download-artifact@v4
+        with:
+          name: windows-server-controller-candidate
+          path: controller
+      - name: Run the delivered controller on Windows
+        shell: pwsh
+        run: |
+          $process = Start-Process -FilePath "$PWD/controller/OpenMultiPOS-Server-Control.exe" -ArgumentList '--self-test' -Wait -PassThru
+          if ($process.ExitCode -ne 0) { throw 'Fallaron los contratos del controlador Windows' }

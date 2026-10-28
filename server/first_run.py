@@ -323,10 +323,20 @@ def setup(home, state, password, *, recover=False):
     save(STATE / "bootstrap.json", state)
 
 
+def public_status(state):
+    return {
+        "protocol": 1,
+        "installed": bool(state.get("installed")),
+        "recoverable": bool(state.get("db_name") and not state.get("installed")),
+        "retained_attempts": len(state.get("previous", [])),
+    }
+
+
 def main():
     parser = argparse.ArgumentParser(description=__doc__)
     parser.add_argument("action", choices=("setup", "recover", "start", "serve", "stop", "status"))
     parser.add_argument("--stdin", action="store_true", help=argparse.SUPPRESS)
+    parser.add_argument("--events", action="store_true", help=argparse.SUPPRESS)
     options = parser.parse_args()
     if os.geteuid() != 0 or not Path("/etc/openmultipos-build-environment").is_file():
         parser.error("Se requiere la distribución dedicada de OpenMultiPOS y permisos root")
@@ -374,7 +384,12 @@ def main():
             print("Abre http://localhost:8089/omp e inicia sesión como Administrator.", flush=True)
             if options.action == "serve":
                 fcntl.flock(lock, fcntl.LOCK_UN)
-                print("Servidor activo. Escribe stop para detenerlo.", flush=True)
+                print(
+                    json.dumps({"event": "ready", "protocol": 1})
+                    if options.events
+                    else "Servidor activo. Escribe stop para detenerlo.",
+                    flush=True,
+                )
                 try:
                     for line in sys.stdin:
                         if line.strip() == "stop":
@@ -387,7 +402,7 @@ def main():
         elif options.action == "stop":
             run("systemctl", "stop", "nginx", *reversed(SERVICES), "mariadb")
         else:
-            print(json.dumps({"installed": bool(state.get("installed"))}))
+            print(json.dumps(public_status(state)))
 
 
 if __name__ == "__main__":

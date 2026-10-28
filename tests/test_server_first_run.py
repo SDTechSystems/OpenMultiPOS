@@ -80,6 +80,19 @@ class FirstRunTests(unittest.TestCase):
         self.assertTrue(any("DROP USER" in command for command in sql))
         self.assertNotIn("admin_password", (self.state_path / "bootstrap.json").read_text())
 
+    def test_status_exposes_protocol_and_progress_without_secrets(self):
+        state = {
+            "db_name": "fictional",
+            "db_password": "do-not-expose",
+            "previous": [{"db_password": "old-secret"}],
+        }
+        self.assertEqual(
+            first_run.public_status(state),
+            {"protocol": 1, "installed": False, "recoverable": True, "retained_attempts": 1},
+        )
+        state["installed"] = True
+        self.assertFalse(first_run.public_status(state)["recoverable"])
+
 
 class RuntimeConfigurationTests(unittest.TestCase):
     def test_internal_services_use_private_sockets_and_proxy_binds_loopback(self):
