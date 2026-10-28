@@ -1,0 +1,24 @@
+{
+  "doctype": "DocType",
+  "name": "OMP Setup Progress",
+  "module": "Open Multi POS",
+  "autoname": "prompt",
+  "engine": "InnoDB",
+  "field_order": [
+    "state_json"
+  ],
+  "fields": [
+    {
+      "fieldname": "state_json",
+      "fieldtype": "Long Text",
+      "label": "Progreso privado",
+      "reqd": 1
+    }
+  ],
+  "permissions": [
+    {
+      "role": "System Manager",
+      "read": 1
+    }
+  ]
+}

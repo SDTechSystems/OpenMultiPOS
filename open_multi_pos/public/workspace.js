@@ -246,32 +246,11 @@
     }
   }
   function setup() {
-    const needs = state.boot.first_setup || !state.boot.businesses.length;
-    $("setup").hidden = !needs;
     $("home-content").hidden = !state.brand;
-    $("setup-actions").replaceChildren();
-    $("setup-suggestions").replaceChildren();
-    if (state.boot.first_setup)
-      $("setup-actions").append(
-        button(
-          "Crear mi perfil de administrador",
-          () => newUser(true),
-          "primary",
-        ),
-      );
-    if (!state.boot.businesses.length)
-      $("setup-actions").append(
-        button("Agregar negocio", () => newBusiness(), "secondary"),
-      );
-    for (const name of suggestions().businesses || []) {
-      if (!state.boot.businesses.some((b) => b.display_name === name))
-        $("setup-suggestions").append(
-          button("Configurar " + name, () => newBusiness(name), "quiet"),
-        );
-    }
   }
   async function home() {
     setup();
+    await window.OMPOnboarding.enter();
     if (!state.brand) return;
     const result = await api("workspace.overview", {
       brand: state.brand.brand,
@@ -428,19 +407,13 @@
           throw new Error(
             "Completa el nombre y la abreviatura de la entidad nueva.",
           );
-        const result = await api(
-          "workspace.create_business",
-          {
-            data: {
-              display_name: value("new-business-name"),
-              company,
-              legal_name: value("new-legal-name"),
-              abbr: value("new-abbr"),
-              currency: value("new-currency"),
-            },
-          },
-          true,
-        );
+        const result = await window.OMPOnboarding.create("business", {
+          display_name: value("new-business-name"),
+          company,
+          legal_name: value("new-legal-name"),
+          abbr: value("new-abbr"),
+          currency: value("new-currency"),
+        });
         await refreshBoot();
         W.active(result.brand);
         await route("businesses");
@@ -772,25 +745,24 @@
         })),
       ],
       async () => {
-        const result = await api(
-          "workspace.create_user",
+        const result = await window.OMPOnboarding.create(
+          "user",
           {
-            data: {
-              full_name: value("user-full-name"),
-              email: value("user-email"),
-              password: $("user-password").value,
-              role: value("user-role"),
-              brands: state.boot.businesses
-                .filter((_, i) => value("user-brand-" + i))
-                .map((b) => b.brand),
-            },
+            full_name: value("user-full-name"),
+            email: value("user-email"),
+            password: $("user-password").value,
+            role: value("user-role"),
+            brands: state.boot.businesses
+              .filter((_, i) => value("user-brand-" + i))
+              .map((b) => b.brand),
           },
-          true,
+          first,
         );
         $("user-password").value = "";
         await refreshBoot();
         setup();
         await team();
+        if (state.view === "home") await window.OMPOnboarding.enter();
         notice(
           "Perfil creado. Inicia sesión con esa cuenta para usar sus permisos.",
         );
@@ -1275,6 +1247,19 @@
     label?.after(tooltip);
     input.setAttribute("aria-describedby", tooltip.querySelector("p").id);
   }
+  W.route = route;
+  W.refreshBoot = refreshBoot;
+  W.setupActions = {
+    user: newUser,
+    business: () =>
+      newBusiness(
+        (suggestions().businesses || []).find(
+          (name) =>
+            !state.boot.businesses.some((brand) => brand.display_name === name),
+        ) || "",
+      ),
+  };
+  window.OMPOnboarding.pendingView();
   await run(async () => {
     await refreshBoot();
     W.translatePage();
@@ -1288,7 +1273,6 @@
     state.manual = await guide.json();
     await route(location.hash.slice(1) || "home");
   });
-  window.OMPWorkspace.route = route;
 })().catch((error) => {
   document.getElementById("notice").hidden = false;
   document.getElementById("notice").textContent = error.message;

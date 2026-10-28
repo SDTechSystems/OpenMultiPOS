@@ -317,3 +317,16 @@ Otros casos comprueban rechazo de Guest/cajero y GET, fechas inválidas y perío
 Chromium real aprobado en 1366/390 px: consulta de margen, teclado, cambio de fechas que limpia resultados, envío que invalida la consulta anterior, ocultación de columnas de margen durante recálculos, recuperación de LCV y abandono, cero infracciones axe en la sección. Se conserva la consulta bajo demanda; no hay sondeo automático, caché de importes ni dependencia frontend nueva. Las 68 pruebas de contratos/simulador, Ruff, formato y Prettier también aprobaron. Los ensayos usan el entorno aislado y los límites de la sección anterior, sin sitio operativo ni datos reales. La comparación de restauración añade tres tablas nativas de recálculo, para 32; su ensayo completo se repite en CI antes de afirmar esa cobertura.
 
 La validación remota del incremento anterior en `72b56fa749f8e984ce6485d2ab5caa2a364f519e` aprobó privacidad, Python, navegador demo, construcción de clientes y Bench real, incluido reinicio/worker/restauración de 29 tablas: [ejecución 40619160431](https://github.com/SDTechSystems/OpenMultiPOS/actions/runs/40619160431). Ese resultado precede a este cambio de valoración y no acredita todavía sus 32 tablas. No se modifican core, hardware, DIAN, operación sin conexión ni el sitio operativo.
+
+
+La ejecución remota del cambio de valoración en `30925d0767f2d74b3ffb9da4839ab191c883844b` aprobó los cinco trabajos, incluido Bench con worker, reinicio y restauración de 32 tablas: [ejecución 40622846948](https://github.com/SDTechSystems/OpenMultiPOS/actions/runs/40622846948). Este resultado no acredita todavía la preparación reanudable posterior.
+
+
+## Preparación reanudable
+
+Nueve pruebas HTTP nativas aprobadas en sitio desechable: reintentos concurrentes con recuperación tras conflicto, un solo negocio, abandono que bloquea escrituras tardías, contraseñas excluidas del journal y nunca restablecidas por replay, cursor persistente, huellas vigentes, existencias reales, cuenta inicial única incluso tras desactivarla, rechazo de Guest/GET/cajero y permisos privados. El cierre satisfactorio usa registros de servicio sintéticos en un directorio exclusivo de prueba; no demuestra por sí mismo que exista un respaldo restaurable. El ensayo real de recuperación sigue siendo una validación separada.
+
+Chromium real aprobó la reanudación tras recarga, foco de teclado, recuperación de una respuesta perdida del alta de cuenta, exclusión de contraseña de localStorage, cierre deshabilitado con requisitos pendientes, escritorio/móvil y cero infracciones axe en el asistente. Las 68 pruebas ordinarias, Ruff, formato, Prettier y tooltips aprobaron. Las nuevas tablas de progreso y solicitudes se incluyen en la comparación de restauración de 34 tablas. La ejecución remota de este incremento queda pendiente antes de acreditar esa ampliación.
+
+
+La regresión completa de navegador del espacio administrativo aprobó compras/finanzas/clientes nativos, inventario, cobro mixto, devoluciones, importación, preferencias, manual, teclado, móvil y axe. La prueba de Print Settings ahora espera el selector de negocio poblado y el botón de vista previa habilitado, en lugar de depender del evento domcontentloaded de la ventana nueva. Mantiene la comprobación de la URL y verifica que la pantalla esté utilizable.

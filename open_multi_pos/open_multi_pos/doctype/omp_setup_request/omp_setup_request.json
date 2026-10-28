@@ -1,0 +1,61 @@
+{
+  "doctype": "DocType",
+  "name": "OMP Setup Request",
+  "module": "Open Multi POS",
+  "autoname": "prompt",
+  "engine": "InnoDB",
+  "field_order": [
+    "actor",
+    "action",
+    "status",
+    "payload_hash",
+    "target_doctype",
+    "target_name"
+  ],
+  "fields": [
+    {
+      "fieldname": "actor",
+      "fieldtype": "Link",
+      "options": "User",
+      "label": "Usuario",
+      "reqd": 1
+    },
+    {
+      "fieldname": "action",
+      "fieldtype": "Select",
+      "options": "user\nbusiness\nclaim",
+      "label": "Acción",
+      "reqd": 1
+    },
+    {
+      "fieldname": "status",
+      "fieldtype": "Select",
+      "options": "Completed\nAbandoned",
+      "label": "Estado",
+      "reqd": 1
+    },
+    {
+      "fieldname": "payload_hash",
+      "fieldtype": "Data",
+      "label": "Huella"
+    },
+    {
+      "fieldname": "target_doctype",
+      "fieldtype": "Link",
+      "options": "DocType",
+      "label": "Tipo de registro"
+    },
+    {
+      "fieldname": "target_name",
+      "fieldtype": "Dynamic Link",
+      "options": "target_doctype",
+      "label": "Registro"
+    }
+  ],
+  "permissions": [
+    {
+      "role": "System Manager",
+      "read": 1
+    }
+  ]
+}

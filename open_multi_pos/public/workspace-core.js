@@ -83,6 +83,7 @@ window.OMPWorkspace = (() => {
     window.OMPImports?.controls();
     window.OMPLandedCosts?.controls();
     window.OMPWarranties?.controls();
+    window.OMPOnboarding?.controls();
     try {
       return await action();
     } catch (error) {
@@ -96,6 +97,7 @@ window.OMPWorkspace = (() => {
       window.OMPImports?.controls();
       window.OMPLandedCosts?.controls();
       window.OMPWarranties?.controls();
+      window.OMPOnboarding?.controls();
     }
   }
   function decimal(value) {

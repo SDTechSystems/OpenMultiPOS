@@ -37,6 +37,8 @@ TABLES = (
     "OMP Landed Cost Tombstone",
     "Warranty Claim",
     "OMP Warranty Request",
+    "OMP Setup Request",
+    "OMP Setup Progress",
     "Repost Item Valuation",
     "Repost Accounting Ledger",
     "Repost Accounting Ledger Items",

@@ -280,3 +280,12 @@ Una cuenta administrativa conserva acceso amplio a los documentos del sitio. Rev
 ![Captura ficticia: Margen bruto nativo](../open_multi_pos/public/manual/screenshots/valuation.png)
 
 ![Captura ficticia: Costos de compra](../open_multi_pos/public/manual/screenshots/costs.png)
+
+
+## Preparación que puedes continuar después
+
+En Inicio, abre **Revisar preparación inicial**. El asistente conserva el paso en el servidor y comprueba seis requisitos: cuenta personal, preferencias, dos negocios, un producto con precio y existencias, muestra de recibo de cada negocio y respaldo con ensayo de recuperación. Puedes salir y volver al mismo paso. Completa antes la configuración nativa de ERPNext en Escritorio.
+
+Revisa cada muestra de recibo con los datos y el equipo que vas a utilizar. Confirma su revisión en el asistente. Si cambias las preferencias o el perfil del negocio, vuelve a revisar la muestra. Tener un producto sin precio vigente o sin existencias no completa el paso de inventario. El estado del respaldo procede del servidor; el asistente no crea una copia ni un ensayo por marcar una casilla. Sigue [las instrucciones de recuperación](recovery.md).
+
+Si se interrumpe el alta de una cuenta o negocio, aparecerá una configuración pendiente. Primero consulta su estado. Puedes reintentar los mismos datos o resolver el intento antes de empezar otro. Resolver recupera el registro si ya se guardó, o bloquea solicitudes tardías si no se guardó. La contraseña no se guarda en el navegador; si necesitas reintentar una cuenta, introdúcela otra vez. Un reintento de una cuenta ya creada no cambia su contraseña. Usa Equipo para administrar perfiles existentes.

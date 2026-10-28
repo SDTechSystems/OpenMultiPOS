@@ -10,6 +10,7 @@
     <script src="/assets/open_multi_pos/workspace-english.js" defer></script>
     <script src="/assets/open_multi_pos/workspace-core.js" defer></script>
     <script src="/assets/open_multi_pos/workspace-tooltips.js" defer></script>
+    <script src="/assets/open_multi_pos/workspace-onboarding.js" defer></script>
     <script src="/assets/open_multi_pos/workspace-sales.js" defer></script>
     <script src="/assets/open_multi_pos/workspace-returns.js" defer></script>
     <script src="/assets/open_multi_pos/workspace-imports.js" defer></script>
@@ -87,16 +88,27 @@
           aria-atomic="true"
           hidden
         ></p>
+        <div id="setup-operation" class="warning" hidden></div>
         <section id="view-home" class="view">
-          <div id="setup" class="setup" hidden>
-            <h2>Configura tu espacio de trabajo</h2>
-            <p>
-              Crea tu perfil de administrador y agrega los negocios que vas a
-              gestionar.
-            </p>
-            <div id="setup-actions"></div>
-            <div id="setup-suggestions"></div>
-          </div>
+          <button
+            id="setup-open"
+            type="button"
+            class="secondary"
+            data-tooltip="Revisa o retoma la preparación guardada en el servidor. Las operaciones existentes conservan su configuración."
+          >
+            Revisar preparación inicial
+          </button>
+          <section
+            id="setup-wizard"
+            class="form-sheet"
+            aria-labelledby="setup-title"
+            hidden
+          >
+            <h2 id="setup-title" tabindex="-1">Preparación inicial</h2>
+            <p id="setup-count" role="status"></p>
+            <div id="setup-step"></div>
+            <div id="setup-navigation" class="actions"></div>
+          </section>
           <div id="home-content">
             <div class="metric-strip">
               <div>
