@@ -270,12 +270,17 @@
         "title": "Recupera y ajusta",
         "body": "Si se pierde la respuesta, consulta estado o reintenta la misma operación. Si el intento ya no es válido, usa Abandonar intento pendiente: el servidor recupera un comprobante existente o bloquea envíos tardíos antes de permitir otro intento. Si se pierde esa respuesta, recarga y consulta el estado. Para ajustar una estimación, abre el comprobante en ERPNext, guarda allí, consulta el estado y revisa antes de enviar la estimación.",
         "target": "#cost-status"
+      },
+      {
+        "title": "Consulta recálculos y margen",
+        "body": "Abre Revisar recálculos y margen bruto, elige un intervalo de hasta un año y consulta. Las tareas abiertas de valoración o contabilidad ocultan los importes. Revisa las tareas en ERPNext y vuelve a consultar después de completarlas. Con las colas despejadas, el informe nativo muestra ventas netas, costo de mercancía y margen del almacén activo, incluidos sus subalmacenes. La fecha de consulta identifica el momento observado; no se actualiza automáticamente.",
+        "target": "#valuation"
       }
     ],
     "notes": [
-      "ERPNext recalcula desde la recepción y puede dejar recálculos posteriores pendientes. Esta sección no certifica su finalización ni calcula márgenes.",
+      "El margen usa Gross Profit nativo, con los permisos del informe y moneda contable. No es la utilidad neta. Las tareas contables sin empresa también bloquean la vista hasta revisarlas.",
       "No dupliques costos ni representes la misma mercancía mediante una recepción y otra factura con stock. Una clave nueva no identifica un flete físico repetido.",
-      "La vista muestra costo unitario de la recepción, no el saldo actual del almacén. Series, lotes, activos, unidades convertidas, filas de otros negocios y distribuciones manuales se revisan en ERPNext.",
+      "La vista previa de distribución muestra costo unitario de la recepción, no el saldo actual del almacén. Series, lotes, activos, unidades convertidas, filas de otros negocios y distribuciones manuales se revisan en ERPNext.",
       "El borrador puede ajustarse en ERPNext. Consulta nuevamente su estado para revisar el importe vigente antes de enviar. No transmite documentos fiscales."
     ]
   },

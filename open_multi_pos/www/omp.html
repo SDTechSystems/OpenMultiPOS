@@ -485,11 +485,43 @@ crear;;Producto ficticio;;Products;2500,50;0;</pre
           <div id="inventory-table"></div>
         </section>
         <section id="view-costs" class="view" hidden>
+          <details class="form-sheet" id="valuation">
+            <summary>Revisar recálculos y margen bruto</summary>
+            <p class="hint">
+              Consulta el informe nativo del almacén activo, incluidos sus
+              subalmacenes. El margen bruto resta el costo de la mercancía a las
+              ventas; no es la utilidad neta. Se ocultan los importes si hay
+              recálculos abiertos de valoración o contabilidad en la entidad
+              legal, incluso de otro almacén.
+            </p>
+            <form id="valuation-form" class="field-grid">
+              <label for="valuation-from"
+                >Desde
+                <input type="date" id="valuation-from" required />
+              </label>
+              <label for="valuation-to"
+                >Hasta
+                <input type="date" id="valuation-to" required />
+              </label>
+              <button
+                id="valuation-refresh"
+                type="submit"
+                class="secondary"
+                data-tooltip="Vuelve a consultar las colas y el informe nativo. No ejecuta recálculos ni registra otro costo."
+              >
+                Consultar recálculos y margen
+              </button>
+            </form>
+            <p id="valuation-status" role="status"></p>
+            <div id="valuation-result"></div>
+            <a id="valuation-native" target="_blank" rel="noopener" hidden
+              >Abrir informe nativo</a
+            >
+          </details>
           <p class="warning">
-            Enviar un costo recalcula la valoración desde la recepción y puede
-            afectar ventas posteriores mediante tareas de ERPNext. Esta vista no
-            confirma que esos recálculos hayan terminado. No crea un documento
-            fiscal.
+            Enviar un costo puede programar recálculos de movimientos
+            posteriores en ERPNext. Consulta su estado en Revisar recálculos y
+            margen bruto. No crea un documento fiscal.
           </p>
           <div id="cost-inputs" class="form-sheet">
             <fieldset id="cost-sources">

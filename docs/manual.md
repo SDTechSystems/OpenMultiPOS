@@ -267,3 +267,16 @@ Una cuenta administrativa conserva acceso amplio a los documentos del sitio. Rev
 [Recuperación, permisos y límites](warranties.md). Las reparaciones pagadas, devoluciones y cambios de existencias mantienen flujos separados.
 
 ![Captura ficticia: Garantías](../open_multi_pos/public/manual/screenshots/warranties.png)
+
+## Costos de compra y margen
+
+1. Selecciona el negocio y abre Costos de compra. Registra primero la compra en ERPNext y selecciona sus documentos enviados. Revisa que no representen dos veces la misma mercancía.
+2. Escribe los costos, sus cuentas y tasas, calcula la vista previa y revisa la distribución. Guardar estimación conserva un borrador. Enviar distribución afecta la valoración mediante el comprobante nativo. Una respuesta perdida se resuelve consultando o reintentando la misma clave.
+3. Abre Revisar recálculos y margen bruto y consulta el período. Si hay tareas abiertas, fallidas o parciales, se ocultan los importes. Revisa sus enlaces en ERPNext y vuelve a consultar cuando estén resueltas. No registres otro costo para resolver una tarea pendiente.
+4. Con las colas despejadas, revisa ventas netas, costo y margen bruto del almacén activo, incluidos sus subalmacenes. Los totales proceden del informe nativo. El margen bruto no representa utilidad neta ni saldo bancario. Consulta de nuevo tras cambios desde otro computador; la fecha mostrada identifica el momento observado.
+
+[Distribución, recuperación y alcance del margen](landed-costs.md).
+
+![Captura ficticia: Margen bruto nativo](../open_multi_pos/public/manual/screenshots/valuation.png)
+
+![Captura ficticia: Costos de compra](../open_multi_pos/public/manual/screenshots/costs.png)

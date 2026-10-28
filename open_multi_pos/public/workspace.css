@@ -409,6 +409,14 @@ tr:last-child td {
   max-width: 780px;
   border-radius: 5px;
 }
+#valuation {
+  max-width: none;
+}
+#valuation-form {
+  max-width: 730px;
+  gap: 14px;
+  margin-block: 16px;
+}
 .field {
   margin: 0 0 17px;
   min-width: 0;

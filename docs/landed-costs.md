@@ -22,9 +22,19 @@ Si la compra fue cancelada, una cuenta dejó de ser válida o no puedes corregir
 
 El costo previo es la tasa de valoración nativa de la fila de recepción, incluidos sus impuestos de valoración y costos LCV anteriores. El costo posterior suma `distribución nueva / cantidad` a esa tasa. No es el costo promedio actual del almacén ni un margen. ERPNext distribuye y redondea los cargos con sus reglas nativas. No se escriben directamente SLE, GL ni movimientos históricos desde la extensión. El envío nativo recalcula la recepción y puede programar recálculos de movimientos posteriores; esta pantalla no certifica que hayan terminado.
 
-Esta entrega excluye conciliación de recálculos y márgenes, así como activos, series/lotes, cantidades negativas, rechazos y conversiones de unidad. Compras con filas de varios negocios requieren el flujo nativo revisado por un administrador. El listado ofrece documentos enteramente pertenecientes al negocio entre los cincuenta más recientes de cada tipo; no constituye una búsqueda histórica completa.
+La distribución guiada excluye activos, series/lotes, cantidades negativas, rechazos y conversiones de unidad. Compras con filas de varios negocios requieren el flujo nativo revisado por un administrador. El listado ofrece documentos enteramente pertenecientes al negocio entre los cincuenta más recientes de cada tipo; no constituye una búsqueda histórica completa.
 
-El respaldo completo de Frappe incluye los LCV, sus campos OMP y las marcas de abandono. La comparación de restauración incorpora las cinco tablas nativas de LCV y la marca privada, para 27 tablas. Los resultados del ensayo sobre este cambio se registran por separado en el informe de auditoría.
+## Recálculos y margen bruto
+
+Abre **Revisar recálculos y margen bruto**, selecciona un intervalo de hasta un año y pulsa **Consultar recálculos y margen**. El valor inicial es el mes actual. La consulta exige acceso al negocio y los permisos nativos de Gross Profit y de las tareas de recálculo. No envía costos ni ejecuta recálculos.
+
+Si hay tareas enviadas abiertas de valoración o contabilidad en la empresa, la tabla muestra sus estados y enlaces a ERPNext. Incluye trabajos de otros almacenes de esa empresa y trabajos contables sin empresa definida. Se muestran hasta cincuenta de cada tipo, con aviso si hay más. Un fallo o un estado parcial conserva los importes ocultos. Revisa el error y el procedimiento de reintento en el documento nativo; no vuelvas a registrar el flete. Un recálculo de stock completado puede dejar otro recálculo contable pendiente.
+
+Con las colas despejadas, se ejecuta Gross Profit nativo sin usar un informe preparado. Si está configurado como informe de instantánea, se ocultan los importes hasta revisar esa configuración. Las filas muestran ventas netas, costo de mercancía, margen bruto y porcentaje por artículo, con el total calculado por ERPNext, en moneda contable y formato monetario nativo. El almacén activo incluye sus subalmacenes. La vista representa ese almacén; no filtra por POS Profile ni equivale a utilidad neta, saldo de caja o conciliación bancaria. Dos negocios que compartan almacén comparten el alcance del informe.
+
+La fecha y zona horaria indican el momento de la consulta. No se actualiza automáticamente. Consulta de nuevo después de cambios realizados desde otra pantalla o computador. Cambiar fechas o negocio, enviar una distribución o recuperar su estado limpia la consulta anterior. Abrir informe nativo conserva empresa, almacén y fechas y permite revisar su detalle con permisos nativos. Un filtro de contexto no restringe el acceso administrativo al sitio.
+
+El respaldo completo de Frappe incluye los LCV, sus campos OMP, marcas de abandono y tareas nativas de recálculo. La comparación de restauración incluye las cinco tablas de LCV y tres tablas de recálculo, para 32 tablas junto con los journals de garantías. Los resultados del ensayo sobre este cambio se registran por separado en el informe de auditoría.
 
 ## Validación
 

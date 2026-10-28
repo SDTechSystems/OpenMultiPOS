@@ -71,6 +71,7 @@ MANUAL_SECTIONS = {
     "imports",
     "costs",
     "warranties",
+    "valuation",
     "home",
     "sales",
     "inventory",

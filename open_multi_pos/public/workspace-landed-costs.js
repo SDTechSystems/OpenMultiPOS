@@ -24,6 +24,8 @@ window.OMPLandedCosts = (() => {
     });
   }
   function controls() {
+    for (const node of $("valuation-form").querySelectorAll("input,button"))
+      node.disabled = W.state.busy;
     $("cost-inputs").hidden = !!journal;
     $("cost-preview").hidden = !!journal;
     $("cost-draft").hidden = $("cost-send").hidden = !!journal;
@@ -91,6 +93,7 @@ window.OMPLandedCosts = (() => {
     }
   }
   function accept(value) {
+    clearValuation();
     if (value.status === "not_found") {
       current = null;
       preview = null;
@@ -243,6 +246,7 @@ window.OMPLandedCosts = (() => {
   async function send() {
     if (!$("cost-confirm").checked)
       throw new Error("Confirma la revisión antes de reintentar.");
+    clearValuation();
     accept(
       await api(
         "landed_costs.save",
@@ -307,6 +311,7 @@ window.OMPLandedCosts = (() => {
           throw new Error(
             "Confirma que revisaste la estimación actual antes de enviar.",
           );
+        clearValuation();
         accept(
           await api(
             "landed_costs.submit_draft",
@@ -333,7 +338,138 @@ window.OMPLandedCosts = (() => {
         await enter();
       }),
     );
+  function clearValuation() {
+    $("valuation-result").replaceChildren();
+    $("valuation-status").textContent = "";
+    $("valuation-native").hidden = true;
+  }
+  $("valuation-form").oninput = clearValuation;
+  $("valuation-form").onsubmit = (event) => {
+    event.preventDefault();
+    run(async () => {
+      clearValuation();
+      const review = await api(
+        "valuation.review",
+        {
+          brand: W.state.brand.brand,
+          from_date: $("valuation-from").value,
+          to_date: $("valuation-to").value,
+        },
+        true,
+      );
+      const context = `${review.company} · ${review.warehouse} · ${review.currency} · ${review.from_date} a ${review.to_date} · ${review.observed_at.slice(0, 19)} ${review.time_zone}`;
+      if (review.status === "pending") {
+        $("valuation-status").textContent =
+          "Hay recálculos abiertos. Revisa sus estados en ERPNext y vuelve a consultar. " +
+          context;
+        table(
+          $("valuation-result"),
+          [
+            {
+              label: "Tarea",
+              render: (row) => {
+                const link = el("a", row.name);
+                link.href =
+                  "/desk/" +
+                  row.doctype.toLowerCase().replaceAll(" ", "-") +
+                  "/" +
+                  encodeURIComponent(row.name);
+                link.target = "_blank";
+                link.rel = "noopener";
+                return link;
+              },
+            },
+            {
+              label: "Tipo",
+              render: (row) =>
+                row.doctype === "Repost Item Valuation"
+                  ? "Valoración"
+                  : "Contabilidad",
+            },
+            {
+              label: "Estado",
+              render: (row) =>
+                ({
+                  Queued: "En cola",
+                  "In Progress": "En curso",
+                  Failed: "Fallido",
+                  "Partially Reposted": "Parcial",
+                  Cancelled: "Cancelado",
+                })[row.status] || row.status,
+            },
+          ],
+          review.jobs,
+        );
+        if (review.more_jobs)
+          $("valuation-result").append(
+            el(
+              "p",
+              "Se muestran las primeras 50 tareas de cada tipo. Consulta el listado completo en ERPNext.",
+            ),
+          );
+      } else if (review.status === "snapshot") {
+        $("valuation-status").textContent =
+          "ERPNext usa una instantánea para este informe. Revisa su configuración nativa antes de consultar márgenes actuales. " +
+          context;
+      } else {
+        $("valuation-status").textContent =
+          "Sin recálculos abiertos observados al consultar. " + context;
+        table(
+          $("valuation-result"),
+          [
+            { label: "Artículo", render: (row) => row.item_code },
+            { label: "Nombre", render: (row) => row.item_name },
+            { label: "Unidades", number: true, render: (row) => row.qty },
+            {
+              label: "Ventas netas",
+              number: true,
+              render: (row) => row.formatted.sales,
+            },
+            {
+              label: "Costo de mercancía",
+              number: true,
+              render: (row) => row.formatted.cost,
+            },
+            {
+              label: "Margen bruto",
+              number: true,
+              render: (row) => row.formatted.margin,
+            },
+            { label: "Margen %", number: true, render: (row) => row.percent },
+          ],
+          review.rows,
+        );
+        $("valuation-native").href =
+          "/desk/query-report/Gross%20Profit?" +
+          new URLSearchParams({
+            company: review.company,
+            warehouse: review.warehouse,
+            from_date: review.from_date,
+            to_date: review.to_date,
+            group_by: "Item Code",
+          });
+        $("valuation-native").hidden = false;
+      }
+      const wrap = $("valuation-result").querySelector(".table-wrap");
+      if (wrap) {
+        wrap.tabIndex = 0;
+        wrap.setAttribute("role", "region");
+        wrap.setAttribute("aria-label", "Recálculos y margen bruto");
+      }
+    });
+  };
   async function enter() {
+    clearValuation();
+    if (!$("valuation-to").value) {
+      const today = new Intl.DateTimeFormat("en-CA", {
+        timeZone: W.state.boot.settings.time_zone,
+        year: "numeric",
+        month: "2-digit",
+        day: "2-digit",
+      }).format(new Date());
+      $("valuation-to").value = today;
+      $("valuation-from").value = today.slice(0, 8) + "01";
+    }
     journal = read();
     preview = null;
     current = null;
