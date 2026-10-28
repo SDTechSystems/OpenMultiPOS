@@ -56,6 +56,18 @@ class FirstRunTests(unittest.TestCase):
             any("DROP USER" in call.kwargs.get("input", "") for call in self.run.call_args_list)
         )
 
+    def test_recovery_rotation_is_durable_if_the_new_install_fails(self):
+        state = {"db_name": "_omp_" + "a" * 24, "db_password": "fictional"}
+        previous = dict(state)
+        self.app.side_effect = [None, None, RuntimeError("fictional new install failure")]
+        with self.assertRaises(RuntimeError):
+            first_run.setup(self.home, state, "Fictional-password-only", recover=True)
+        saved = json.loads((self.state_path / "bootstrap.json").read_text())
+        self.assertEqual(saved["previous"], [previous])
+        self.assertNotEqual(saved["db_name"], previous["db_name"])
+        self.assertNotIn("retiring", saved)
+        self.assertNotIn("installed", saved)
+
     def test_bootstrap_passwords_are_input_only_and_temporary_account_is_removed(self):
         state = {}
         first_run.setup(self.home, state, "Fictional-password-only")

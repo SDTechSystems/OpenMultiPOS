@@ -194,11 +194,69 @@ frappe.destroy()
 """
 
 
-def setup(home, state, password):
+RETIRE = """
+import json,os,re,sys
+from pathlib import Path
+import MySQLdb
+value=json.load(sys.stdin)
+name=value['db_name']
+if not re.fullmatch(r'_omp_[0-9a-f]{24}',name):
+ raise ValueError('Identidad de preparación inválida')
+base=Path.home()/'.local/share/openmultipos'
+site=base/'bench/sites/omp.localhost'
+archive=base/'incomplete'/name
+for path in (site,archive):
+ if path.resolve()!=path:
+  raise ValueError('No se permiten enlaces en la preparación')
+if site.exists() and archive.exists():
+ raise ValueError('Hay dos copias del intento; se conservan sin cambios')
+source=site if site.exists() else archive
+if source.exists():
+ config=source/'site_config.json'
+ if config.is_file():
+  config=json.loads(config.read_text())
+  if config.get('db_name')!=name or config.get('db_password')!=value['db_password']:
+   raise ValueError('El sitio no pertenece al intento registrado')
+ elif any(path.is_file() and path.stat().st_size for path in source.rglob('*')):
+  raise ValueError('El sitio contiene archivos sin prueba de propiedad')
+ for directory in ('public/files','private/files'):
+  if any(path.is_file() for path in (source/directory).rglob('*')):
+   raise ValueError('El sitio contiene archivos de usuario; se conserva')
+connection=MySQLdb.connect(unix_socket=value['socket'],user='omp_bootstrap',passwd=value['root_password'])
+cursor=connection.cursor()
+cursor.execute('SELECT TABLE_NAME FROM information_schema.TABLES WHERE TABLE_SCHEMA=%s',(name,))
+tables={row[0] for row in cursor.fetchall()}
+for table in ('tabCompany','tabCustomer','tabSupplier','tabContact','tabAddress','tabItem','tabSales Invoice','tabStock Ledger Entry','tabGL Entry'):
+ if table in tables:
+  cursor.execute(f'SELECT COUNT(*) FROM `{name}`.`{table}`')
+  if cursor.fetchone()[0]:
+   raise ValueError('Hay datos comerciales; se conserva el sitio')
+if 'tabUser' in tables:
+ cursor.execute(f"SELECT COUNT(*) FROM `{name}`.tabUser WHERE name NOT IN ('Administrator','Guest')")
+ if cursor.fetchone()[0]:
+  raise ValueError('Hay cuentas personales; se conserva el sitio')
+connection.close()
+if site.exists():
+ archive.parent.mkdir(mode=0o700,exist_ok=True)
+ descriptor=os.open(base,os.O_DIRECTORY);os.fsync(descriptor);os.close(descriptor)
+ site.rename(archive)
+ for directory in (site.parent,archive.parent):
+  descriptor=os.open(directory,os.O_DIRECTORY);os.fsync(descriptor);os.close(descriptor)
+"""
+
+
+def setup(home, state, password, *, recover=False):
     if state.get("installed"):
+        if recover:
+            raise ValueError("El sitio ya está instalado; no se reinicia su preparación")
         return
     if not isinstance(password, str) or not 12 <= len(password) <= 128:
         raise ValueError("Usa una contraseña inicial de 12 a 128 caracteres")
+    if recover:
+        if not state.get("db_name") or len(state.get("previous", [])) >= 3:
+            raise ValueError("Revisa los intentos conservados antes de reiniciar la preparación")
+        state["retiring"] = True
+        save(STATE / "bootstrap.json", state)
     if not state:
         if (home / ".local/share/openmultipos/bench/sites" / SITE).exists():
             raise ValueError(
@@ -227,6 +285,18 @@ def setup(home, state, password):
                 stdout=log,
                 stderr=log,
             )
+            if state.get("retiring"):
+                app(home, RETIRE, {**state, "root_password": temporary, "socket": SOCKET}, log)
+                previous = state.get("previous", []) + [
+                    {"db_name": state["db_name"], "db_password": state["db_password"]}
+                ]
+                state.clear()
+                state.update(
+                    db_name="_omp_" + secrets.token_hex(12),
+                    db_password=secrets.token_hex(32),
+                    previous=previous,
+                )
+                save(STATE / "bootstrap.json", state)
             app(
                 home,
                 INSTALL,
@@ -255,7 +325,7 @@ def setup(home, state, password):
 
 def main():
     parser = argparse.ArgumentParser(description=__doc__)
-    parser.add_argument("action", choices=("setup", "start", "serve", "stop", "status"))
+    parser.add_argument("action", choices=("setup", "recover", "start", "serve", "stop", "status"))
     parser.add_argument("--stdin", action="store_true", help=argparse.SUPPRESS)
     options = parser.parse_args()
     if os.geteuid() != 0 or not Path("/etc/openmultipos-build-environment").is_file():
@@ -267,7 +337,7 @@ def main():
         path = STATE / "bootstrap.json"
         state = json.loads(path.read_text()) if path.exists() else {}
         home = Path(pwd.getpwnam("openmultipos").pw_dir)
-        if options.action == "setup":
+        if options.action in ("setup", "recover"):
             password = (
                 ""
                 if state.get("installed")
@@ -277,7 +347,7 @@ def main():
                     else getpass.getpass("Contraseña inicial de Administrator: ")
                 )
             )
-            setup(home, state, password)
+            setup(home, state, password, recover=options.action == "recover")
             print("Sitio preparado. Inicia el servidor y completa el asistente nativo de ERPNext.")
         elif options.action in ("start", "serve"):
             server_lock = None
