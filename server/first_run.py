@@ -1,0 +1,337 @@
+"""Private server initialization and controls for the dedicated WSL appliance."""
+
+import argparse
+import fcntl
+import getpass
+import json
+import os
+import pwd
+import secrets
+import subprocess
+import sys
+import time
+from pathlib import Path
+from urllib.request import urlopen
+
+SITE = "omp.localhost"
+STATE = Path("/var/lib/openmultipos")
+SOCKET = "/run/mysqld/mysqld.sock"
+SERVICES = ("omp-cache", "omp-queue", "omp-web", "omp-worker", "omp-scheduler", "omp-realtime")
+
+
+def unit(home, command, *, directory="bench", extra=""):
+    base = home / ".local/share/openmultipos"
+    return f"""[Unit]
+Description=OpenMultiPOS private server
+After=mariadb.service omp-cache.service omp-queue.service
+[Service]
+User=openmultipos
+Group=openmultipos
+WorkingDirectory={base / directory}
+Environment=HOME={home}
+Environment=PATH={base}/tools/bin:/opt/openmultipos/node/bin:/usr/bin:/bin
+RuntimeDirectory=openmultipos
+RuntimeDirectoryMode=0700
+RuntimeDirectoryPreserve=yes
+UMask=0077
+NoNewPrivileges=yes
+ProtectSystem=full
+ExecStart={command}
+Restart=on-failure
+RestartSec=5
+{extra}
+[Install]
+WantedBy=multi-user.target
+"""
+
+
+def configurations(home):
+    base = home / ".local/share/openmultipos"
+    result = {
+        "/etc/mysql/mariadb.conf.d/99-openmultipos.cnf": "[mysqld]\nskip-networking\ncharacter-set-server=utf8mb4\ncollation-server=utf8mb4_unicode_ci\n",
+        "/etc/nginx/nginx.conf": f"""user openmultipos;
+worker_processes auto;
+pid /run/nginx.pid;
+events {{ worker_connections 1024; }}
+http {{
+ include /etc/nginx/mime.types;
+ default_type application/octet-stream;
+ map $http_upgrade $connection_upgrade {{ default upgrade; '' close; }}
+ map $http_x_forwarded_proto $omp_scheme {{ default $scheme; https https; }}
+ server {{
+  listen 127.0.0.1:8089;
+  server_name localhost;
+  client_max_body_size 25m;
+  location /assets/ {{ alias {base}/bench/sites/assets/; expires 1h; }}
+  location /socket.io {{
+   proxy_pass http://unix:/run/openmultipos/realtime.sock;
+   proxy_http_version 1.1;
+   proxy_set_header Upgrade $http_upgrade;
+   proxy_set_header Connection $connection_upgrade;
+   proxy_set_header Host $http_host;
+   proxy_set_header X-Frappe-Site-Name {SITE};
+   proxy_set_header X-Forwarded-Proto $omp_scheme;
+  }}
+  location / {{
+   proxy_pass http://unix:/run/openmultipos/web.sock;
+   proxy_set_header Host $http_host;
+   proxy_set_header X-Frappe-Site-Name {SITE};
+   proxy_set_header X-Forwarded-For $remote_addr;
+   proxy_set_header X-Forwarded-Proto $omp_scheme;
+   proxy_read_timeout 120s;
+  }}
+ }}
+}}
+""",
+    }
+    for kind in ("cache", "queue"):
+        persistent = kind == "queue"
+        command = (
+            f"/usr/bin/redis-server --port 0 --unixsocket /run/openmultipos/redis-{kind}.sock "
+            f'--unixsocketperm 600 --save "" --appendonly {"yes" if persistent else "no"} '
+            f"--dir {base}/redis-{kind}"
+        )
+        result[f"/etc/systemd/system/omp-{kind}.service"] = unit(
+            home, command, directory=f"redis-{kind}"
+        ).replace(
+            "After=mariadb.service omp-cache.service omp-queue.service", "After=local-fs.target"
+        )
+    commands = {
+        "web": f'{base}/bench/env/bin/gunicorn --bind unix:/run/openmultipos/web.sock --workers 2 --threads 2 --timeout 120 "frappe.app:application_with_statics()"',
+        "worker": f"{base}/tools/bin/bench worker --queue short,default,long --quiet",
+        "scheduler": f"{base}/tools/bin/bench schedule",
+        "realtime": "/opt/openmultipos/node/bin/node apps/frappe/socketio.js",
+    }
+    for name, command in commands.items():
+        result[f"/etc/systemd/system/omp-{name}.service"] = unit(
+            home, command, directory="bench/sites" if name == "web" else "bench"
+        )
+    return result
+
+
+def run(*args, **kwargs):
+    subprocess.run(args, check=True, **kwargs)
+
+
+def save(path, value):
+    temporary = path.with_suffix(".new")
+    with temporary.open("w") as stream:
+        json.dump(value, stream)
+        stream.flush()
+        os.fsync(stream.fileno())
+    temporary.chmod(0o600)
+    temporary.replace(path)
+    descriptor = os.open(path.parent, os.O_DIRECTORY)
+    try:
+        os.fsync(descriptor)
+    finally:
+        os.close(descriptor)
+
+
+def app(home, source, payload, log):
+    base = home / ".local/share/openmultipos"
+    run(
+        "runuser",
+        "-u",
+        "openmultipos",
+        "--",
+        "env",
+        "-i",
+        f"HOME={home}",
+        "LANG=C.UTF-8",
+        f"PATH={base}/tools/bin:/opt/openmultipos/node/bin:/usr/bin:/bin",
+        str(base / "bench/env/bin/python"),
+        "-c",
+        source,
+        input=json.dumps(payload),
+        text=True,
+        stdout=log,
+        stderr=subprocess.STDOUT,
+    )
+
+
+PREPARE = """
+import json,os,sys
+from pathlib import Path
+value=json.load(sys.stdin)
+base=Path.home()/'.local/share/openmultipos'
+for kind in ('cache','queue'):
+ (base/('redis-'+kind)).mkdir(mode=0o700,exist_ok=True)
+path=base/'bench/sites/common_site_config.json'
+config=json.loads(path.read_text())
+config.update(redis_cache='unix:///run/openmultipos/redis-cache.sock',redis_queue='unix:///run/openmultipos/redis-queue.sock',redis_socketio='unix:///run/openmultipos/redis-queue.sock',socketio_uds='/run/openmultipos/realtime.sock',default_site='omp.localhost',serve_default_site=True)
+path.write_text(json.dumps(config))
+path.chmod(0o600)
+"""
+
+INSTALL = """
+import json,os,sys
+from pathlib import Path
+import frappe
+from frappe.installer import _new_site,install_app
+value=json.load(sys.stdin)
+base=Path.home()/'.local/share/openmultipos/bench'
+os.chdir(base/'sites')
+site=Path('omp.localhost')
+if not site.exists():
+ frappe.init(str(site), new_site=True)
+ _new_site(db_name=value['db_name'],site=str(site),db_root_username='omp_bootstrap',db_root_password=value['root_password'],admin_password=value['admin_password'],db_password=value['db_password'],db_socket=value['socket'],db_type='mariadb',mariadb_user_host_login_scope='localhost')
+else:
+ config=json.loads((site/'site_config.json').read_text())
+ if config.get('db_name') != value['db_name']:
+  raise RuntimeError('El sitio no pertenece a este intento de preparación')
+ frappe.init(str(site))
+ frappe.connect()
+frappe.set_user('Administrator')
+for name in ('erpnext','xpos','open_multi_pos'):
+ install_app(name)
+frappe.db.set_single_value('System Settings','language','es')
+frappe.db.set_single_value('System Settings','time_zone','America/Bogota')
+frappe.db.commit()
+from frappe.utils.password import get_encryption_key
+get_encryption_key()
+frappe.destroy()
+"""
+
+
+def setup(home, state, password):
+    if state.get("installed"):
+        return
+    if not isinstance(password, str) or not 12 <= len(password) <= 128:
+        raise ValueError("Usa una contraseña inicial de 12 a 128 caracteres")
+    if not state:
+        if (home / ".local/share/openmultipos/bench/sites" / SITE).exists():
+            raise ValueError(
+                "Ya existe un sitio sin registro de instalación; se conserva sin cambios"
+            )
+        state.update(db_name="_omp_" + secrets.token_hex(12), db_password=secrets.token_hex(32))
+        save(STATE / "bootstrap.json", state)
+    for name, content in configurations(home).items():
+        path = Path(name)
+        path.write_text(content)
+        path.chmod(0o644)
+    with (STATE / "setup.log").open("a") as log:
+        app(home, PREPARE, {}, log)
+        run("systemctl", "daemon-reload", stdout=log, stderr=log)
+        run("systemctl", "unmask", "mariadb", stdout=log, stderr=log)
+        run("systemctl", "start", "mariadb", "omp-cache", "omp-queue", stdout=log, stderr=log)
+        temporary = secrets.token_hex(32)
+        sql = f"CREATE USER IF NOT EXISTS 'omp_bootstrap'@'localhost' IDENTIFIED BY '{temporary}'; ALTER USER 'omp_bootstrap'@'localhost' IDENTIFIED BY '{temporary}'; GRANT ALL PRIVILEGES ON *.* TO 'omp_bootstrap'@'localhost' WITH GRANT OPTION;"
+        try:
+            run(
+                "mariadb",
+                "--protocol=socket",
+                "-uroot",
+                input=sql,
+                text=True,
+                stdout=log,
+                stderr=log,
+            )
+            app(
+                home,
+                INSTALL,
+                {**state, "root_password": temporary, "admin_password": password, "socket": SOCKET},
+                log,
+            )
+        finally:
+            run(
+                "mariadb",
+                "--protocol=socket",
+                "-uroot",
+                input="DROP USER IF EXISTS 'omp_bootstrap'@'localhost';",
+                text=True,
+                stdout=log,
+                stderr=log,
+            )
+        app(
+            home,
+            "import os; from pathlib import Path; os.chdir(Path.home()/'.local/share/openmultipos/bench/sites'); from frappe.migrate import SiteMigration; SiteMigration().run(site='omp.localhost')",
+            {},
+            log,
+        )
+    state["installed"] = True
+    save(STATE / "bootstrap.json", state)
+
+
+def main():
+    parser = argparse.ArgumentParser(description=__doc__)
+    parser.add_argument("action", choices=("setup", "start", "serve", "stop", "status"))
+    parser.add_argument("--stdin", action="store_true", help=argparse.SUPPRESS)
+    options = parser.parse_args()
+    if os.geteuid() != 0 or not Path("/etc/openmultipos-build-environment").is_file():
+        parser.error("Se requiere la distribución dedicada de OpenMultiPOS y permisos root")
+    os.umask(0o077)
+    STATE.mkdir(mode=0o700, exist_ok=True)
+    with (STATE / "bootstrap.lock").open("a") as lock:
+        fcntl.flock(lock, fcntl.LOCK_EX | fcntl.LOCK_NB)
+        path = STATE / "bootstrap.json"
+        state = json.loads(path.read_text()) if path.exists() else {}
+        home = Path(pwd.getpwnam("openmultipos").pw_dir)
+        if options.action == "setup":
+            password = (
+                ""
+                if state.get("installed")
+                else (
+                    json.load(sys.stdin)["password"]
+                    if options.stdin
+                    else getpass.getpass("Contraseña inicial de Administrator: ")
+                )
+            )
+            setup(home, state, password)
+            print("Sitio preparado. Inicia el servidor y completa el asistente nativo de ERPNext.")
+        elif options.action in ("start", "serve"):
+            server_lock = None
+            if options.action == "serve":
+                server_lock = (STATE / "server.lock").open("a")
+                fcntl.flock(server_lock, fcntl.LOCK_EX | fcntl.LOCK_NB)
+            if not state.get("installed"):
+                parser.error("Completa primero la preparación del sitio")
+            run("nginx", "-t")
+            run("systemctl", "unmask", "nginx")
+            run("systemctl", "enable", "--now", "mariadb", *SERVICES, "nginx")
+            for _attempt in range(60):
+                try:
+                    with urlopen("http://127.0.0.1:8089/api/method/ping", timeout=2) as response:
+                        if json.load(response).get("message") == "pong":
+                            break
+                except (OSError, ValueError):
+                    pass
+                time.sleep(0.5)
+            else:
+                raise RuntimeError(
+                    "El servidor no respondió. Revisa los servicios antes de abrir caja"
+                )
+            print("Abre http://localhost:8089/omp e inicia sesión como Administrator.", flush=True)
+            if options.action == "serve":
+                fcntl.flock(lock, fcntl.LOCK_UN)
+                print("Servidor activo. Escribe stop para detenerlo.", flush=True)
+                try:
+                    for line in sys.stdin:
+                        if line.strip() == "stop":
+                            break
+                except KeyboardInterrupt:
+                    pass
+                finally:
+                    run("systemctl", "stop", "nginx", *reversed(SERVICES), "mariadb")
+                    server_lock.close()
+        elif options.action == "stop":
+            run("systemctl", "stop", "nginx", *reversed(SERVICES), "mariadb")
+        else:
+            print(json.dumps({"installed": bool(state.get("installed"))}))
+
+
+if __name__ == "__main__":
+    try:
+        main()
+    except BlockingIOError:
+        print("Hay otra preparación o un controlador del servidor activo.", file=sys.stderr)
+        sys.exit(1)
+    except ValueError as error:
+        print(str(error), file=sys.stderr)
+        sys.exit(1)
+    except (OSError, RuntimeError, subprocess.CalledProcessError):
+        print(
+            "No se pudo completar la operación. El sitio se conserva; revisa el registro local y los servicios.",
+            file=sys.stderr,
+        )
+        sys.exit(1)

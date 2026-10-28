@@ -13,3 +13,13 @@ Nunca usar una distribución que contenga datos operativos ni exportar una insta
 Antes de exportar, ejecutar el control `image_contract.py` con la raíz de la imagen. Rechaza directorios de sitio, esquemas MariaDB ajenos al sistema, credenciales en la configuración común y contraseñas Linux reutilizables. Es una comprobación necesaria, no una auditoría completa del filesystem. La revisión de contenido, sanitización, manifiesto y ensayos de instalación/actualización/recuperación siguen siendo obligatorios.
 
 La construcción limpia no acredita todavía el arranque del servidor ni su uso desde Windows. El manual de operación e instalación se actualizará con las acciones verificadas cuando estén disponibles.
+
+## Inicialización privada y control
+
+`first_run.py` prepara un sitio nuevo dentro de la distribución dedicada. Recibe la contraseña inicial mediante una entrada oculta o stdin, genera las claves locales, registra el intento en un archivo root privado y retira la cuenta temporal de instalación de MariaDB. Un sitio previo sin registro de propiedad se conserva y se rechaza. Repetir una instalación completada conserva su contraseña y sus datos. Las instalaciones nativas parcialmente interrumpidas requieren más pruebas de recuperación antes de entregar el instalador.
+
+El servidor usa MariaDB sin TCP, dos Redis por sockets privados y una cola con AOF. Gunicorn, worker, scheduler y realtime se ejecutan sin root; Nginx escucha únicamente en `localhost:8089`. El proxy conserva el host del navegador y selecciona el sitio interno por un encabezado fijo. No se activa acceso remoto por este procedimiento.
+
+La acción `serve` mantiene abierta una sesión de control de WSL, necesaria porque los servicios systemd por sí solos no mantienen activa la distribución. Espera `stop` o el cierre de stdin y detiene los servicios de forma ordenada. El controlador Windows pendiente deberá conservar esa conexión mientras el servidor esté activo. `start` solo inicia y comprueba servicios; no sustituye una sesión persistente. `status` informa si existe una instalación completada, no certifica salud operativa.
+
+Una inicialización aprobada no marca como completado el asistente nativo de ERPNext. El primer acceso exige terminarlo antes de abrir `/omp`, y después revisar la preparación de negocios, usuarios, inventario, recibos y recuperación. Los controles Windows y la experiencia completa de instalación todavía están en desarrollo.
