@@ -77,6 +77,12 @@ def main():
         ["dpkg-query", "-W", "-f=${binary:Package}\t${Version}\t${Architecture}\n"], text=True
     )
     (manifest / "packages.tsv").write_text(packages)
+    sources = subprocess.check_output(
+        ["dpkg-query", "-W", "-f=${source:Package}\t${source:Version}\n"], text=True
+    )
+    (manifest / "source-packages.tsv").write_text(
+        "\n".join(sorted(set(sources.splitlines()))) + "\n"
+    )
     for name in ("bench", "tools"):
         output = subprocess.check_output(
             [
@@ -133,6 +139,7 @@ def main():
             "systemd-journald.socket",
             "systemd-journald-dev-log.socket",
             "systemd-journald-audit.socket",
+            "systemd-random-seed.service",
         ],
         check=True,
     )
@@ -154,6 +161,8 @@ def main():
         remove(root, relative)
     for relative in (".cache", ".npm", ".yarn", ".bash_history"):
         remove(root, str(home.relative_to(root) / relative))
+    for path in Path("/etc/ssh").glob("ssh_host_*"):
+        remove(root, str(path.relative_to(root)))
     Path("/var/log").mkdir(mode=0o755)
     Path("/var/log/nginx").mkdir(mode=0o755)
     replace(Path("/etc/machine-id"), "")
