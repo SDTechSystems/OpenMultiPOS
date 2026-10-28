@@ -68,6 +68,8 @@ class WorkspaceHTTP(unittest.TestCase):
                 raise AssertionError("Crear negocio: " + response.text[-1800:])
             context = response.json()["message"]
             terminal = cls.request("workspace.terminal_for", {"brand": context["brand"]}, post=True)
+            if terminal.status_code != 200:
+                raise AssertionError("Preparar terminal: " + terminal.text[-1800:])
             context["terminal"] = terminal.json()["message"]["terminal"]
             cls.businesses.append(context)
 

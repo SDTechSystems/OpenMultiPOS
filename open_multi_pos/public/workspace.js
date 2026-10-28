@@ -1159,10 +1159,11 @@
     else if (view === "help") manual();
     else module(view);
   }
-  for (const [key, [name]] of Object.entries(views)) {
+  for (const [key, [name, description]] of Object.entries(views)) {
     const btn = el("button");
     btn.type = "button";
     btn.dataset.view = key;
+    btn.dataset.tooltip = description;
     btn.append(icon(key), el("span", name));
     btn.onclick = () => run(() => route(key));
     $("navigation").append(btn);
@@ -1263,7 +1264,8 @@
     logout:
       "Cierra esta sesión en el sitio. Conserva los intentos pendientes antes de salir.",
   };
-  for (const [id, text] of Object.entries(actionHelp)) $(id).title = text;
+  for (const [id, text] of Object.entries(actionHelp))
+    $(id).dataset.tooltip = text;
   for (const input of document.querySelectorAll("[data-help]")) {
     const label = document.querySelector(`label[for="${input.id}"]`);
     const tooltip = W.help(

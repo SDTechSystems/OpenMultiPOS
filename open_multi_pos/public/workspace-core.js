@@ -177,7 +177,7 @@ window.OMPWorkspace = (() => {
       if (f.minLength) input.minLength = f.minLength;
       if (f.inputMode) input.inputMode = f.inputMode;
       if (f.type === "checkbox") input.checked = !!f.value;
-      else input.value = f.value ?? "";
+      else if (f.value !== undefined) input.value = f.value ?? "";
       if (f.type === "checkbox") label.prepend(input);
       box.append(label);
       if (f.type !== "checkbox") box.append(input);

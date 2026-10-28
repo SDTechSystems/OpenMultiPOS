@@ -473,6 +473,7 @@ async function go(page, id) {
       context.waitForEvent("page"),
       nativePreview.click(),
     ]);
+    await nativePage.waitForLoadState("domcontentloaded");
     await nativePage.locator("#preview-brand").waitFor();
     assert.match(nativePage.url(), /omp_receipt_preview/);
     await nativePage.close();

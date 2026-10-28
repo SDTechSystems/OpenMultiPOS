@@ -3,6 +3,7 @@
   "private": true,
   "scripts": {
     "test:ui": "node scripts/ui-smoke.cjs",
+    "test:tooltips": "node scripts/test-tooltips.cjs",
     "format:check": "prettier --check open_multi_pos/demo/static open_multi_pos/public open_multi_pos/www/*.html scripts/*.cjs package.json .github/workflows/quality.yml"
   },
   "devDependencies": {

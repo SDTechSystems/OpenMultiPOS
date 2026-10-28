@@ -4,6 +4,20 @@ Requisito de entrega solicitado por el propietario: al completar y validar el al
 
 Este documento define el trabajo pendiente. El wheel, la demo, el lanzador local y las guías actuales no son los dos paquetes finales ni un asistente integral terminado.
 
+## Cliente Windows disponible para aceptación
+
+El cliente 0.1.0 tiene ZIP portable e instalador por usuario. Abre el servidor compartido en el navegador y guarda únicamente su dirección en el perfil de Windows. El instalador registra el acceso en Inicio y la desinstalación en Aplicaciones. Conserva las preferencias del cliente y los datos del servidor al quitarlo. Los archivos reemplazados quedan como `.previous` para recuperar una actualización del cliente.
+
+Estos paquetes no incluyen el backend ni completan las entregas #37/#38. Necesitan un servidor ya configurado, Windows 10/11 x64 con .NET Framework 4.8 y un navegador actualizado. Están sin firma. La instalación, actualización, desinstalación y uso en Windows limpio siguen pendientes de aceptación.
+
+Construcción sin red en Linux, usando Mono y `markdown2` ya instalado con Frappe:
+
+```bash
+<bench>/env/bin/python scripts/build-windows-client.py --output <directorio-nuevo>
+```
+
+El script compila ambos ejecutables, prueba el contrato de direcciones, incorpora el manual sin conexión con imágenes verificadas contra el manifest y genera SHA256SUMS.txt. El ZIP incluye el código correspondiente del cliente y del instalador. El paquete empieza sin dirección privada, usuario ni contraseña. El cliente remoto exige HTTPS; permite HTTP solo para loopback y el nombre local existente. Las pruebas de compilación bajo Mono no sustituyen la aceptación de WinForms, accesos y registro en Windows.
+
 ## Ediciones y datos
 
 | Edición | Resultado esperado | Evidencia necesaria |

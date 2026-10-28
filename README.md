@@ -7,6 +7,8 @@ Espacio administrativo autohospedado sobre **ERPNext + Frappe + X POS**, orienta
 Las operaciones usan documentos, stock y contabilidad nativos; una cesta conjunta crea una factura por negocio y un recibo interno. Solo se personalizan la impresora y el lector existentes. La impresión ya fue confirmada por el propietario; se conserva el preset. DIAN y operación sin conexión siguen desactivadas. La recuperación local incluye respaldo diario, ensayo aislado y conciliación; las APIs anteriores de X POS quedan cerradas salvo tres adaptadores autorizados. Revisa configuración privada y resultados antes de cargar datos reales.
 
 - [Manual visual de administración](docs/manual.md)
+- [Los mismos datos en varios computadores](docs/online-access.md)
+- [Cliente Windows y estado de la distribución](docs/release-onboarding.md)
 - [Configuración y contratos del espacio de trabajo](docs/workspace.md)
 - [Funcionalidades F01-F28](docs/features.md) · [Roadmap e issues](docs/roadmap.md)
 - [Arquitectura](docs/architecture.md) · [Auditoría y resultados](docs/audit-report.md)

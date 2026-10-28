@@ -1,0 +1,21 @@
+Construir el cliente desde el código incluido en el ZIP
+
+Desde esta carpeta source, en PowerShell con .NET Framework 4.8:
+
+& "$env:WINDIR\Microsoft.NET\Framework64\v4.0.30319\csc.exe" /nologo /target:winexe /optimize+ /r:System.Windows.Forms.dll /r:System.Drawing.dll /out:OpenMultiPOS.exe Client.cs
+
+& "$env:WINDIR\Microsoft.NET\Framework64\v4.0.30319\csc.exe" /nologo /target:winexe /optimize+ /r:System.Windows.Forms.dll /resource:OpenMultiPOS.exe,client /resource:..\Manual.html,manual /resource:..\LICENSE,license /resource:Configurar.cmd,configure /out:OpenMultiPOS-Client-Setup.exe Installer.cs
+
+Para comprobar el contrato de direcciones sin abrir ventanas:
+
+$process = Start-Process .\OpenMultiPOS.exe -ArgumentList '--self-test' -Wait -PassThru
+if ($process.ExitCode -ne 0) { throw 'Fallaron los contratos del cliente' }
+
+En Linux, mcs acepta los mismos nombres de archivos y referencias.
+La construcción del repositorio usa scripts/build-windows-client.py, Mono y
+markdown2. Ese script genera también Manual.html a partir de docs/ y de las
+capturas aprobadas en el manifest del repositorio. El HTML y sus imágenes
+ya están incluidos en el ZIP; no necesitas regenerarlos para compilar.
+
+Los compiladores pueden producir bytes y hashes diferentes. La construcción
+no se presenta como reproducible byte a byte. Los ejecutables están sin firma.

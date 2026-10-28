@@ -47,6 +47,13 @@ const input = JSON.parse(fs.readFileSync(0, "utf8"));
       await page.locator("#warranty-complaint").fill(text);
     }
     await prepare("Reclamación ficticia: revisar funcionamiento.");
+    assert.equal(
+      await page
+        .locator("#dialog-form")
+        .evaluate((form) => form.checkValidity()),
+      true,
+      "The original sale item must be selected by default",
+    );
     await page.route(
       "**/api/method/open_multi_pos.warranties.create",
       async (route) => {
@@ -61,6 +68,11 @@ const input = JSON.parse(fs.readFileSync(0, "utf8"));
     await page.locator("#dialog-cancel").click();
     await page.reload();
     await ready();
+    assert.equal(
+      await page.locator("#notice").textContent(),
+      "",
+      "Recovery must not fail silently",
+    );
     assert.match(
       await page.locator("#warranty-recovery-text").textContent(),
       /registrada/,

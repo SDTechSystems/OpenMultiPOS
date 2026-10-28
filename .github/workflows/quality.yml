@@ -132,6 +132,28 @@ jobs:
             test-results/workspace/
             test-results/landed-costs/
             test-results/warranties/
+  windows-client:
+    needs: privacy
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.14"
+      - name: Install client build tools
+        run: |
+          sudo apt-get update -qq
+          sudo apt-get install -y mono-mcs libmono-system-windows-forms4.0-cil
+          python -m pip install markdown2==2.5.5
+      - name: Build clients and check URL contracts
+        run: python scripts/build-windows-client.py --output test-results/windows-client
+      - uses: actions/upload-artifact@v4
+        with:
+          name: windows-client-candidates
+          path: |
+            test-results/windows-client/*.zip
+            test-results/windows-client/*.exe
+            test-results/windows-client/SHA256SUMS.txt
   browser:
     needs: privacy
     runs-on: ubuntu-latest
@@ -157,6 +179,7 @@ jobs:
           trap 'kill $!' EXIT
           for attempt in $(seq 1 30); do curl -fsS -o /dev/null http://127.0.0.1:8765/api/context && break || sleep 1; done
           npm run test:ui
+          npm run test:tooltips
           python scripts/check-receipt-pdfs.py
       - uses: actions/upload-artifact@v4
         if: always()

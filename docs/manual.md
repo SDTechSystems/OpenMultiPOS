@@ -6,6 +6,10 @@ Las capturas contienen datos inventados. Los nombres, NIT, contactos, correos, c
 
 Atajos: **Ctrl K** busca una sección; **Tab** recorre controles; **Enter** activa un botón o confirma el código del lector; **Escape** cierra ayudas y tutoriales. Cada formulario incluye ayuda con `?`. Las guías son opcionales y se pueden repetir desde Guía de esta sección o Ayuda.
 
+Los botones del menú y las acciones principales muestran una explicación al pasar el puntero o recibir foco con Tab. Escape la cierra. En una pantalla táctil, consulta la descripción de la sección, los botones `?` y su guía.
+
+Para usar los mismos datos desde otros computadores, consulta [acceso privado y datos compartidos](online-access.md). Todos usan el mismo servidor Windows con cuentas personales. La conexión debe estar disponible para guardar operaciones.
+
 ## Inicio
 
 Revisa el negocio activo y entra a la tarea que necesitas.
@@ -261,3 +265,5 @@ Una cuenta administrativa conserva acceso amplio a los documentos del sitio. Rev
 5. Cerrar registra la fecha nativa de resolución. El seguimiento no confirma cobertura ni calcula periodos/plazos automáticos.
 
 [Recuperación, permisos y límites](warranties.md). Las reparaciones pagadas, devoluciones y cambios de existencias mantienen flujos separados.
+
+![Captura ficticia: Garantías](../open_multi_pos/public/manual/screenshots/warranties.png)
