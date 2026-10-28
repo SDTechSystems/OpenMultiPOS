@@ -49,3 +49,18 @@ class ImageContractTests(unittest.TestCase):
         (self.root / "etc/shadow").write_text("root:$fictional-hash:0:0:99999:7:::\n")
         with self.assertRaisesRegex(ValueError, "contraseña"):
             validate(self.root)
+
+    def test_private_installation_and_retained_attempts_are_rejected(self):
+        for relative in (
+            "var/lib/openmultipos",
+            str(BENCH.parent / "incomplete"),
+            str(BENCH.parent / "redis-queue"),
+            "root/.ssh",
+        ):
+            folder = self.root / relative
+            folder.mkdir(parents=True)
+            marker = folder / "fictional-private-state"
+            marker.write_text("do not distribute")
+            with self.assertRaises(ValueError):
+                validate(self.root)
+            marker.unlink()

@@ -11,6 +11,17 @@ def validate(root):
     root = Path(root)
     if not (root / "etc/openmultipos-build-environment").is_file():
         raise ValueError("La imagen no pertenece al entorno de construcción dedicado")
+    state = root / "var/lib/openmultipos"
+    if state.exists() and any(state.iterdir()):
+        raise ValueError("La imagen contiene estado privado de instalación")
+    base = root / BENCH.parent
+    for name in ("incomplete", "recovery", "redis-cache", "redis-queue"):
+        path = base / name
+        if path.is_symlink() or (path.exists() and any(path.iterdir())):
+            raise ValueError("La imagen contiene intentos, respaldos o estado de servicios")
+    for folder in (root / "root/.ssh", root / "home/openmultipos/.ssh"):
+        if folder.exists() and any(folder.iterdir()):
+            raise ValueError("La imagen contiene configuración SSH privada")
     sites = root / BENCH / "sites"
     allowed = {"assets", "apps.txt", "apps.json", "common_site_config.json"}
     if not sites.is_dir() or any(path.name not in allowed for path in sites.iterdir()):
