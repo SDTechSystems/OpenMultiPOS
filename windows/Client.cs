@@ -51,29 +51,29 @@ internal static class Client
             }
             using (Form form = new Form())
             {
-                form.Text = "OpenMultiPOS · Conectar al servidor";
+                form.Text = "OpenMultiPOS · Conectar a mi servidor";
                 form.Font = new Font("Segoe UI", 10);
                 form.BackColor = Color.FromArgb(243, 246, 250);
                 form.AutoScaleMode = AutoScaleMode.Dpi;
-                form.MinimumSize = new Size(540, 360);
-                form.ClientSize = new Size(600, 340);
+                form.MinimumSize = new Size(540, 440);
+                form.ClientSize = new Size(600, 420);
                 form.StartPosition = FormStartPosition.CenterScreen;
-                var panel = new TableLayoutPanel { Dock = DockStyle.Fill, Padding = new Padding(24), ColumnCount = 1, RowCount = 5 };
+                var panel = new TableLayoutPanel { Dock = DockStyle.Fill, AutoScroll = true, Padding = new Padding(24), ColumnCount = 1, RowCount = 5 };
                 panel.RowStyles.Add(new RowStyle(SizeType.AutoSize));
                 panel.RowStyles.Add(new RowStyle(SizeType.AutoSize));
                 panel.RowStyles.Add(new RowStyle(SizeType.AutoSize));
                 panel.RowStyles.Add(new RowStyle(SizeType.AutoSize));
                 panel.RowStyles.Add(new RowStyle(SizeType.Percent, 100));
-                panel.Controls.Add(new Label { Text = "Usa los mismos datos de tu servidor", AutoSize = true, Font = new Font("Segoe UI", 15, FontStyle.Bold), Margin = new Padding(0, 0, 0, 12) });
-                panel.Controls.Add(new Label { Text = "Este cliente abre la aplicación en tu navegador. El servidor debe estar encendido y conectado. Inicia sesión con tu cuenta personal.", AutoSize = true, MaximumSize = new Size(540, 0), Margin = new Padding(0, 0, 0, 16) });
+                panel.Controls.Add(new Label { Text = "Conectar a un servidor de tu negocio", AutoSize = true, Font = new Font("Segoe UI", 15, FontStyle.Bold), Margin = new Padding(0, 0, 0, 12) });
+                panel.Controls.Add(new Label { Text = "Los datos se guardan en el servidor cuya dirección escribas. No se incluye una conexión a los desarrolladores. Para guardar datos en este equipo, instala la edición Servidor propio. Cambiar de dirección no traslada datos entre servidores.", AutoSize = true, MaximumSize = new Size(540, 0), Margin = new Padding(0, 0, 0, 16) });
                 panel.Controls.Add(new Label { Text = "&Dirección HTTPS del servidor", AutoSize = true });
-                var address = new TextBox { Dock = DockStyle.Fill, AccessibleName = "Dirección del servidor", Text = File.Exists(config) ? File.ReadAllText(config) : "http://localhost:8089" };
+                var address = new TextBox { Dock = DockStyle.Fill, AccessibleName = "Dirección del servidor", Text = File.Exists(config) ? File.ReadAllText(config) : "" };
                 panel.Controls.Add(address);
                 var actions = new FlowLayoutPanel { Dock = DockStyle.Fill, Padding = new Padding(0, 16, 0, 0), AutoSize = true };
                 var open = new Button { Text = "Guardar y abrir", AutoSize = true, BackColor = Color.FromArgb(36, 95, 164), ForeColor = Color.White, FlatStyle = FlatStyle.Flat };
                 var manual = new Button { Text = "Leer el manual", AutoSize = true };
                 var help = new ToolTip();
-                help.SetToolTip(address, "En el computador servidor puedes usar la dirección local. En los demás, usa su dirección HTTPS privada.");
+                help.SetToolTip(address, "Escribe la dirección de tu propio servidor. En ese computador puedes usar http://localhost:8089. En los demás, usa su dirección HTTPS privada.");
                 help.SetToolTip(open, "Guarda solo la dirección en tu perfil de Windows. No guarda tu contraseña.");
                 open.Click += delegate {
                     try

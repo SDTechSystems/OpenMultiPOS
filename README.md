@@ -4,6 +4,8 @@ Espacio administrativo autohospedado sobre **ERPNext + Frappe + X POS**, orienta
 
 **La administración se abre en `/omp`**, con una cuenta administrativa. Menú lateral, selector de negocio, perfiles privados, productos con SKU automático y entradas de inventario, cesta de ambos negocios, datos de recibo configurables, manual con capturas y guías por sección. Español latinoamericano, COP y America/Bogota por defecto; configuración editable. El backend funciona en WSL y el navegador/equipos en Windows.
 
+**Servidor propio** crea una instalación independiente y guarda los datos en el computador de quien lo instala. **Conectar a mi servidor** pide la dirección del servidor de su negocio. Ningún paquete público trae una conexión al computador del creador ni incluye su instalación privada. Consulta [ediciones y propiedad de los datos](docs/editions.md). La aceptación de producción y Windows limpio sigue pendiente.
+
 Las operaciones usan documentos, stock y contabilidad nativos; una cesta conjunta crea una factura por negocio y un recibo interno. Solo se personalizan la impresora y el lector existentes. La impresión ya fue confirmada por el propietario; se conserva el preset. DIAN y operación sin conexión siguen desactivadas. La recuperación local incluye respaldo diario, ensayo aislado y conciliación; las APIs anteriores de X POS quedan cerradas salvo tres adaptadores autorizados. Revisa configuración privada y resultados antes de cargar datos reales.
 
 - [Manual visual de administración](docs/manual.md)

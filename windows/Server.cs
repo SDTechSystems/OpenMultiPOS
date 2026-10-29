@@ -221,12 +221,12 @@ internal sealed class ServerWindow : Form
     internal ServerWindow(string distro)
     {
         backend = new ServerBackend(distro);
-        Text = "OpenMultiPOS · Servidor · " + distro;
+        Text = "OpenMultiPOS · Servidor propio · " + distro;
         Font = new Font("Segoe UI", 10); BackColor = Color.FromArgb(243, 246, 250);
         AutoScaleMode = AutoScaleMode.Dpi; MinimumSize = new Size(700, 540); ClientSize = new Size(740, 540); StartPosition = FormStartPosition.CenterScreen;
         var panel = new TableLayoutPanel { Dock = DockStyle.Fill, AutoScroll = true, Padding = new Padding(24), ColumnCount = 1, RowCount = 10 };
-        panel.Controls.Add(new Label { Text = "Servidor de este computador", Font = new Font("Segoe UI", 17, FontStyle.Bold), AutoSize = true });
-        panel.Controls.Add(new Label { Text = "Requiere WSL2, virtualización y 30 GB libres. Mantén esta ventana abierta mientras otros equipos usan el servidor. Los datos se guardan por separado del programa, en tu perfil de Windows.", AutoSize = true, MaximumSize = new Size(620, 0), Margin = new Padding(0, 12, 0, 16) });
+        panel.Controls.Add(new Label { Text = "Servidor propio: datos en este computador", Font = new Font("Segoe UI", 17, FontStyle.Bold), AutoSize = true });
+        panel.Controls.Add(new Label { Text = "Crea una instalación independiente para tu negocio. Los datos quedan en este computador, separados del programa, y no se envían a los desarrolladores. Requiere WSL2, virtualización y 30 GB libres. Mantén esta ventana abierta mientras tus otros equipos usan este servidor.", AutoSize = true, MaximumSize = new Size(620, 0), Margin = new Padding(0, 12, 0, 16) });
         panel.Controls.Add(status);
         panel.Controls.Add(new Label { Text = "Contraseña inicial de Administrator", AutoSize = true, Margin = new Padding(0, 16, 0, 4) }); panel.Controls.Add(password);
         panel.Controls.Add(new Label { Text = "Repite la contraseña inicial", AutoSize = true }); panel.Controls.Add(confirm);

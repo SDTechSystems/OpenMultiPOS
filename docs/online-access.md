@@ -1,5 +1,7 @@
 # Usar los mismos datos desde varios computadores
 
+Esta guía se aplica dentro de tu propio negocio. Quien recibe el programa desde GitHub o de otra persona configura un servidor propio; no recibe acceso al servidor de quien lo compartió. El paquete Servidor propio guarda datos en el computador donde se instala. Conectar a mi servidor permite escribir manualmente la dirección autorizada de tu negocio y cambiarla después con Configurar.cmd. Consulta [ediciones y propiedad de los datos](editions.md).
+
 La instalación principal vive en el computador Windows que hace de servidor. Todos los computadores abren ese mismo sitio y guardan en su base de datos. No se necesita exportar ventas ni sincronizar archivos entre cajas. Una operación confirmada aparece al actualizar la consulta en el otro computador.
 
 El servidor debe permanecer encendido, conectado a internet y con OpenMultiPOS iniciado. Si se suspende, reinicia o pierde internet, los demás computadores pierden acceso hasta que vuelva. La aplicación todavía requiere conexión para operar.

@@ -11,10 +11,19 @@ from base64 import b64encode
 from pathlib import Path
 from zipfile import ZIP_DEFLATED, ZipFile
 
-import markdown2
+
+def public_windows_sources(repo):
+    files = subprocess.check_output(["git", "ls-files", "-z", "--", "windows"], cwd=repo)
+    for relative in filter(None, files.decode().split("\0")):
+        path = repo / relative
+        if path.is_symlink() or not path.is_file():
+            raise ValueError("Las fuentes Windows deben ser archivos públicos regulares")
+        yield path
 
 
 def build(destination):
+    import markdown2
+
     repo = Path(__file__).resolve().parents[1]
     destination.mkdir(parents=True, exist_ok=False)
     portable = destination / "OpenMultiPOS-Client-0.1.0"
@@ -70,9 +79,8 @@ def build(destination):
         shutil.copyfile(repo / source, portable / name)
     source_dir = portable / "source"
     source_dir.mkdir()
-    for path in (repo / "windows").iterdir():
-        if path.is_file():
-            shutil.copyfile(path, source_dir / path.name)
+    for path in public_windows_sources(repo):
+        shutil.copyfile(path, source_dir / path.name)
     shutil.copyfile(__file__, source_dir / Path(__file__).name)
     subprocess.run(
         [
@@ -114,6 +122,9 @@ def build(destination):
     info = {
         "version": "0.1.0",
         "scope": "client-only; requires an existing OpenMultiPOS server",
+        "edition": "Conectar a mi servidor",
+        "data_location": "server address entered by the recipient",
+        "default_remote_server": None,
         "windows_acceptance": "pending",
         "signed": False,
         "compiler": subprocess.check_output(["mcs", "--version"], text=True).strip(),

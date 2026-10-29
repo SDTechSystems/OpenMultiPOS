@@ -421,3 +421,9 @@ El empaquetador incluye solo los archivos verificados, sin registros, temporales
 ## Preparación del equipo desde Windows · 28/10/2026
 
 El contraste con los requisitos de #37/#38 encontró que el controlador describía WSL como requisito pero no ofrecía una acción guiada para prepararlo. Se añade consulta de estado y Preparar Windows con el instalador oficial de WSL, elevación solicitada por Windows y sin distribución adicional ni reinicio automático. La importación comprueba el espacio libre de la unidad de datos antes de leer la imagen. Los contratos cubren los argumentos exactos de preparación y el límite de espacio. No se ejecuta la instalación elevada sobre el equipo operativo; su aceptación en Windows limpio sigue pendiente. No cambia el backend ni requiere reconstruir la imagen sellada.
+
+## Instalaciones independientes al compartir · 28/10/2026
+
+Se distinguen Servidor propio y Conectar a mi servidor en instaladores, ventanas, Aplicaciones de Windows y manuales. El primero crea una instalación WSL independiente en el computador receptor; el segundo comienza sin dirección y pide la de su propio negocio. Las preferencias privadas del propietario no se distribuyen. Los manifiestos identifican edición, ubicación de datos y ausencia de servidor remoto predeterminado.
+
+Los constructores ahora toman únicamente fuentes Windows registradas en Git, rechazan enlaces y excluyen archivos locales no registrados. El control de publicación bloquea connection.txt incluso si se agrega por error. Una prueba con un repositorio temporal confirma la exclusión de una conexión ficticia no registrada y el rechazo de un enlace desde una fuente registrada. Los cambios se limitan a distribución y configuración del cliente; no se reconstruye el backend ni se repiten ensayos contables.

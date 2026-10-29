@@ -12,6 +12,8 @@ Para usar los mismos datos desde otros computadores, consulta [acceso privado y 
 
 ## Instalar el servidor en Windows
 
+Hay dos ediciones con el mismo código de aplicación: **Servidor propio** crea un servidor independiente y guarda los datos en el computador de quien lo instala. **Conectar a mi servidor** pide la dirección de un servidor de ese negocio y guarda los datos allí. Ninguna edición pública contiene una conexión al computador del creador. La instalación privada y su configuración no forman parte del programa compartido. Consulta [ediciones y propiedad de los datos](editions.md).
+
 La edición completa del servidor está en aceptación privada. Todavía no está aprobada para producción ni para compartir. El cliente Windows separado solo abre un servidor existente.
 
 Prepara Windows x64, .NET Framework 4.8, WSL2, virtualización y 30 GB libres. La preparación de WSL puede pedir administrador, descargas y reinicio. Extrae todo el ZIP en una carpeta local. Para usarlo como portable, abre `OpenMultiPOS-Server-Control.exe`. Para instalar el programa en tu perfil, ejecuta `OpenMultiPOS-Server-Setup-0.1.0.exe` desde esa misma carpeta completa y después abre OpenMultiPOS Servidor desde Inicio. Conserva la imagen `.wsl` y `server-image.json` junto al instalador.

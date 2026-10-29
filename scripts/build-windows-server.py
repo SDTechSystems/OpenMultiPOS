@@ -39,7 +39,8 @@ def build(destination, image, manifest, audit, *, archive=True):
     repo = Path(__file__).resolve().parents[1]
     destination.mkdir(parents=True, exist_ok=False)
     client = destination / "client"
-    runpy.run_path(str(repo / "scripts/build-windows-client.py"))["build"](client)
+    client_builder = runpy.run_path(str(repo / "scripts/build-windows-client.py"))
+    client_builder["build"](client)
     portable = destination / "OpenMultiPOS-Server-0.1.0"
     runpy.run_path(str(repo / "scripts/build-windows-controller.py"))["build"](
         portable, client / "OpenMultiPOS-Client-0.1.0/Manual.html"
@@ -47,9 +48,8 @@ def build(destination, image, manifest, audit, *, archive=True):
     shutil.copyfile(image, portable / "OpenMultiPOS-Server.wsl")
     shutil.copyfile(manifest, portable / "server-image.json")
     shutil.copyfile(repo / "windows/SERVIDOR.txt", portable / "LEEME.txt")
-    for path in (repo / "windows").iterdir():
-        if path.is_file():
-            shutil.copyfile(path, portable / "source" / path.name)
+    for path in client_builder["public_windows_sources"](repo):
+        shutil.copyfile(path, portable / "source" / path.name)
     # Public source only; no ignored build outputs or private fixtures.
     files = subprocess.check_output(["git", "ls-files", "-z"], cwd=repo).decode().split("\0")
     with ZipFile(portable / "source.zip", "w", ZIP_DEFLATED) as source:
@@ -88,6 +88,9 @@ def build(destination, image, manifest, audit, *, archive=True):
     info = {
         "version": "0.1.0",
         "scope": "complete server acceptance candidate; not approved for production or sharing",
+        "edition": "Servidor propio",
+        "data_location": "recipient computer; independent WSL installation",
+        "default_remote_server": None,
         "signed": False,
         "image": metadata,
         "windows_gui_acceptance": "pending",

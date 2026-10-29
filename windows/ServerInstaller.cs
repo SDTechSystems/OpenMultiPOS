@@ -65,7 +65,7 @@ internal static class ServerInstaller
         }
         using (RegistryKey key = Registry.CurrentUser.CreateSubKey(keyPath))
         {
-            key.SetValue("DisplayName", "OpenMultiPOS · Servidor"); key.SetValue("DisplayVersion", "0.1.0");
+            key.SetValue("DisplayName", "OpenMultiPOS · Servidor propio"); key.SetValue("DisplayVersion", "0.1.0");
             key.SetValue("Publisher", "OpenMultiPOS contributors"); key.SetValue("InstallLocation", target);
             key.SetValue("UninstallString", "\"" + setup + "\" --uninstall");
             key.SetValue("NoModify", 1, RegistryValueKind.DWord); key.SetValue("NoRepair", 1, RegistryValueKind.DWord);
@@ -132,7 +132,7 @@ internal static class ServerInstaller
                 Busy(() => Uninstall(Target, Shortcut, Key));
                 MessageBox.Show("Programa desinstalado. Los datos WSL permanecen en su ubicación. Puedes quitar la carpeta del programa después de cerrar esta ventana.", "OpenMultiPOS"); return 0;
             }
-            if (MessageBox.Show("Se instalará el controlador y la imagen limpia para tu usuario. Requiere Windows x64, .NET 4.8, WSL2, virtualización y 30 GB libres. La preparación de WSL puede pedir permisos de administrador y reinicio.\n\nCierra el controlador antes de actualizar. Actualizar este programa conserva el servidor existente; no migra sus datos. ¿Continuar?", "Instalar OpenMultiPOS", MessageBoxButtons.YesNo) != DialogResult.Yes) return 0;
+            if (MessageBox.Show("Edición Servidor propio. Crea una instalación independiente: los datos se guardan en este computador, no en el equipo de los desarrolladores. No incluye negocios, cuentas ni conexiones de otra instalación.\n\nRequiere Windows x64, .NET 4.8, WSL2, virtualización y 30 GB libres. Preparar WSL puede pedir administrador y reinicio. Cierra el controlador antes de actualizar; se conserva el servidor existente y sus datos.\n\n¿Continuar?", "OpenMultiPOS · Servidor propio", MessageBoxButtons.YesNo) != DialogResult.Yes) return 0;
             Busy(() => Install(Target, Shortcut, Key, AppDomain.CurrentDomain.BaseDirectory));
             MessageBox.Show("Abre OpenMultiPOS Servidor desde Inicio. Importa la imagen, crea la contraseña inicial e inicia el servidor. Completa ERPNext y el asistente de OpenMultiPOS en el navegador. Consulta Manual.html.", "OpenMultiPOS"); return 0;
         }

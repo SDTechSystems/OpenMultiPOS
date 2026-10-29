@@ -122,6 +122,7 @@ def violations(path: str, data: bytes, reviewed: dict[str, str] | None = None) -
         or file.name.lower().startswith(".env")
         and not file.name.lower().endswith(".example")
         or "project_brief" in file.name.lower()
+        or file.name.lower() == "connection.txt"
     ):
         issues.append("private-file-type-or-location")
     try:

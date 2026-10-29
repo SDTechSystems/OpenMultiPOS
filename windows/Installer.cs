@@ -51,7 +51,7 @@ internal static class Installer
                 MessageBox.Show("Cliente desinstalado. Puedes borrar la carpeta del programa cuando cierres este desinstalador. Los datos del servidor se conservan.", "OpenMultiPOS");
                 return 0;
             }
-            if (MessageBox.Show("Se instalará el cliente para tu usuario de Windows. Necesitas un servidor OpenMultiPOS ya configurado. Este instalador no incluye el servidor ni datos comerciales.\n\n¿Continuar?", "Instalar OpenMultiPOS", MessageBoxButtons.YesNo, MessageBoxIcon.Question) != DialogResult.Yes) return 0;
+            if (MessageBox.Show("Edición Conectar a mi servidor. Escribe después la dirección de un servidor de tu negocio: allí se guardarán los datos. No hay conexión preconfigurada a los desarrolladores. Para crear una instalación independiente en este computador, usa Servidor propio.\n\n¿Instalar el cliente?", "OpenMultiPOS · Conectar a mi servidor", MessageBoxButtons.YesNo, MessageBoxIcon.Question) != DialogResult.Yes) return 0;
             Directory.CreateDirectory(Target);
             Write("OpenMultiPOS.exe", Resource("client"));
             Write("Manual.html", Resource("manual"));
@@ -71,7 +71,7 @@ internal static class Installer
             System.Runtime.InteropServices.Marshal.FinalReleaseComObject(shell);
             using (RegistryKey key = Registry.CurrentUser.CreateSubKey(Key))
             {
-                key.SetValue("DisplayName", "OpenMultiPOS · Cliente");
+                key.SetValue("DisplayName", "OpenMultiPOS · Conectar a mi servidor");
                 key.SetValue("DisplayVersion", "0.1.0");
                 key.SetValue("Publisher", "OpenMultiPOS contributors");
                 key.SetValue("InstallLocation", Target);

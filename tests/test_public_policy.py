@@ -24,6 +24,7 @@ class PublicationPolicyTests(unittest.TestCase):
             "x.pem",
             ".env",
             "PROJECT_BRIEF.md",
+            "windows/connection.txt",
         ):
             with self.subTest(name=name):
                 self.assertTrue(module.violations(name, b"fictional"))
