@@ -416,3 +416,10 @@ Se recuperaron las 18 versiones de fuentes Ubuntu faltantes desde publicaciones 
 Una extensión `setup_wizard_requires` conserva el asistente nativo y propone el idioma configurado del sitio, usando sus nombres de idioma. Admite el código regional mediante su idioma base; respeta una selección previa y deja el valor nativo si el código no está disponible. No modifica core, validaciones ni estado de configuración.
 
 Una copia QA sin sitio recibió los cuatro archivos públicos nuevos y completó la instalación nativa. Chrome Windows inició sesión y abrió su primer asistente: boot.lang es, campo de idioma Español. No se completó ni se marcó artificialmente el asistente. La prueba de lógica persistente cubre configuración es/es-CO, selección previa, código ausente/desconocido y reentrada, y se ejecuta en CI. El ensayo nativo completo de empresa/cuentas del incremento anterior sigue siendo evidencia separada.
+
+
+## Respaldo y ensayo local guiados · 28/10/2026
+
+El controlador Windows añade Crear copia y Comprobar recuperación, con ayuda y ejecución fuera del hilo de interfaz. Exige servidor detenido y reutiliza operations.backup/restore_drill. El helper root toma el bloqueo de vida, rechaza servicios activos y habilita únicamente base y Redis durante la operación. Retira la cuenta temporal de base y detiene servicios en finally. Un clon de ensayo conserva el aislamiento nativo y no sustituye el sitio original.
+
+Una copia y un ensayo reales aprobaron sobre PackageQA ficticio mediante el nuevo helper. El controlador compiló y sus contratos aprobaron. Se añadió rechazo de servidor activo/no preparado/controlador concurrente y comprobación de limpieza ante fallo. No se repiten pruebas contables ni se reconstruye la imagen completa en este incremento. Los servicios dejan de habilitarse al arranque WSL para evitar actividad de fondo al consultar el estado. La aceptación visual Windows y la entrega final siguen pendientes.

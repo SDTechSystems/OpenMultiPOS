@@ -35,3 +35,10 @@ El protocolo local 1 expone únicamente estado de instalación, disponibilidad d
 En Windows real, `--verify-import` importó la imagen sellada de 1,5 GB en `OpenMultiPOS-PackageQA`. En otra distribución recién importada, `ImageQA`, aprobaron `first_run.py setup` y la comprobación Windows `--verify-server`. Esta última comprobó estado, transporte de texto Unicode y comillas por stdin, inicio con evento ready y parada mediante EOF.
 
 También en Windows real, `--verify-installation` aprobó copia de archivos, acceso directo, registro HKCU, actualización, rechazo de una imagen alterada y desinstalación. Esa prueba usó una imagen sintética pequeña y conservó un archivo de datos ficticios separado; no importó la imagen real mediante la interfaz. Las pruebas propias rechazan nombres de distribución ajenos y manifiestos incompletos. Siguen pendientes la aceptación visual y de teclado, el recorrido completo en Windows limpio y la revisión completa de fuentes y licencias. El candidato privado está sin firma y no se puede publicar todavía.
+
+
+## Copias desde el controlador
+
+Con el servidor detenido, Crear copia ejecuta el motor existente de respaldo de base, archivos, claves y conciliación. Comprobar recuperación crea una copia nueva y un clon de restauración aislado. No reemplaza el sitio original. El control local exige el bloqueo de vida y servicios detenidos; inicia solo MariaDB y Redis durante la operación y los detiene al terminar, incluso ante error. El ensayo recibe un administrador de base temporal por stdin, con archivo privado transitorio y retirada de la cuenta al salir. Las copias quedan en recovery, junto al Bench, y alimentan los indicadores del asistente.
+
+Los servicios administrados se inician únicamente desde la sesión del controlador; no se habilitan para arrancar solos al consultar WSL. Tras la copia o el ensayo se debe iniciar el servidor de nuevo. Una copia local no sustituye la copia cifrada en otro dispositivo.

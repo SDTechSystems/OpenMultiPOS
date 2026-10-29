@@ -108,6 +108,7 @@ internal sealed class ServerBackend
     {
         Execute(Runtime(recover ? "recover" : "setup", "--stdin"), json.Serialize(new { password = password }), false);
     }
+    internal void Backup(bool check) { Execute(Runtime(check ? "restore-check" : "backup"), null, false); }
     internal void VerifyInput()
     {
         string sample = "Fictional ñ \n quote\" slash\\";
@@ -179,6 +180,8 @@ internal sealed class ServerWindow : Form
     private readonly Button start = new Button { Text = "I&niciar servidor", AutoSize = true };
     private readonly Button stop = new Button { Text = "&Detener servidor", AutoSize = true };
     private readonly Button open = new Button { Text = "&Abrir aplicación", AutoSize = true };
+    private readonly Button backup = new Button { Text = "Crear copia", AutoSize = true };
+    private readonly Button drill = new Button { Text = "Comprobar recuperación", AutoSize = true };
     private readonly ToolTip help = new ToolTip();
     private bool busy, registered, installed, recoverable, allowClose, wasRunning;
 
@@ -195,7 +198,7 @@ internal sealed class ServerWindow : Form
         panel.Controls.Add(new Label { Text = "Contraseña inicial de Administrator", AutoSize = true, Margin = new Padding(0, 16, 0, 4) }); panel.Controls.Add(password);
         panel.Controls.Add(new Label { Text = "Repite la contraseña inicial", AutoSize = true }); panel.Controls.Add(confirm);
         var actions = new FlowLayoutPanel { AutoSize = true, Dock = DockStyle.Fill, WrapContents = true, Margin = new Padding(0, 16, 0, 8) };
-        foreach (Button button in new [] { import, setup, recover, start, stop, open }) actions.Controls.Add(button);
+        foreach (Button button in new [] { import, setup, recover, start, stop, open, backup, drill }) actions.Controls.Add(button);
         panel.Controls.Add(actions);
         var details = new FlowLayoutPanel { AutoSize = true, Dock = DockStyle.Fill };
         var refresh = new Button { Text = "Actualizar estado", AutoSize = true }; var log = new Button { Text = "Ver registros locales", AutoSize = true }; var manual = new Button { Text = "Leer manual", AutoSize = true };
@@ -208,6 +211,10 @@ internal sealed class ServerWindow : Form
         help.SetToolTip(recover, "Úsalo tras una preparación interrumpida. Conserva el intento anterior y rechaza sitios con datos comerciales o cuentas personales.");
         help.SetToolTip(stop, "Cierra los servicios de forma ordenada. Los otros equipos perderán conexión hasta volver a iniciar.");
         help.SetToolTip(password, "Solo se envía a la preparación local. El controlador no la guarda en un archivo.");
+        help.SetToolTip(backup, "Con el servidor detenido, crea una copia privada verificada de base, archivos y claves. Después vuelve a iniciar.");
+        help.SetToolTip(drill, "Crea una copia nueva y la restaura en otro sitio aislado. Conserva el original y el ensayo. Puede tardar y necesita espacio libre.");
+        backup.Click += async delegate { await Backup(false); };
+        drill.Click += async delegate { await Backup(true); };
         import.Click += async delegate { await Work(async () => { status.Text = "Verificando e importando la imagen. Puede tardar varios minutos."; await Task.Run(() => backend.Import(AppDomain.CurrentDomain.BaseDirectory)); await RefreshState(); }); };
         setup.Click += async delegate { await Prepare(false); }; recover.Click += async delegate { await Prepare(true); };
         start.Click += async delegate { await Work(async () => { status.Text = "Iniciando los servicios…"; await backend.Start(); status.Text = "Servidor activo en http://localhost:8089. Conserva esta ventana abierta."; }); };
@@ -235,6 +242,7 @@ internal sealed class ServerWindow : Form
         import.Enabled = !busy && !registered; setup.Enabled = !busy && registered && !installed && !Running;
         recover.Enabled = setup.Enabled && recoverable; start.Enabled = !busy && installed && !Running;
         stop.Enabled = !busy && Running; open.Enabled = !busy && Running; password.Enabled = confirm.Enabled = setup.Enabled;
+        backup.Enabled = drill.Enabled = !busy && installed && !Running;
         AcceptButton = !registered ? import : installed ? start : setup;
     }
     private async Task Work(Func<Task> action)
@@ -256,6 +264,10 @@ internal sealed class ServerWindow : Form
         if (password.Text.Length < 12 || password.Text != confirm.Text) { status.Text = "Introduce y confirma la misma contraseña de 12 a 128 caracteres."; password.Focus(); return; }
         string secret = password.Text; password.Clear(); confirm.Clear();
         await Work(async () => { status.Text = "Preparando el sitio privado. La primera vez puede tardar varios minutos."; try { await Task.Run(() => backend.Setup(secret, recovery)); } finally { await RefreshState(); } });
+    }
+    private async Task Backup(bool check)
+    {
+        await Work(async () => { status.Text = check ? "Creando copia y comprobando restauración aislada…" : "Creando copia privada verificada…"; await Task.Run(() => backend.Backup(check)); status.Text = check ? "Copia y restauración verificadas. Inicia el servidor y actualiza Recuperación en la aplicación." : "Copia verificada. Inicia el servidor y actualiza Recuperación en la aplicación."; });
     }
 }
 

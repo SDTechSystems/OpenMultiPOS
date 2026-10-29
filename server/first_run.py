@@ -271,6 +271,7 @@ def setup(home, state, password, *, recover=False):
     with (STATE / "setup.log").open("a") as log:
         app(home, PREPARE, {}, log)
         run("systemctl", "daemon-reload", stdout=log, stderr=log)
+        run("systemctl", "disable", "mariadb", *SERVICES, "nginx", stdout=log, stderr=log)
         run("systemctl", "unmask", "mariadb", stdout=log, stderr=log)
         run("systemctl", "start", "mariadb", "omp-cache", "omp-queue", stdout=log, stderr=log)
         temporary = secrets.token_hex(32)
@@ -332,9 +333,120 @@ def public_status(state):
     }
 
 
+BACKUP = """
+import json,os,sys,tempfile
+from pathlib import Path
+from uuid import uuid4
+import frappe
+from open_multi_pos.operations import backup,restore_drill
+value=json.load(sys.stdin)
+base=Path.home()/'.local/share/openmultipos'
+bench=base/'bench'
+os.chdir(bench/'sites')
+frappe.init('omp.localhost',sites_path=str(bench/'sites'))
+frappe.connect()
+frappe.set_user('Administrator')
+try:
+ root=base/'recovery'
+ result=backup('omp.localhost',root,systemd=False)
+finally:
+ frappe.destroy()
+if value.get('check'):
+ descriptor,path=tempfile.mkstemp(prefix='.drill-admin-',dir=root)
+ try:
+  with os.fdopen(descriptor,'w') as stream:
+   json.dump({'username':value['username'],'password':value['password'],'socket':value['socket']},stream)
+  restore_drill(bench,'omp-restore-'+uuid4().hex[:16]+'.localhost',root/result['backup'],Path(path))
+ finally:
+  Path(path).unlink(missing_ok=True)
+  frappe.destroy()
+"""
+
+
+def backup_site(home, state, *, check=False):
+    if not state.get("installed"):
+        raise ValueError("Prepara el sitio antes de crear una copia")
+    # The same lifetime lock prevents another controller starting during the copy.
+    with (STATE / "server.lock").open("a") as lifetime:
+        fcntl.flock(lifetime, fcntl.LOCK_EX | fcntl.LOCK_NB)
+        for service in ("nginx", *SERVICES, "mariadb"):
+            if (
+                subprocess.run(
+                    ["systemctl", "is-active", "--quiet", service], check=False
+                ).returncode
+                == 0
+            ):
+                raise ValueError("Detén el servidor desde su controlador antes de respaldar")
+        with (STATE / "recovery.log").open("a") as log:
+            password = secrets.token_hex(32) if check else ""
+            username = "omp_drill_" + secrets.token_hex(8)
+            created = False
+            try:
+                run(
+                    "systemctl",
+                    "start",
+                    "mariadb",
+                    "omp-cache",
+                    "omp-queue",
+                    stdout=log,
+                    stderr=log,
+                )
+                if check:
+                    run(
+                        "mariadb",
+                        "--protocol=socket",
+                        "-uroot",
+                        text=True,
+                        input=f"CREATE USER '{username}'@'localhost' IDENTIFIED BY '{password}';",
+                        stdout=log,
+                        stderr=log,
+                    )
+                    created = True
+                    run(
+                        "mariadb",
+                        "--protocol=socket",
+                        "-uroot",
+                        text=True,
+                        input=f"GRANT ALL PRIVILEGES ON *.* TO '{username}'@'localhost' WITH GRANT OPTION;",
+                        stdout=log,
+                        stderr=log,
+                    )
+                app(
+                    home,
+                    BACKUP,
+                    {"check": check, "username": username, "password": password, "socket": SOCKET},
+                    log,
+                )
+            finally:
+                try:
+                    if created:
+                        run(
+                            "mariadb",
+                            "--protocol=socket",
+                            "-uroot",
+                            text=True,
+                            input=f"DROP USER IF EXISTS '{username}'@'localhost';",
+                            stdout=log,
+                            stderr=log,
+                        )
+                finally:
+                    run(
+                        "systemctl",
+                        "stop",
+                        "omp-queue",
+                        "omp-cache",
+                        "mariadb",
+                        stdout=log,
+                        stderr=log,
+                    )
+
+
 def main():
     parser = argparse.ArgumentParser(description=__doc__)
-    parser.add_argument("action", choices=("setup", "recover", "start", "serve", "stop", "status"))
+    parser.add_argument(
+        "action",
+        choices=("setup", "recover", "start", "serve", "stop", "status", "backup", "restore-check"),
+    )
     parser.add_argument("--stdin", action="store_true", help=argparse.SUPPRESS)
     parser.add_argument("--events", action="store_true", help=argparse.SUPPRESS)
     options = parser.parse_args()
@@ -359,6 +471,13 @@ def main():
             )
             setup(home, state, password, recover=options.action == "recover")
             print("Sitio preparado. Inicia el servidor y completa el asistente nativo de ERPNext.")
+        elif options.action in ("backup", "restore-check"):
+            backup_site(home, state, check=options.action == "restore-check")
+            print(
+                "Copia verificada. Puedes iniciar el servidor."
+                if options.action == "backup"
+                else "Copia y restauración aislada verificadas. Puedes iniciar el servidor."
+            )
         elif options.action in ("start", "serve"):
             server_lock = None
             if options.action == "serve":
@@ -368,7 +487,8 @@ def main():
                 parser.error("Completa primero la preparación del sitio")
             run("nginx", "-t")
             run("systemctl", "unmask", "nginx")
-            run("systemctl", "enable", "--now", "mariadb", *SERVICES, "nginx")
+            run("systemctl", "disable", "mariadb", *SERVICES, "nginx")
+            run("systemctl", "start", "mariadb", *SERVICES, "nginx")
             for _attempt in range(60):
                 try:
                     with urlopen("http://127.0.0.1:8089/api/method/ping", timeout=2) as response:
@@ -400,6 +520,7 @@ def main():
                     run("systemctl", "stop", "nginx", *reversed(SERVICES), "mariadb")
                     server_lock.close()
         elif options.action == "stop":
+            run("systemctl", "disable", "mariadb", *SERVICES, "nginx")
             run("systemctl", "stop", "nginx", *reversed(SERVICES), "mariadb")
         else:
             print(json.dumps(public_status(state)))

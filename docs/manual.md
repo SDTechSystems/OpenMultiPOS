@@ -24,6 +24,8 @@ Prepara Windows x64, .NET Framework 4.8, WSL2, virtualización y 30 GB libres. L
 
 La ventana muestra dónde están los datos. Por defecto, WSL los conserva en `%LOCALAPPDATA%\OpenMultiPOS\Servidor`, separados del programa. Puedes mover la carpeta portable con el controlador cerrado; eso no traslada la base de datos. No muevas ni sincronices el disco WSL en vivo.
 
+Para una copia local, detén el servidor y pulsa Crear copia en su controlador. Comprobar recuperación crea una copia nueva y la restaura en otro sitio aislado, sin reemplazar el original. Conserva el ensayo para revisión y necesita espacio libre. Después inicia el servidor y actualiza Recuperación en la aplicación. Las copias quedan en el directorio recovery del servidor, separado del sitio. No protegen contra la pérdida del disco: guarda también una copia cifrada fuera del equipo.
+
 Actualizar o desinstalar el programa conserva el servidor y sus datos. El instalador guarda los archivos de programa reemplazados con extensión `.previous`. Esta actualización no migra el backend de un sitio existente: esa operación exige copia verificada, ensayo de restauración y migración en una copia. Consulta [recuperación](recovery.md). No uses `wsl --unregister` para quitar el programa, porque destruye la distribución y sus datos.
 
 ## Inicio
