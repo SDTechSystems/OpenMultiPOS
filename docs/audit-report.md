@@ -10,32 +10,32 @@ Entorno: Python 3.14.4, git y gh disponibles; Bench, MariaDB/Redis y Docker no d
 
 ## Hallazgos de fuentes
 
-| ID | Severidad | Evidencia/reproducción pendiente | Consecuencia / mitigación |
-| --- | --- | --- | --- |
-| U01 | Alta | X POS pyproject Python >=3.10 vs Frappe >=3.14,<3.15; README Node >=24 | Fijar candidatos por SHA y usar Python 3.14/Node 24; instalación conjunta pendiente. |
+| ID  | Severidad               | Evidencia/reproducción pendiente                                                                                     | Consecuencia / mitigación                                                                                                                                                   |
+| --- | ----------------------- | -------------------------------------------------------------------------------------------------------------------- | --------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| U01 | Alta                    | X POS pyproject Python >=3.10 vs Frappe >=3.14,<3.15; README Node >=24                                               | Fijar candidatos por SHA y usar Python 3.14/Node 24; instalación conjunta pendiente.                                                                                        |
 | U02 | Crítica para despliegue | create_invoice retorna duplicado por local_id/warehouse antes de validar perfil; insert/save usan ignore_permissions | No conectar datos reales. Probar usuario ajeno contra IDs y perfiles, permisos de draft y stock; revisar todos los endpoints. Hallazgo estático, explotación no confirmada. |
-| U03 | Alta | find_invoice_by_local_id es lectura previa a creación; test_invoice_retry usa mocks secuenciales | Un test de reintento no demuestra atomicidad. Exigir unicidad en BD, hash de payload y prueba concurrente. |
-| U04 | Alta | get_receipt_context y mark_invoice_printed en print_formats.py no contienen check_permission local explícito | Revisar permisos efectivos del framework y llamadas directas entre perfiles; no anunciar aislamiento total. No se reproduce contra un sitio instalado. |
-| U05 | Alta | Offline tiene colas, cache y tests; README desaconseja Electron productivo | Offline no habilitado en la base; pendientes tests de reconexión/stock y revisión de cache de autenticación. |
-| U06 | Media | print() / printview pueden pedir diálogo sin confirmar papel | Separar venta de impresión; evitar marcar trabajo exitoso automáticamente. |
-| U07 | Media | Fabricante declara ESC/POS y QR, no todos los subcomandos | Perfiles por capacidades y driver primero; corte manual y hardware pendiente. |
+| U03 | Alta                    | find_invoice_by_local_id es lectura previa a creación; test_invoice_retry usa mocks secuenciales                     | Un test de reintento no demuestra atomicidad. Exigir unicidad en BD, hash de payload y prueba concurrente.                                                                  |
+| U04 | Alta                    | get_receipt_context y mark_invoice_printed en print_formats.py no contienen check_permission local explícito         | Revisar permisos efectivos del framework y llamadas directas entre perfiles; no anunciar aislamiento total. No se reproduce contra un sitio instalado.                      |
+| U05 | Alta                    | Offline tiene colas, cache y tests; README desaconseja Electron productivo                                           | Offline no habilitado en la base; pendientes tests de reconexión/stock y revisión de cache de autenticación.                                                                |
+| U06 | Media                   | print() / printview pueden pedir diálogo sin confirmar papel                                                         | Separar venta de impresión; evitar marcar trabajo exitoso automáticamente.                                                                                                  |
+| U07 | Media                   | Fabricante declara ESC/POS y QR, no todos los subcomandos                                                            | Perfiles por capacidades y driver primero; corte manual y hardware pendiente.                                                                                               |
 
 Las rutas exactas y enlaces están en [upstream.md](upstream.md). No se ejecutaron tests upstream, escaneo completo de sus dependencias ni pruebas Bench; no afirmar ausencia de vulnerabilidades.
 
 ## Validación del incremento
 
-| Comprobación | Resultado | Alcance |
-| --- | --- | --- |
-| `python -m unittest discover -s tests -v` | PASÓ · 29 tests | Simulador SQLite/HTTP, dinero preciso, stock, acceso cruzado, snapshots, payload manipulado, reintentos y concurrencia; contratos Frappe con fake, no Bench. |
-| `ruff check .` / `ruff format --check .` | PASÓ | Código Python propio. |
-| `python -m build` + inspección wheel | PASÓ | sdist/wheel; assets HTML/JS, perfiles y DocTypes incluidos. |
-| Browser smoke con Chrome/Playwright | PASÓ | Cobro mixto, recibo/QR, cambio de perfil, API 403 entre marcas, teclado básico, sin overflow a 390/768/1366 px y sin errores JS. |
-| axe sobre UI móvil | PASÓ · 0 violaciones en reglas seleccionadas | WCAG 2A/AA, 2.1AA, 2.2AA automatizadas. No certifica conformidad ni sustituye lector de pantalla. |
-| `pip-audit --no-deps --disable-pip -r requirements-runtime.txt` | PASÓ · sin vulnerabilidades conocidas | Solo qrcode 8.2, única dependencia runtime propia; no cubre Frappe/X POS/transitivas. |
-| `npm audit` | PASÓ · 0 vulnerabilidades conocidas | Dependencias de pruebas de navegador, no ERPNext. |
-| Impresora conectada / POS-58 / USB001 | PARCIAL | Propietario confirma salida y aporta foto; texto pequeño borroso. Ajustes de raster/layout preparados; segunda prueba bloqueada por política de scripts Windows. Modelo exacto no confirmado. |
-| Lector conectado | PASÓ · lectura física básica | Propietario escaneó un código alfanumérico de 10 caracteres, capturado en ~70–80 ms y confirmado en pantalla. No se publica el código real. Modelo, terminador exacto y matriz 1D/QR aún pendientes. |
-| Instalación y ventas ERPNext/X POS | NO EJECUTADO | Sin Bench/DB/Redis. No se ha probado stock, impuestos, permisos ni offline productivos. |
+| Comprobación                                                    | Resultado                                    | Alcance                                                                                                                                                                                              |
+| --------------------------------------------------------------- | -------------------------------------------- | ---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| `python -m unittest discover -s tests -v`                       | PASÓ · 29 tests                              | Simulador SQLite/HTTP, dinero preciso, stock, acceso cruzado, snapshots, payload manipulado, reintentos y concurrencia; contratos Frappe con fake, no Bench.                                         |
+| `ruff check .` / `ruff format --check .`                        | PASÓ                                         | Código Python propio.                                                                                                                                                                                |
+| `python -m build` + inspección wheel                            | PASÓ                                         | sdist/wheel; assets HTML/JS, perfiles y DocTypes incluidos.                                                                                                                                          |
+| Browser smoke con Chrome/Playwright                             | PASÓ                                         | Cobro mixto, recibo/QR, cambio de perfil, API 403 entre marcas, teclado básico, sin overflow a 390/768/1366 px y sin errores JS.                                                                     |
+| axe sobre UI móvil                                              | PASÓ · 0 violaciones en reglas seleccionadas | WCAG 2A/AA, 2.1AA, 2.2AA automatizadas. No certifica conformidad ni sustituye lector de pantalla.                                                                                                    |
+| `pip-audit --no-deps --disable-pip -r requirements-runtime.txt` | PASÓ · sin vulnerabilidades conocidas        | Solo qrcode 8.2, única dependencia runtime propia; no cubre Frappe/X POS/transitivas.                                                                                                                |
+| `npm audit`                                                     | PASÓ · 0 vulnerabilidades conocidas          | Dependencias de pruebas de navegador, no ERPNext.                                                                                                                                                    |
+| Impresora conectada / POS-58 / USB001                           | PARCIAL                                      | Propietario confirma salida y aporta foto; texto pequeño borroso. Ajustes de raster/layout preparados; segunda prueba bloqueada por política de scripts Windows. Modelo exacto no confirmado.        |
+| Lector conectado                                                | PASÓ · lectura física básica                 | Propietario escaneó un código alfanumérico de 10 caracteres, capturado en ~70–80 ms y confirmado en pantalla. No se publica el código real. Modelo, terminador exacto y matriz 1D/QR aún pendientes. |
+| Instalación y ventas ERPNext/X POS                              | NO EJECUTADO                                 | Sin Bench/DB/Redis. No se ha probado stock, impuestos, permisos ni offline productivos.                                                                                                              |
 
 ## Revisión propia y límites
 
@@ -79,15 +79,15 @@ Instalación nueva de Frappe, ERPNext y X POS en los tres SHAs de `upstream.lock
 
 Se detectó que Sales User no tiene lectura nativa de POS Profile. Se añadió OMP Cashier con permiso exclusivo de lectura, sin ampliar roles contables ni reemplazar permisos nativos. Hooks de lista y documento restringen sus perfiles por marca habilitada, autorización explícita y applicable_for_users. El contexto revalida además perfil habilitado y empresa actual del almacén. Los usuarios conservan User Permissions nativas por empresa.
 
-| Evidencia local | Resultado | Límite |
-| --- | --- | --- |
-| Instalación y migrate | PASÓ | Frappe 16.52.0, ERPNext 16.51.1, X POS 2.12.0, OpenMultiPOS 0.1.0; sitio desechable. |
-| Suite Bench/MariaDB | PASÓ · 9 pruebas | Dos marcas/empresas y dos cajeros, listas/contexto/client.get, Guest, acceso cruzado, rechazo de edición, configuración incoherente, perfiles deshabilitados y rol idempotente. Sin mocks. |
-| Suite sin framework | PASÓ · 40 pruebas | Simulador y contratos. No valida stock ni pagos ERPNext. |
-| Ruff y formato | PASÓ | Código propio. |
-| Build de assets | PASÓ | Frappe, ERPNext, X POS web y app; no se descargaron binarios Electron/Cypress ni se probaron esas aplicaciones. |
-| Servicio web local | PASÓ | Gunicorn bajo systemd de usuario, 127.0.0.1:8000, sin debugger. Respuesta ping y login HTTP real de Administrator. |
-| Cliente Windows | PASÓ · conectividad | Chrome nativo Windows/Playwright alcanzó el servidor WSL y recibió pong. No constituye checkout E2E ni nueva prueba física de impresora. |
+| Evidencia local       | Resultado           | Límite                                                                                                                                                                                     |
+| --------------------- | ------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------ |
+| Instalación y migrate | PASÓ                | Frappe 16.52.0, ERPNext 16.51.1, X POS 2.12.0, OpenMultiPOS 0.1.0; sitio desechable.                                                                                                       |
+| Suite Bench/MariaDB   | PASÓ · 9 pruebas    | Dos marcas/empresas y dos cajeros, listas/contexto/client.get, Guest, acceso cruzado, rechazo de edición, configuración incoherente, perfiles deshabilitados y rol idempotente. Sin mocks. |
+| Suite sin framework   | PASÓ · 40 pruebas   | Simulador y contratos. No valida stock ni pagos ERPNext.                                                                                                                                   |
+| Ruff y formato        | PASÓ                | Código propio.                                                                                                                                                                             |
+| Build de assets       | PASÓ                | Frappe, ERPNext, X POS web y app; no se descargaron binarios Electron/Cypress ni se probaron esas aplicaciones.                                                                            |
+| Servicio web local    | PASÓ                | Gunicorn bajo systemd de usuario, 127.0.0.1:8000, sin debugger. Respuesta ping y login HTTP real de Administrator.                                                                         |
+| Cliente Windows       | PASÓ · conectividad | Chrome nativo Windows/Playwright alcanzó el servidor WSL y recibió pong. No constituye checkout E2E ni nueva prueba física de impresora.                                                   |
 
 Las primeras ejecuciones revelaron detalles del runner: `set-config --parse` interpreta literales Python (True); el flag obsoleto `--skip-test-records` no debe usarse; instalar extras sin `-e` sustituye la fuente editable y rompe el build frontend. Corregidos comandos y documentación. La suite usa el instalador estándar de datos maestros ERPNext para crear Warehouse Type Transit y otras dependencias de una instalación previa al wizard; no se omitieron validaciones nativas para forzar fixtures.
 
@@ -105,12 +105,12 @@ Los ensayos adicionales encontraron una factura de otra marca de la misma empres
 
 MariaDB produjo CHECKREAD bajo solicitudes concurrentes con bloqueo, traducido por Frappe a QueryDeadlockError. Se responde 409 y se deja el rollback al framework; no se resetea la transacción del llamador. Las pruebas reintentan únicamente registros abortados y verifican contador exacto y segunda impresión denegada al cajero sin permiso. No existe reintento automático de papel ni confirmación física en ese contador.
 
-| Evidencia de este incremento | Resultado | Alcance y límites |
-| --- | --- | --- |
+| Evidencia de este incremento    | Resultado         | Alcance y límites                                                                                                                                                                                                                                |
+| ------------------------------- | ----------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------ |
 | Suite HTTP con Gunicorn/MariaDB | PASÓ · 19 pruebas | v1/v2, URLs propias, ambas clases de factura, Guest, dos empresas, otra marca en la misma empresa, revocación, perfil/marca deshabilitados, formato arbitrario, campos restringidos, rutas bloqueadas y concurrencia. Sin mocks de autorización. |
-| Suite Bench/MariaDB anterior | PASÓ · 9 pruebas | Regresión del perímetro marca/perfil sobre el sitio instalado. |
-| Suite sin framework | PASÓ · 40 pruebas | Simulador y contratos existentes, no checkout ERPNext. |
-| Ruff, formato y build | PASÓ | Fuentes propias; wheel incluye módulos y fixtures. |
+| Suite Bench/MariaDB anterior    | PASÓ · 9 pruebas  | Regresión del perímetro marca/perfil sobre el sitio instalado.                                                                                                                                                                                   |
+| Suite sin framework             | PASÓ · 40 pruebas | Simulador y contratos existentes, no checkout ERPNext.                                                                                                                                                                                           |
+| Ruff, formato y build           | PASÓ              | Fuentes propias; wheel incluye módulos y fixtures.                                                                                                                                                                                               |
 
 Los fixtures HTTP son exclusivamente ficticios: facturas en borrador de un ítem sin stock y aperturas POS de saldo cero canceladas después de preparar los documentos. Tokens aleatorios permanecen en memoria; la suite restaura credenciales/roles y elimina secretos temporales. No se publican cuerpos de recibos, credenciales ni logs privados. El probe resuelve ahora el override y devuelve `native_profile_access_denied=true`, `xpos_adapter_access_denied=true`; es diagnóstico Python adicional, separado de la evidencia HTTP.
 
@@ -130,12 +130,12 @@ Se comprobaron precio/impuestos nativos, pagos COP mixtos y cambio del efectivo;
 
 El cierre ERPNext contiene un commit interno antes de asociar algunas facturas. Se mantiene ese comportamiento sin fork y se documenta su límite: retry idéntico recupera el cierre y repara asociaciones, sin volver a enviar facturas ni descontar stock. No se anuncia atomicidad completa del cierre ni recuperación de todos los fallos. Solo checkout propio carece de commits/rollbacks internos; 409 y respuesta incierta requieren consultar estado y repetir la misma clave.
 
-| Evidencia local | Resultado | Alcance |
-| --- | --- | --- |
-| Migración | PASÓ | Tres DocTypes nuevos, índices UNIQUE/consulta y permisos mínimos sin roles contables. |
-| HTTP nativo | PASÓ · 16 pruebas | Factura enviada, Stock Ledger y GL balanceado, impuesto ficticio calculado por ERPNext, mixtos/cambio, apertura/cierre, retry/payload/quote, concurrencia/última unidad entre perfiles, cierre concurrente, expiración/precio cambiado, revocación/acceso cruzado, perfil reutilizado, unidad de inventario, rechazo fiscal y snapshot. |
-| Rollback contable real | PASÓ | Cuentas congeladas causan fallo nativo de GL; sin factura, SLE, GL ni claim adicionales. Misma clave funciona al corregir la configuración. |
-| Contratos sin Frappe | PASÓ · 47 pruebas | Incluye siete contratos nuevos de Decimal, UUID, campos admitidos, cantidades y normalización; separado de la integración real. |
+| Evidencia local        | Resultado         | Alcance                                                                                                                                                                                                                                                                                                                                 |
+| ---------------------- | ----------------- | --------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| Migración              | PASÓ              | Tres DocTypes nuevos, índices UNIQUE/consulta y permisos mínimos sin roles contables.                                                                                                                                                                                                                                                   |
+| HTTP nativo            | PASÓ · 16 pruebas | Factura enviada, Stock Ledger y GL balanceado, impuesto ficticio calculado por ERPNext, mixtos/cambio, apertura/cierre, retry/payload/quote, concurrencia/última unidad entre perfiles, cierre concurrente, expiración/precio cambiado, revocación/acceso cruzado, perfil reutilizado, unidad de inventario, rechazo fiscal y snapshot. |
+| Rollback contable real | PASÓ              | Cuentas congeladas causan fallo nativo de GL; sin factura, SLE, GL ni claim adicionales. Misma clave funciona al corregir la configuración.                                                                                                                                                                                             |
+| Contratos sin Frappe   | PASÓ · 47 pruebas | Incluye siete contratos nuevos de Decimal, UUID, campos admitidos, cantidades y normalización; separado de la integración real.                                                                                                                                                                                                         |
 
 Fixtures únicamente ficticios; Stock Entry de preparación, facturas enviadas y cierres se conservan. Se restauran tokens/roles, precios, configuración y permiso temporal adicional; se deshabilitan perfiles/marcas/terminales de la suite. Ningún voucher ni log se publica. La migración encontró 550 trabajos pendientes sin consumidor: se instaló worker systemd de usuario para procesarlos sin purgar cola ni aumentar su límite; CI también arranca un worker.
 
@@ -155,21 +155,20 @@ Nuevo campo `OMP Checkout Request.abandoned` y POST `abandon_checkout`: mismo mu
 
 Recibo escapado del snapshot histórico, impuestos y medios nativos, fecha local, pie/QR, perfiles 48/58/80 mm y script compartido de altura finita. Cargar/imprimir revalida lectura e impresión; no crea factura ni marca salida de papel. El botón solo pide diálogo y no incrementa automáticamente print_count. El simulador conserva su rotulado DEMO y usa los helpers compartidos de escaneo/layout.
 
-| Evidencia local | Resultado | Alcance y límites |
-| --- | --- | --- |
-| Migración del journal | PASÓ | Tombstone persistente; índices únicos previos conservados, sin cambio de core. |
-| HTTP nativo | PASÓ · 20 pruebas | 16 previas y fachada/catálogo, recibo/permisos/layout, resolución y carrera. Catálogo rechazado sin mensajes filtrados, perfil deshabilitado omitido. |
-| E2E Chrome Windows → Bench/MariaDB | PASÓ · 1 recorrido | Login cookie/CSRF negativo, dos usuarios, cuatro facturas y cuatro SLE/GL, código HID simulado, mixtos/cambio, respuesta perdida antes/después del commit, retry con mismo UUID, recarga, dos pestañas con un solo POST, tombstone y cierre. Sin mocks del backend. |
-| Recibo nativo | PASÓ · 3 PDF de una página | 48/58/80 mm, altura menor a 180 mm y ancho comprobado con pypdf. Error HTTP de recibo conserva venta y no reenvía checkout. Diálogo sustituido en navegador de pruebas; ninguna salida física nueva. |
-| Teclado/responsive/axe | PASÓ | Enter de lector, Tab al botón de guardar y Enter; 390/768/1366 px sin desborde; sin violaciones axe en reglas seleccionadas. No acredita WCAG completa ni lector físico. |
-| Regresiones | PASÓ | 9 Bench, 19 HTTP seguridad, 48 Python, Ruff/formato/Prettier, sdist/wheel; demo navegador y seis PDF previos conservados. |
+| Evidencia local                    | Resultado                  | Alcance y límites                                                                                                                                                                                                                                                   |
+| ---------------------------------- | -------------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| Migración del journal              | PASÓ                       | Tombstone persistente; índices únicos previos conservados, sin cambio de core.                                                                                                                                                                                      |
+| HTTP nativo                        | PASÓ · 20 pruebas          | 16 previas y fachada/catálogo, recibo/permisos/layout, resolución y carrera. Catálogo rechazado sin mensajes filtrados, perfil deshabilitado omitido.                                                                                                               |
+| E2E Chrome Windows → Bench/MariaDB | PASÓ · 1 recorrido         | Login cookie/CSRF negativo, dos usuarios, cuatro facturas y cuatro SLE/GL, código HID simulado, mixtos/cambio, respuesta perdida antes/después del commit, retry con mismo UUID, recarga, dos pestañas con un solo POST, tombstone y cierre. Sin mocks del backend. |
+| Recibo nativo                      | PASÓ · 3 PDF de una página | 48/58/80 mm, altura menor a 180 mm y ancho comprobado con pypdf. Error HTTP de recibo conserva venta y no reenvía checkout. Diálogo sustituido en navegador de pruebas; ninguna salida física nueva.                                                                |
+| Teclado/responsive/axe             | PASÓ                       | Enter de lector, Tab al botón de guardar y Enter; 390/768/1366 px sin desborde; sin violaciones axe en reglas seleccionadas. No acredita WCAG completa ni lector físico.                                                                                            |
+| Regresiones                        | PASÓ                       | 9 Bench, 19 HTTP seguridad, 48 Python, Ruff/formato/Prettier, sdist/wheel; demo navegador y seis PDF previos conservados.                                                                                                                                           |
 
 El harness restaura hashes de contraseña, sesiones nuevas, roles, barcodes y configuración, y deshabilita terminales de suites. Credenciales efímeras pasan por stdin, sin argumentos ni archivos públicos. Capturas/PDF exclusivamente ficticios quedan fuera de Git. Un preparador separado deja una caja de revisión ficticia con credenciales locales modo 600; no sustituye una instalación productiva ni incorpora datos reales.
 
 CI incorpora el E2E Chromium Linux después de las suites HTTP en un sitio nuevo y sirve assets propios con el middleware de desarrollo de Frappe. La validación de CI y commit se registra en PR #1. Próximo P0: lector y recibo nativo en hardware/controlador Windows, luego recuperación operativa y auditoría restante. Devoluciones, historial navegable de caja, otros clientes, offline, backups/restauración y aceptación productiva siguen pendientes. DIAN desactivada; sin transmisiones fiscales ni pruebas físicas nuevas.
 
 Configuración de fecha: se detectó que el sitio local conservaba la zona por defecto de Frappe (Asia/Kolkata). Se configuró America/Bogota y un almacén, cliente y lista de precios separados para la caja ficticia de revisión, sin reescribir vouchers anteriores. Un recorrido adicional Chrome Windows validó apertura, venta, snapshot y cierre con esa configuración; CI fija Bogotá antes de crear los fixtures del sitio nuevo.
-
 
 ## Espacio administrativo y personalización · 20/10/2026
 
@@ -181,26 +180,25 @@ SKU automático: iniciales/prefijo editable, nombre normalizado y serie nativa. 
 
 Dos extensiones de clase nativas permiten aperturas personales por negocio para administradores y validan la apertura de cada factura por usuario/perfil/empresa/fecha. Conservan las demás validaciones nativas. El cierre nativo consulta por propietario y perfil; una prueba usa dos administradores simultáneos y verifica que cerrar uno conserva abierto el otro.
 
-| Evidencia local | Resultado | Alcance |
-| --- | --- | --- |
-| Python sin Frappe | PASÓ · 52 pruebas | Contratos, simulador, recibos, SKU y guard de publicación. |
-| Ruff y formato | PASÓ | Fuentes propias Python y Prettier en assets/HTML/runner. |
-| Bench/MariaDB | PASÓ · 9 pruebas | Regresión de permisos con marcas/empresas/cajeros. |
-| Seguridad HTTP X POS | PASÓ · 19 pruebas | API v1/v2 y rutas nativas alternativas; sin ampliar accesos de cajero. |
-| Checkout HTTP nativo | PASÓ · 20 pruebas | Stock/GL, impuestos, concurrencia, cierres, snapshots y rollback. |
-| Espacio administrativo HTTP | PASÓ · 15 pruebas | Alta con entidad nueva/compartida; stock y SKU idempotentes/concurrentes; propiedad de producto; cesta de dos empresas; rollback del segundo hijo; abandono; snapshot/contactos; moneda USD y rechazo de cesta de monedas distintas; revocación/cancelación; dos administradores. |
-| Caja anterior, Chrome Windows | PASÓ | Cookie/CSRF, cuatro facturas, stock/GL, dos cajeros, dos pestañas, respuesta perdida, abandono, recibo y cierre. |
-| Espacio administrativo, Chrome Windows | PASÓ | Todas las herramientas nativas de compras/finanzas/clientes; SKU y entrada con respuesta perdida/recarga; cesta mixta y recibo; cambio español/inglés/formato; tutoriales/teclado; móvil 390 px; axe sin violaciones graves/críticas en la vista revisada. |
-| PDF del recibo conjunto | PASÓ | Una página de 48 mm, altura menor de 130 mm para el caso ficticio de dos artículos; no equivale a prueba física. |
-| Manual visual | REVISADO | Diez secciones y captura adicional del formulario SKU. Solo datos inventados; manifest SHA256 exacto. |
-| Construcción | PASÓ | sdist/wheel; comprobar assets y DocTypes del índice antes de publicar. |
+| Evidencia local                        | Resultado         | Alcance                                                                                                                                                                                                                                                                           |
+| -------------------------------------- | ----------------- | --------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| Python sin Frappe                      | PASÓ · 52 pruebas | Contratos, simulador, recibos, SKU y guard de publicación.                                                                                                                                                                                                                        |
+| Ruff y formato                         | PASÓ              | Fuentes propias Python y Prettier en assets/HTML/runner.                                                                                                                                                                                                                          |
+| Bench/MariaDB                          | PASÓ · 9 pruebas  | Regresión de permisos con marcas/empresas/cajeros.                                                                                                                                                                                                                                |
+| Seguridad HTTP X POS                   | PASÓ · 19 pruebas | API v1/v2 y rutas nativas alternativas; sin ampliar accesos de cajero.                                                                                                                                                                                                            |
+| Checkout HTTP nativo                   | PASÓ · 20 pruebas | Stock/GL, impuestos, concurrencia, cierres, snapshots y rollback.                                                                                                                                                                                                                 |
+| Espacio administrativo HTTP            | PASÓ · 15 pruebas | Alta con entidad nueva/compartida; stock y SKU idempotentes/concurrentes; propiedad de producto; cesta de dos empresas; rollback del segundo hijo; abandono; snapshot/contactos; moneda USD y rechazo de cesta de monedas distintas; revocación/cancelación; dos administradores. |
+| Caja anterior, Chrome Windows          | PASÓ              | Cookie/CSRF, cuatro facturas, stock/GL, dos cajeros, dos pestañas, respuesta perdida, abandono, recibo y cierre.                                                                                                                                                                  |
+| Espacio administrativo, Chrome Windows | PASÓ              | Todas las herramientas nativas de compras/finanzas/clientes; SKU y entrada con respuesta perdida/recarga; cesta mixta y recibo; cambio español/inglés/formato; tutoriales/teclado; móvil 390 px; axe sin violaciones graves/críticas en la vista revisada.                        |
+| PDF del recibo conjunto                | PASÓ              | Una página de 48 mm, altura menor de 130 mm para el caso ficticio de dos artículos; no equivale a prueba física.                                                                                                                                                                  |
+| Manual visual                          | REVISADO          | Diez secciones y captura adicional del formulario SKU. Solo datos inventados; manifest SHA256 exacto.                                                                                                                                                                             |
+| Construcción                           | PASÓ              | sdist/wheel; comprobar assets y DocTypes del índice antes de publicar.                                                                                                                                                                                                            |
 
 Se encontró contaminación de fixtures históricos de inventario por fechas de otra zona horaria: los intentos de reducir existencias chocaban con movimientos futuros del artículo ficticio reutilizado. La suite nativa ahora crea artículos nuevos por ejecución y conserva el ledger anterior; no reescribe vouchers para hacer pasar pruebas. Las 20 pruebas se repitieron con éxito. Las aperturas ficticias huérfanas de ensayos fallidos se cerraron nativamente, sin tocar documentos de una operación real.
 
 La primera pasada de axe detectó contraste 4,48:1 en Ctrl K; se oscureció el texto y la repetición pasó. Se corrigieron permisos nativos faltantes de maestros para cuentas humanas y el idioma de los formularios embebidos. Un hook soportado ajusta mensajes comunes de ERPNext a español latinoamericano, sin parchear core.
 
 Límites: no se habilitan devoluciones guiadas, offline, transmisión fiscal ni un puente de impresión. El navegador/controlador conserva cola, márgenes, encabezados/pies y puede imponer longitud fija. La nueva plantilla se validó en HTML/PDF; no se pidió otro ensayo físico. El manual y tutoriales se mantienen en español; la cobertura de traducción de formularios avanzados depende también de ERPNext. Backup/restauración aislada y revisión de APIs upstream restantes siguen en el plan antes de datos reales. La CI del nuevo PR se verifica por commit; esta tabla registra ejecución local.
-
 
 La primera instalación nueva de CI pasó las nueve pruebas Bench, 19 HTTP de seguridad, 20 de checkout, 15 administrativas y el navegador de cajero. El recorrido administrativo detectó metadatos iniciales de ERPNext pendientes antes de abrir Compras. Se añadió una migración nativa después de preparar usuarios/empresas de prueba y una aserción explícita de readiness. No se omite el asistente con banderas manuales; la instalación real requiere la configuración nativa completa.
 
@@ -318,16 +316,13 @@ Chromium real aprobado en 1366/390 px: consulta de margen, teclado, cambio de fe
 
 La validación remota del incremento anterior en `72b56fa749f8e984ce6485d2ab5caa2a364f519e` aprobó privacidad, Python, navegador demo, construcción de clientes y Bench real, incluido reinicio/worker/restauración de 29 tablas: [ejecución 40619160431](https://github.com/SDTechSystems/OpenMultiPOS/actions/runs/40619160431). Ese resultado precede a este cambio de valoración y no acredita todavía sus 32 tablas. No se modifican core, hardware, DIAN, operación sin conexión ni el sitio operativo.
 
-
 La ejecución remota del cambio de valoración en `30925d0767f2d74b3ffb9da4839ab191c883844b` aprobó los cinco trabajos, incluido Bench con worker, reinicio y restauración de 32 tablas: [ejecución 40622846948](https://github.com/SDTechSystems/OpenMultiPOS/actions/runs/40622846948). Este resultado no acredita todavía la preparación reanudable posterior.
-
 
 ## Preparación reanudable
 
 Nueve pruebas HTTP nativas aprobadas en sitio desechable: reintentos concurrentes con recuperación tras conflicto, un solo negocio, abandono que bloquea escrituras tardías, contraseñas excluidas del journal y nunca restablecidas por replay, cursor persistente, huellas vigentes, existencias reales, cuenta inicial única incluso tras desactivarla, rechazo de Guest/GET/cajero y permisos privados. El cierre satisfactorio usa registros de servicio sintéticos en un directorio exclusivo de prueba; no demuestra por sí mismo que exista un respaldo restaurable. El ensayo real de recuperación sigue siendo una validación separada.
 
 Chromium real aprobó la reanudación tras recarga, foco de teclado, recuperación de una respuesta perdida del alta de cuenta, exclusión de contraseña de localStorage, cierre deshabilitado con requisitos pendientes, escritorio/móvil y cero infracciones axe en el asistente. Las 68 pruebas ordinarias, Ruff, formato, Prettier y tooltips aprobaron. Las nuevas tablas de progreso y solicitudes se incluyen en la comparación de restauración de 34 tablas. La ejecución remota de este incremento queda pendiente antes de acreditar esa ampliación.
-
 
 La regresión completa de navegador del espacio administrativo aprobó compras/finanzas/clientes nativos, inventario, cobro mixto, devoluciones, importación, preferencias, manual, teclado, móvil y axe. La prueba de Print Settings ahora espera el selector de negocio poblado y el botón de vista previa habilitado, en lugar de depender del evento domcontentloaded de la ventana nueva. Mantiene la comprobación de la URL y verifica que la pantalla esté utilizable.
 
@@ -353,7 +348,6 @@ Se observó que systemd no mantiene activa la distribución WSL cuando termina l
 
 Las 77 pruebas ordinarias, Ruff, formato y Prettier aprobaron. Las nuevas pruebas cubren replay completado sin cambios, rechazo de sitio ajeno, intención persistente sin falso éxito, permisos 600, contraseña fuera de argumentos/registro, retirada de cuenta temporal ante fallo nativo y configuración de sockets/cola persistente. Esto no acredita todavía recuperación de una interrupción a mitad de creación del esquema Frappe, ni prueba completa del asistente nativo en navegador, ni aceptación de instalación Windows limpia. Siguen pendientes esos ensayos, el controlador Windows, el sellado y la exportación final con manifiesto/licencias. Los logs y credenciales QA permanecen privados y fuera del repositorio.
 
-
 ## Recuperación de la creación inicial del esquema
 
 El inicializador incorpora una recuperación conservadora: verifica la propiedad mediante el intento root y el site_config, consulta cuentas y tablas comerciales, y rechaza sitios completados, ajenos, con enlaces, archivos subidos o datos de operación. Guarda el intento anterior con sus credenciales privadas, mueve sus archivos fuera de sites y crea otra base con secretos nuevos. No ejecuta DROP DATABASE ni borra archivos. El registro y el movimiento se sincronizan a disco; una interrupción entre movimiento y actualización del registro permite repetir la operación. Se limita a tres intentos conservados antes de exigir revisión local.
@@ -374,9 +368,7 @@ El ejecutable real aprobó en Windows el protocolo de estado, el transporte JSON
 
 La automatización visual de Windows no pudo inicializarse: node_repl rechazó sandboxCwd por el URI del workspace WSL. No se sustituyó por otra automatización de UI. Quedan pendientes revisión visual/teclado, importación de imagen sellada, instalación completa y aceptación en Windows limpio. El candidato carece de imagen de servidor y no se presenta como instalador final. Registros y datos QA siguen privados.
 
-
 La CI del controlador en `270fb241b33e9ca901c8afee078e8980e3ca1576` aprobó privacidad, Python, navegador demo, construcción de clientes/controlador y contratos del ejecutable entregado sobre Windows: [ejecución 40642979402](https://github.com/SDTechSystems/OpenMultiPOS/actions/runs/40642979402). Bench se omitió en ese push; esta CI no sustituye la prueba QA local del proceso WSL ni acredita la interfaz visual del controlador.
-
 
 ## Imagen sellada y paquetes completos de aceptación · 28/10/2026
 
@@ -392,13 +384,11 @@ La primera configuración nativa se recorrió con Chrome Windows sobre la imagen
 
 Las 88 pruebas ordinarias, Ruff, formato y Prettier aprobaron. Las comprobaciones existentes de la caja no se presentan como pruebas nuevas de esta imagen. Pendientes: aceptación visual/teclado de WinForms, Windows limpio sin herramientas de desarrollo, migración de backend con copia/restauración y cierre de fuentes y licencias antes de compartir. Se recopilaron 356 de las 374 versiones de fuentes Ubuntu del inventario; 18 requieren recuperación adicional. El inventario por sí solo no acredita el código fuente correspondiente completo. Los candidatos están sin firma, privados y no aprobados para producción.
 
-
 ## Restricción adicional de gráficos para cajeros · 28/10/2026
 
 El gate de cajeros también rechaza `frappe.desk.doctype.dashboard_chart.dashboard_chart.get`, antes de resolver la caché compartida por nombre de gráfico o calcular su contenido. El endpoint nativo acepta descriptores del cliente y no es necesario para la caja propia. No se modifica el código upstream ni se impide el uso nativo de managers.
 
 La suite real de seguridad HTTP aprobó 22 pruebas. El caso nuevo conserva una caché temporal ficticia, confirma que el manager puede leerla y exige 403 del gate para dos cajeros, GET/POST, v1/v2 y `cmd`, con caché y `no_cache`: 24 negativas. El resultado no acredita aislamiento integral; siguen pendientes metadatos File, Address/Contact, Price List y otras rutas de reportes.
-
 
 ## Contrato cerrado de HTTP para cajeros · 28/10/2026
 
@@ -410,13 +400,11 @@ El resultado final fue 25 pruebas HTTP de seguridad aprobadas, con comparación 
 
 Se recuperaron las 18 versiones de fuentes Ubuntu faltantes desde publicaciones oficiales de Launchpad, con tamaño y SHA256 de los contenidos cotejados contra sus dsc. El conjunto cubre las 374 versiones inventariadas. No se validaron firmas OpenPGP de esas recuperaciones; el cierre de fuentes/licencias del resto de dependencias sigue en curso.
 
-
 ## Idioma de la primera configuración nativa · 28/10/2026
 
 Una extensión `setup_wizard_requires` conserva el asistente nativo y propone el idioma configurado del sitio, usando sus nombres de idioma. Admite el código regional mediante su idioma base; respeta una selección previa y deja el valor nativo si el código no está disponible. No modifica core, validaciones ni estado de configuración.
 
 Una copia QA sin sitio recibió los cuatro archivos públicos nuevos y completó la instalación nativa. Chrome Windows inició sesión y abrió su primer asistente: boot.lang es, campo de idioma Español. No se completó ni se marcó artificialmente el asistente. La prueba de lógica persistente cubre configuración es/es-CO, selección previa, código ausente/desconocido y reentrada, y se ejecuta en CI. El ensayo nativo completo de empresa/cuentas del incremento anterior sigue siendo evidencia separada.
-
 
 ## Respaldo y ensayo local guiados · 28/10/2026
 
@@ -424,9 +412,12 @@ El controlador Windows añade Crear copia y Comprobar recuperación, con ayuda y
 
 Una copia y un ensayo reales aprobaron sobre PackageQA ficticio mediante el nuevo helper. El controlador compiló y sus contratos aprobaron. Se añadió rechazo de servidor activo/no preparado/controlador concurrente y comprobación de limpieza ante fallo. No se repiten pruebas contables ni se reconstruye la imagen completa en este incremento. Los servicios dejan de habilitarse al arranque WSL para evitar actividad de fondo al consultar el estado. La aceptación visual Windows y la entrega final siguen pendientes.
 
-
 ## Fuentes verificadas para empaquetado · 28/10/2026
 
 El nuevo constructor de fuentes coteja Source y Version de cada dsc con el inventario exacto de la imagen, verifica tamaños y SHA256 de sus contenidos y contrasta la cobertura Python con ambos entornos. Ese control encontró seis resultados apt cuya versión no coincidía con la solicitada; se recuperaron las versiones correctas desde Launchpad. El estado exitoso del descargador no se usa como prueba de correspondencia.
 
 El empaquetador incluye solo los archivos verificados, sin registros, temporales ni rutas locales del recolector. Divide las fuentes en ZIP independientes sin recomprimir archivos ya comprimidos, para reducir CPU y permitir su distribución por partes. Conserva versiones y sumas en sources.json. Para barcodenumber se conserva el wheel publicado con fuente Python y GPL3, y se declara la ausencia upstream del COPYRIGHT referido; no se inventan avisos ni se afirma revisión legal externa.
+
+## Preparación del equipo desde Windows · 28/10/2026
+
+El contraste con los requisitos de #37/#38 encontró que el controlador describía WSL como requisito pero no ofrecía una acción guiada para prepararlo. Se añade consulta de estado y Preparar Windows con el instalador oficial de WSL, elevación solicitada por Windows y sin distribución adicional ni reinicio automático. La importación comprueba el espacio libre de la unidad de datos antes de leer la imagen. Los contratos cubren los argumentos exactos de preparación y el límite de espacio. No se ejecuta la instalación elevada sobre el equipo operativo; su aceptación en Windows limpio sigue pendiente. No cambia el backend ni requiere reconstruir la imagen sellada.

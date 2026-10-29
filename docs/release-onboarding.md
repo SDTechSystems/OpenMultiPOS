@@ -22,7 +22,9 @@ El script compila ambos ejecutables, prueba el contrato de direcciones, incorpor
 
 `scripts/build-windows-server.py` genera el ZIP portable del servidor y el instalador por usuario de `windows/ServerInstaller.cs`. El paquete incluye el controlador, `OpenMultiPOS-Server.wsl`, `server-image.json`, manual sin conexión, `source.zip` y hashes. El instalador necesita la imagen y el manifiesto junto al ejecutable. Ambos formatos requieren Windows x64, .NET Framework 4.8, WSL2, virtualización habilitada y 30 GB libres. Preparar WSL puede pedir administrador, descargas y reinicio.
 
-El constructor exige que la imagen, el manifiesto y el informe de auditoría coincidan. La imagen privada sellada de 1,5 GB corresponde a la revisión `3f6e2da`; la auditoría del archivo exportado encontró cero sitios, cero esquemas de aplicación y ninguna identidad reutilizable. No se puede publicar hasta completar la aceptación y la revisión de fuentes y licencias.
+El constructor exige que la imagen, el manifiesto y el informe de auditoría coincidan. La imagen privada sellada de 1,5 GB corresponde a la revisión `4e684a5`; la auditoría del archivo exportado encontró cero sitios, cero esquemas de aplicación y ninguna identidad reutilizable. No se puede publicar hasta completar la aceptación y la revisión de fuentes y licencias.
+
+El controlador comprueba la disponibilidad de WSL mediante su consulta de estado. Cuando no responde correctamente, muestra Preparar Windows en lugar de permitir la importación. Esa acción, solo tras confirmación del operador, solicita elevación para la instalación oficial de WSL sin otra distribución. El operador gestiona cualquier reinicio posterior. La importación comprueba 30 GB libres en la unidad de datos antes de leer la imagen. El ensayo de ausencia de WSL y de permisos/reinicio en Windows limpio sigue pendiente; comprobar disponibilidad no certifica toda la configuración de virtualización.
 
 ```bash
 <bench>/env/bin/python scripts/build-windows-server.py --output <directorio-nuevo> --image <imagen-limpia.wsl> --manifest <server-image.json> --audit <informe-auditoria.json>
@@ -36,10 +38,10 @@ El candidato está sin firma. Siguen pendientes la aceptación visual y de tecla
 
 ## Ediciones y datos
 
-| Edición | Resultado esperado | Evidencia necesaria |
-| --- | --- | --- |
-| Portable | Paquete extraíble con inicio/parada y acceso a la aplicación sin el checkout de desarrollo. Datos propios separados y ruta visible. | Ejecución en Windows limpio y prueba de traslado a una ruta admitida. Verificar qué componentes puede transportar y cuáles requieren preparación del equipo. |
-| Instalable | Instalador Windows con preparación de componentes, accesos, actualización y desinstalación que conserve datos por defecto. | Instalación nueva, reinicio, uso, actualización con copia previa, recuperación y desinstalación en Windows limpio. |
+| Edición    | Resultado esperado                                                                                                                  | Evidencia necesaria                                                                                                                                          |
+| ---------- | ----------------------------------------------------------------------------------------------------------------------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------ |
+| Portable   | Paquete extraíble con inicio/parada y acceso a la aplicación sin el checkout de desarrollo. Datos propios separados y ruta visible. | Ejecución en Windows limpio y prueba de traslado a una ruta admitida. Verificar qué componentes puede transportar y cuáles requieren preparación del equipo. |
+| Instalable | Instalador Windows con preparación de componentes, accesos, actualización y desinstalación que conserve datos por defecto.          | Instalación nueva, reinicio, uso, actualización con copia previa, recuperación y desinstalación en Windows limpio.                                           |
 
 El backend sigue siendo ERPNext/Frappe y el candidato del servidor incluye sus componentes en una distribución WSL2 `.wsl`. Antes de afirmar portabilidad, comprobar requisitos de WSL/virtualización, permisos, espacio, descargas y reinicios en Windows limpio. El operador debe poder completar el proceso sin comandos de desarrollo. La construcción limpia, el arranque privado y la recuperación inicial aprobaron en WSL. La imagen sellada, su importación y las comprobaciones nativas Windows descritas arriba ya están disponibles; siguen pendientes la aceptación visual y las pruebas completas de entrega. El paquete requiere preparar Windows y conservar varios archivos juntos.
 
@@ -57,15 +59,15 @@ Se aplican onboard, frontend-design, accessibility y unslop. El [contexto visual
 
 El primer resultado útil es configurar un negocio, agregar un producto con SKU y existencias correctas y revisar su recibo antes de una venta explícita. La experiencia asumida es administrativa, sin conocimientos del entorno de desarrollo; debe comprobarse con usuarios al implementar. No se inventa un tiempo de finalización antes de medirlo.
 
-| Etapa | Qué hace la persona | Cuándo puede continuar |
-| --- | --- | --- |
-| Preparar el equipo | Revisa requisitos, ubicación de datos y componentes; resuelve permisos o reinicios indicados. | Los servicios necesarios responden y los errores tienen una acción concreta. |
-| Crear acceso propio | Crea el primer administrador con credenciales nuevas mediante un arranque local seguro. | La primera cuenta se reclama una sola vez; altas posteriores exigen administración. |
-| Elegir preferencias | Confirma idioma, moneda y zona horaria; se proponen español latinoamericano, es-CO, COP y America/Bogota. | Se guardan valores válidos y se explica qué cambia para entidades nuevas. |
-| Configurar negocios | Elige entidad compartida/separada, datos comerciales/NIT, contactos, prefijo SKU, almacén y medios de pago. | La configuración nativa es coherente y los datos quedan en la instalación privada. |
-| Preparar inventario | Agrega o importa productos y decide cómo registrar existencias. | El propietario, SKU, código de barras, precio y stock se pueden revisar; no se duplica una recepción/compra. |
+| Etapa                   | Qué hace la persona                                                                                         | Cuándo puede continuar                                                                                          |
+| ----------------------- | ----------------------------------------------------------------------------------------------------------- | --------------------------------------------------------------------------------------------------------------- |
+| Preparar el equipo      | Revisa requisitos, ubicación de datos y componentes; resuelve permisos o reinicios indicados.               | Los servicios necesarios responden y los errores tienen una acción concreta.                                    |
+| Crear acceso propio     | Crea el primer administrador con credenciales nuevas mediante un arranque local seguro.                     | La primera cuenta se reclama una sola vez; altas posteriores exigen administración.                             |
+| Elegir preferencias     | Confirma idioma, moneda y zona horaria; se proponen español latinoamericano, es-CO, COP y America/Bogota.   | Se guardan valores válidos y se explica qué cambia para entidades nuevas.                                       |
+| Configurar negocios     | Elige entidad compartida/separada, datos comerciales/NIT, contactos, prefijo SKU, almacén y medios de pago. | La configuración nativa es coherente y los datos quedan en la instalación privada.                              |
+| Preparar inventario     | Agrega o importa productos y decide cómo registrar existencias.                                             | El propietario, SKU, código de barras, precio y stock se pueden revisar; no se duplica una recepción/compra.    |
 | Revisar recibo y equipo | Confirma ajustes existentes del lector/impresora y opciones de contacto por negocio; abre una vista previa. | Puede reconocer negocio, productos y contenido del recibo sin crear una venta de prueba en el ledger operativo. |
-| Revisar y comenzar | Revisa accesos, ubicación de datos y respaldo/recuperación; abre caja cuando vaya a operar. | Los requisitos obligatorios están completos y quedan accesibles los pasos pospuestos y el manual. |
+| Revisar y comenzar      | Revisa accesos, ubicación de datos y respaldo/recuperación; abre caja cuando vaya a operar.                 | Los requisitos obligatorios están completos y quedan accesibles los pasos pospuestos y el manual.               |
 
 Cada etapa se divide en subpasos cortos. Mostrar progreso, Atrás/Siguiente, errores junto al campo y ayuda con palabras del operador. Pedir datos cuando hacen falta; ofrecer posponer elementos opcionales y volver desde Ajustes/Ayuda. Los requisitos de acceso, coherencia y contabilidad siguen siendo obligatorios antes de operar.
 
@@ -78,7 +80,6 @@ Las instalaciones existentes conservan su configuración y no reciben de nuevo e
 No declarar lista la distribución hasta probar ambas ediciones sin herramientas de desarrollo: primera ejecución, interrupción y reanudación, errores, primera cuenta única, negocios con entidad compartida/separada, configuración completa, reinicio, actualización, copia/restauración y conservación de datos al desinstalar. Las pruebas usan fixtures inventados; la revisión humana de comprensión se registra cuando ocurra.
 
 El manual visual debe explicar la instalación y cada etapa con capturas ficticias. La versión compartida debe recorrer este mismo asistente con datos nuevos de quien la recibe, sin heredar el negocio ni las credenciales del propietario.
-
 
 ## Fuentes de las dependencias
 

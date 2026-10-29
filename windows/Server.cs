@@ -88,6 +88,37 @@ internal sealed class ServerBackend
         foreach (string line in list.Split(new [] { '\n' })) if (line.Trim('\r', '\n', '\0', '\uFEFF', ' ') == Distro) return true;
         return false;
     }
+    internal bool WindowsReady()
+    {
+        if (!File.Exists(wsl)) return false;
+        try { Execute(new [] { "--status" }, null, true); return true; }
+        catch (InvalidOperationException) { return false; }
+    }
+    internal static ProcessStartInfo WindowsPreparation(string executable)
+    {
+        return new ProcessStartInfo(executable, "--install --no-distribution") { UseShellExecute = true, Verb = "runas" };
+    }
+    internal async Task PrepareWindows()
+    {
+        if (!File.Exists(wsl)) throw new InvalidOperationException("Actualiza Windows y consulta Preparar Windows en el manual. Este equipo necesita WSL2.");
+        Process preparation;
+        try { preparation = Process.Start(WindowsPreparation(wsl)); }
+        catch (System.ComponentModel.Win32Exception error)
+        {
+            if (error.NativeErrorCode == 1223) throw new InvalidOperationException("La preparación se canceló. Pulsa Preparar Windows cuando puedas autorizarla.");
+            throw;
+        }
+        using (Process process = preparation)
+        {
+            await Task.Run(() => process.WaitForExit());
+            if (process.ExitCode != 0 && process.ExitCode != 3010)
+                throw new InvalidOperationException("Windows no completó la preparación. Revisa su ventana, la virtualización del equipo y Preparar Windows en el manual.");
+        }
+    }
+    internal static void CheckFreeSpace(long available)
+    {
+        if (available < 30L * 1024 * 1024 * 1024) throw new IOException("Libera al menos 30 GB en la unidad donde se guardarán los datos y vuelve a instalar el servidor.");
+    }
     internal string DataFolder()
     {
         using (RegistryKey root = Registry.CurrentUser.OpenSubKey(@"Software\Microsoft\Windows\CurrentVersion\Lxss"))
@@ -132,9 +163,10 @@ internal sealed class ServerBackend
     internal void Import(string folder)
     {
         if (Registered()) throw new InvalidOperationException("El servidor ya existe. Revisa su estado antes de instalar.");
-        VerifyImage(folder);
         string data = NewDataFolder();
         if (Directory.Exists(data)) throw new IOException("La carpeta de datos ya existe. Se conserva para revisión.");
+        CheckFreeSpace(new DriveInfo(Path.GetPathRoot(data)).AvailableFreeSpace);
+        VerifyImage(folder);
         Execute(new [] { "--import", Distro, data, Path.Combine(folder, "OpenMultiPOS-Server.wsl"), "--version", "2" }, null, true);
     }
     internal async Task Start()
@@ -175,6 +207,7 @@ internal sealed class ServerWindow : Form
     private readonly TextBox password = new TextBox { UseSystemPasswordChar = true, Dock = DockStyle.Fill, MaxLength = 128, AccessibleName = "Contraseña inicial" };
     private readonly TextBox confirm = new TextBox { UseSystemPasswordChar = true, Dock = DockStyle.Fill, MaxLength = 128, AccessibleName = "Confirmar contraseña inicial" };
     private readonly Button import = new Button { Text = "&Instalar servidor", AutoSize = true };
+    private readonly Button prepareWindows = new Button { Text = "Preparar &Windows", AutoSize = true };
     private readonly Button setup = new Button { Text = "&Preparar acceso", AutoSize = true };
     private readonly Button recover = new Button { Text = "&Recuperar preparación", AutoSize = true };
     private readonly Button start = new Button { Text = "I&niciar servidor", AutoSize = true };
@@ -183,7 +216,7 @@ internal sealed class ServerWindow : Form
     private readonly Button backup = new Button { Text = "Crear copia", AutoSize = true };
     private readonly Button drill = new Button { Text = "Comprobar recuperación", AutoSize = true };
     private readonly ToolTip help = new ToolTip();
-    private bool busy, registered, installed, recoverable, allowClose, wasRunning;
+    private bool busy, windowsReady, registered, installed, recoverable, allowClose, wasRunning;
 
     internal ServerWindow(string distro)
     {
@@ -193,12 +226,12 @@ internal sealed class ServerWindow : Form
         AutoScaleMode = AutoScaleMode.Dpi; MinimumSize = new Size(700, 540); ClientSize = new Size(740, 540); StartPosition = FormStartPosition.CenterScreen;
         var panel = new TableLayoutPanel { Dock = DockStyle.Fill, AutoScroll = true, Padding = new Padding(24), ColumnCount = 1, RowCount = 10 };
         panel.Controls.Add(new Label { Text = "Servidor de este computador", Font = new Font("Segoe UI", 17, FontStyle.Bold), AutoSize = true });
-        panel.Controls.Add(new Label { Text = "Mantén esta ventana abierta mientras otros equipos usan el servidor. Los datos se guardan por separado del programa, en tu perfil de Windows.", AutoSize = true, MaximumSize = new Size(620, 0), Margin = new Padding(0, 12, 0, 16) });
+        panel.Controls.Add(new Label { Text = "Requiere WSL2, virtualización y 30 GB libres. Mantén esta ventana abierta mientras otros equipos usan el servidor. Los datos se guardan por separado del programa, en tu perfil de Windows.", AutoSize = true, MaximumSize = new Size(620, 0), Margin = new Padding(0, 12, 0, 16) });
         panel.Controls.Add(status);
         panel.Controls.Add(new Label { Text = "Contraseña inicial de Administrator", AutoSize = true, Margin = new Padding(0, 16, 0, 4) }); panel.Controls.Add(password);
         panel.Controls.Add(new Label { Text = "Repite la contraseña inicial", AutoSize = true }); panel.Controls.Add(confirm);
         var actions = new FlowLayoutPanel { AutoSize = true, Dock = DockStyle.Fill, WrapContents = true, Margin = new Padding(0, 16, 0, 8) };
-        foreach (Button button in new [] { import, setup, recover, start, stop, open, backup, drill }) actions.Controls.Add(button);
+        foreach (Button button in new [] { prepareWindows, import, setup, recover, start, stop, open, backup, drill }) actions.Controls.Add(button);
         panel.Controls.Add(actions);
         var details = new FlowLayoutPanel { AutoSize = true, Dock = DockStyle.Fill };
         var refresh = new Button { Text = "Actualizar estado", AutoSize = true }; var log = new Button { Text = "Ver registros locales", AutoSize = true }; var manual = new Button { Text = "Leer manual", AutoSize = true };
@@ -206,6 +239,7 @@ internal sealed class ServerWindow : Form
         panel.Controls.Add(location);
         start.BackColor = Color.FromArgb(36, 95, 164); start.ForeColor = Color.White; start.FlatStyle = FlatStyle.Flat;
         Controls.Add(panel);
+        help.SetToolTip(prepareWindows, "Windows pide permiso de administrador para preparar WSL, sin instalar otra distribución. Puede descargar componentes y pedir reinicio. El programa no reinicia el equipo.");
         help.SetToolTip(import, "Requiere WSL2 y la imagen del servidor junto al programa. Verifica su hash antes de importar. Los datos quedan en OpenMultiPOS\\Servidor dentro de tu perfil.");
         help.SetToolTip(setup, "Crea el sitio privado con una contraseña de 12 a 128 caracteres. Después debes completar el asistente de ERPNext en el navegador.");
         help.SetToolTip(recover, "Úsalo tras una preparación interrumpida. Conserva el intento anterior y rechaza sitios con datos comerciales o cuentas personales.");
@@ -215,6 +249,12 @@ internal sealed class ServerWindow : Form
         help.SetToolTip(drill, "Crea una copia nueva y la restaura en otro sitio aislado. Conserva el original y el ensayo. Puede tardar y necesita espacio libre.");
         backup.Click += async delegate { await Backup(false); };
         drill.Click += async delegate { await Backup(true); };
+        prepareWindows.Click += async delegate { await Work(async () => {
+            if (MessageBox.Show(this, "Windows solicitará permiso de administrador para preparar WSL. Puede necesitar internet y un reinicio posterior. Guarda tu trabajo; este programa no reinicia el computador.\n\n¿Preparar Windows?", "Preparar Windows", MessageBoxButtons.YesNo, MessageBoxIcon.Question) != DialogResult.Yes) return;
+            status.Text = "Sigue la preparación en la ventana de Windows. No cierres este controlador hasta que termine.";
+            await backend.PrepareWindows();
+            status.Text = "La preparación terminó. Si Windows pide reiniciar, guarda tu trabajo y hazlo cuando puedas. Después abre este controlador y pulsa Actualizar estado.";
+        }); };
         import.Click += async delegate { await Work(async () => { status.Text = "Verificando e importando la imagen. Puede tardar varios minutos."; await Task.Run(() => backend.Import(AppDomain.CurrentDomain.BaseDirectory)); await RefreshState(); }); };
         setup.Click += async delegate { await Prepare(false); }; recover.Click += async delegate { await Prepare(true); };
         start.Click += async delegate { await Work(async () => { status.Text = "Iniciando los servicios…"; await backend.Start(); status.Text = "Servidor activo en http://localhost:8089. Conserva esta ventana abierta."; }); };
@@ -239,11 +279,12 @@ internal sealed class ServerWindow : Form
     private bool Running { get { return backend.Serving != null && !backend.Serving.HasExited; } }
     private void ControlsState()
     {
-        import.Enabled = !busy && !registered; setup.Enabled = !busy && registered && !installed && !Running;
+        prepareWindows.Enabled = !busy && !windowsReady && !Running;
+        import.Enabled = !busy && windowsReady && !registered; setup.Enabled = !busy && registered && !installed && !Running;
         recover.Enabled = setup.Enabled && recoverable; start.Enabled = !busy && installed && !Running;
         stop.Enabled = !busy && Running; open.Enabled = !busy && Running; password.Enabled = confirm.Enabled = setup.Enabled;
         backup.Enabled = drill.Enabled = !busy && installed && !Running;
-        AcceptButton = !registered ? import : installed ? start : setup;
+        AcceptButton = !windowsReady ? prepareWindows : !registered ? import : installed ? start : setup;
     }
     private async Task Work(Func<Task> action)
     {
@@ -253,8 +294,10 @@ internal sealed class ServerWindow : Form
     }
     private async Task RefreshState()
     {
-        registered = await Task.Run(() => backend.Registered()); installed = recoverable = false;
+        windowsReady = await Task.Run(() => backend.WindowsReady()); registered = installed = recoverable = false;
         location.Text = "Ubicación de datos: " + backend.DataFolder().Replace(Environment.GetFolderPath(Environment.SpecialFolder.LocalApplicationData), "%LOCALAPPDATA%");
+        if (!windowsReady) { status.Text = "Windows todavía no confirma WSL disponible. Pulsa Preparar Windows. Si ya lo preparaste, revisa el reinicio pendiente y la virtualización. Consulta el manual si continúa."; return; }
+        registered = await Task.Run(() => backend.Registered());
         if (!registered) { status.Text = "Servidor sin instalar. Requiere WSL2 y el paquete completo del servidor."; return; }
         var state = await Task.Run(() => backend.Status()); installed = Convert.ToBoolean(state["installed"]); recoverable = Convert.ToBoolean(state["recoverable"]);
         status.Text = Running ? "Servidor activo. Conserva esta ventana abierta." : installed ? "Sitio preparado. Inicia el servidor para abrir la aplicación." : recoverable ? "La preparación está incompleta. Puedes reintentar o recuperar el intento anterior." : "Crea una contraseña inicial para preparar este servidor privado.";
@@ -278,6 +321,10 @@ internal static class ServerProgram
     {
         if (args.Length == 1 && args[0] == "--self-test")
         {
+            var preparation = ServerBackend.WindowsPreparation("wsl.exe");
+            if (preparation.Arguments != "--install --no-distribution" || preparation.Verb != "runas" || !preparation.UseShellExecute) return 1;
+            ServerBackend.CheckFreeSpace(30L * 1024 * 1024 * 1024);
+            try { ServerBackend.CheckFreeSpace(30L * 1024 * 1024 * 1024 - 1); return 1; } catch (IOException) { }
             if (ServerBackend.Quote("a b") != "\"a b\"" || ServerBackend.Quote("a b\\") != "\"a b\\\\\"" || ServerBackend.Quote("a\"b") != "\"a\\\"b\"") return 1;
             if (ServerBackend.Quote("--list") != "--list" || ServerBackend.Quote("") != "\"\"") return 1;
             foreach (string bad in new [] { "Ubuntu", "OpenMultiPOS;bad", "OpenMultiPOS bad", "../OpenMultiPOS" }) { try { new ServerBackend(bad); return 1; } catch (ArgumentException) { } }
@@ -303,7 +350,7 @@ internal static class ServerProgram
         {
             if (!Regex.IsMatch(args[1], @"\AOpenMultiPOS-[A-Za-z0-9-]*QA\z")) return 2;
             var backend = new ServerBackend(args[1]);
-            try { if (!backend.Registered() || !Convert.ToBoolean(backend.Status()["installed"]) || !Directory.Exists(backend.DataFolder())) return 3; backend.VerifyInput(); backend.Start().GetAwaiter().GetResult(); backend.Stop().GetAwaiter().GetResult(); return 0; }
+            try { if (!backend.WindowsReady() || !backend.Registered() || !Convert.ToBoolean(backend.Status()["installed"]) || !Directory.Exists(backend.DataFolder())) return 3; backend.VerifyInput(); backend.Start().GetAwaiter().GetResult(); backend.Stop().GetAwaiter().GetResult(); return 0; }
             catch (Exception error) { File.WriteAllText(Path.Combine(AppDomain.CurrentDomain.BaseDirectory, "verification-error.txt"), error.ToString() + "\n" + Convert.ToString(error.Data["diagnostic"])); return 4; }
             finally { try { backend.Stop().GetAwaiter().GetResult(); } catch { } }
         }

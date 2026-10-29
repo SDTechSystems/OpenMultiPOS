@@ -23,6 +23,11 @@ sin pedir permisos de administrador. Preparar WSL sí puede necesitarlos.
 Después abre OpenMultiPOS Servidor desde Inicio.
 
 Primera ejecución
+Si Windows no confirma WSL disponible, pulsa Preparar Windows. Sigue la ventana
+de Windows y su permiso de administrador. Puede descargar componentes y pedir
+reinicio. El programa no reinicia el computador. Después vuelve a abrir el
+controlador y pulsa Actualizar estado. No agrega otra distribución Linux.
+
 1. Importa la imagen. El controlador verifica su hash y conserva cualquier
    servidor o carpeta previa. No borres esos datos si aparece un conflicto.
 2. Crea y confirma una contraseña inicial de 12 a 128 caracteres.
