@@ -29,7 +29,8 @@ internal static class Client
     {
         if (Array.IndexOf(args, "--self-test") >= 0)
         {
-            if (Address("http://omp.localhost:8000") != "http://omp.localhost:8000/omp"
+            if (Address("http://localhost:8089") != "http://localhost:8089/omp"
+                || Address("http://omp.localhost:8000") != "http://omp.localhost:8000/omp"
                 || Address("https://pos.example.invalid/omp") != "https://pos.example.invalid/omp") return 1;
             foreach (string bad in new [] { "file:///C:/Windows", "javascript:alert(1)", "http://example.invalid", "https://user:secret@example.invalid", "https://example.invalid/?token=secret", "https://example.invalid/#sales", "https://example.invalid/elsewhere" })
             {
@@ -66,7 +67,7 @@ internal static class Client
                 panel.Controls.Add(new Label { Text = "Usa los mismos datos de tu servidor", AutoSize = true, Font = new Font("Segoe UI", 15, FontStyle.Bold), Margin = new Padding(0, 0, 0, 12) });
                 panel.Controls.Add(new Label { Text = "Este cliente abre la aplicación en tu navegador. El servidor debe estar encendido y conectado. Inicia sesión con tu cuenta personal.", AutoSize = true, MaximumSize = new Size(540, 0), Margin = new Padding(0, 0, 0, 16) });
                 panel.Controls.Add(new Label { Text = "&Dirección HTTPS del servidor", AutoSize = true });
-                var address = new TextBox { Dock = DockStyle.Fill, AccessibleName = "Dirección del servidor", Text = File.Exists(config) ? File.ReadAllText(config) : "http://omp.localhost:8000" };
+                var address = new TextBox { Dock = DockStyle.Fill, AccessibleName = "Dirección del servidor", Text = File.Exists(config) ? File.ReadAllText(config) : "http://localhost:8089" };
                 panel.Controls.Add(address);
                 var actions = new FlowLayoutPanel { Dock = DockStyle.Fill, Padding = new Padding(0, 16, 0, 0), AutoSize = true };
                 var open = new Button { Text = "Guardar y abrir", AutoSize = true, BackColor = Color.FromArgb(36, 95, 164), ForeColor = Color.White, FlatStyle = FlatStyle.Flat };

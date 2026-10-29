@@ -634,6 +634,49 @@ class XPOSHTTPTests(unittest.TestCase):
                 # Proves the OpenMultiPOS gate denied it, not a native permission.
                 self.assertIn("no está habilitada", response.text)
 
+    def test_native_dashboard_chart_routes_are_denied_to_cashiers(self):
+        method = "frappe.desk.doctype.dashboard_chart.dashboard_chart.get"
+        chart = {
+            "name": "OMP HTTP chart " + secrets.token_hex(6),
+            "document_type": "Sales Invoice",
+            "chart_type": "Count",
+            "type": "Line",
+            "based_on": "posting_date",
+            "timespan": "Last Year",
+            "time_interval": "Daily",
+            "filters_json": json.dumps([["name", "=", self.b["invoice"]]]),
+        }
+        cache_key = "chart-data:" + chart["name"]
+        cached = {"labels": [self.b["invoice"]], "datasets": [{"values": [1]}]}
+        frappe.cache.set_value(cache_key, json.dumps(cached))
+        self.addCleanup(frappe.cache.delete_value, cache_key)
+        payload = {"chart": json.dumps(chart)}
+        allowed = self.call(method, payload, user=MANAGER)
+        self.assertEqual(allowed.status_code, 200)
+        self.assertEqual(allowed.json()["message"], cached)
+        for user in (self.a["user"], self.b["user"]):
+            headers = {"Host": OPTIONS.site, "Authorization": self.tokens[user]}
+            for no_cache in (None, 1):
+                data = {**payload, **({"no_cache": no_cache} if no_cache else {})}
+                for path, args in (
+                    ("/api/method/" + method, data),
+                    ("/api/v2/method/" + method, data),
+                    ("/", {**data, "cmd": method}),
+                ):
+                    for verb in ("GET", "POST"):
+                        with self.subTest(user=user, no_cache=no_cache, path=path, verb=verb):
+                            options = {"params": args} if verb == "GET" else {"json": args}
+                            response = requests.request(
+                                verb,
+                                OPTIONS.base_url + path,
+                                headers=headers,
+                                timeout=30,
+                                **options,
+                            )
+                            self.assertEqual(response.status_code, 403)
+                            self.assertIn("no está habilitada", response.text)
+                            self.assertNotIn(self.b["invoice"], response.text)
+
     def test_unassigned_format_is_rejected(self):
         self.assertEqual(
             self.call(

@@ -8,7 +8,7 @@ Las operaciones usan documentos, stock y contabilidad nativos; una cesta conjunt
 
 - [Manual visual de administración](docs/manual.md)
 - [Los mismos datos en varios computadores](docs/online-access.md)
-- [Cliente Windows y estado de la distribución](docs/release-onboarding.md)
+- [Cliente, servidor Windows y estado de la distribución](docs/release-onboarding.md)
 - [Configuración y contratos del espacio de trabajo](docs/workspace.md)
 - [Funcionalidades F01-F28](docs/features.md) · [Roadmap e issues](docs/roadmap.md)
 - [Arquitectura](docs/architecture.md) · [Auditoría y resultados](docs/audit-report.md)

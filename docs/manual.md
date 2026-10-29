@@ -10,6 +10,22 @@ Los botones del menú y las acciones principales muestran una explicación al pa
 
 Para usar los mismos datos desde otros computadores, consulta [acceso privado y datos compartidos](online-access.md). Todos usan el mismo servidor Windows con cuentas personales. La conexión debe estar disponible para guardar operaciones.
 
+## Instalar el servidor en Windows
+
+La edición completa del servidor está en aceptación privada. Todavía no está aprobada para producción ni para compartir. El cliente Windows separado solo abre un servidor existente.
+
+Prepara Windows x64, .NET Framework 4.8, WSL2, virtualización y 30 GB libres. La preparación de WSL puede pedir administrador, descargas y reinicio. Extrae todo el ZIP en una carpeta local. Para usarlo como portable, abre `OpenMultiPOS-Server-Control.exe`. Para instalar el programa en tu perfil, ejecuta `OpenMultiPOS-Server-Setup-0.1.0.exe` desde esa misma carpeta completa y después abre OpenMultiPOS Servidor desde Inicio. Conserva la imagen `.wsl` y `server-image.json` junto al instalador.
+
+1. Pulsa Importar imagen. Espera la verificación y la importación. Si ya hay un servidor o una carpeta de datos, el programa los conserva; revisa el estado antes de continuar.
+2. Escribe y confirma una contraseña inicial de 12 a 128 caracteres. Pulsa Preparar sitio y espera. Si se interrumpe, vuelve a consultar el estado y reintenta. Recuperar conserva el intento anterior y solo permite preparaciones sin cuentas personales ni datos comerciales.
+3. Pulsa Iniciar y Abrir aplicación. Entra como Administrator con la contraseña inicial. En el asistente nativo de ERPNext selecciona español, Colombia, COP y America/Bogota, o las preferencias que realmente necesites. Crea tu cuenta personal y completa la entidad legal y su configuración contable antes de operar.
+4. Continúa con la preparación de Inicio en OpenMultiPOS. El progreso se guarda en el servidor. Revisa tus usuarios, negocios, existencias, recibos y recuperación.
+5. Conserva abierta la ventana del servidor mientras trabajan los demás computadores. Detener cierra los servicios ordenadamente y los desconecta hasta volver a iniciar.
+
+La ventana muestra dónde están los datos. Por defecto, WSL los conserva en `%LOCALAPPDATA%\OpenMultiPOS\Servidor`, separados del programa. Puedes mover la carpeta portable con el controlador cerrado; eso no traslada la base de datos. No muevas ni sincronices el disco WSL en vivo.
+
+Actualizar o desinstalar el programa conserva el servidor y sus datos. El instalador guarda los archivos de programa reemplazados con extensión `.previous`. Esta actualización no migra el backend de un sitio existente: esa operación exige copia verificada, ensayo de restauración y migración en una copia. Consulta [recuperación](recovery.md). No uses `wsl --unregister` para quitar el programa, porque destruye la distribución y sus datos.
+
 ## Inicio
 
 Revisa el negocio activo y entra a la tarea que necesitas.

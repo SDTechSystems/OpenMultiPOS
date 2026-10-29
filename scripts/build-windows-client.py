@@ -78,6 +78,8 @@ def build(destination):
         [
             "mcs",
             "-target:winexe",
+            "-sdk:4.8",
+            "-platform:x64",
             "-optimize+",
             "-r:System.Windows.Forms",
             "-r:System.Drawing",
@@ -98,6 +100,8 @@ def build(destination):
         [
             "mcs",
             "-target:winexe",
+            "-sdk:4.8",
+            "-platform:x64",
             "-optimize+",
             "-r:System.Windows.Forms",
             "-out:" + str(installer),

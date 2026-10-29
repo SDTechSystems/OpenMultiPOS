@@ -11,9 +11,19 @@ La opción propuesta es una red privada Tailscale y HTTPS mediante Tailscale Ser
 1. Instala Tailscale en el servidor Windows y en cada computador autorizado. Inicia sesión con cuentas personales y protege el acceso a esas cuentas con autenticación multifactor.
 2. Autoriza solamente los usuarios y equipos del negocio. En la política de acceso, permite a esos usuarios llegar al puerto HTTPS del servidor. Revisa las reglas existentes, porque una regla general anterior puede seguir concediendo más acceso.
 3. Inicia OpenMultiPOS y comprueba el acceso local. Conserva MariaDB, Redis y el backend en loopback. No abras sus puertos en el router.
-4. Prepara un proxy local que seleccione el sitio Frappe correcto, sirva sus recursos y envíe las cabeceras de HTTPS. Define la URL externa en `host_name`. La URL externa de Tailscale tiene otro nombre de host; apuntar Serve directamente al servidor de desarrollo no acredita una configuración correcta de Frappe. Ver [despliegue](deployment.md).
-5. Con el proxy local verificado, ejecuta `tailscale serve --bg http://127.0.0.1:PUERTO_LOCAL` en el servidor. Sustituye `PUERTO_LOCAL` por su puerto. Sigue el enlace que ofrece Tailscale para habilitar HTTPS si hace falta. Guarda la dirección HTTPS que muestra `tailscale serve status`.
+4. En el paquete completo, el proxy local ya escucha en `http://127.0.0.1:8089`, sirve los recursos y selecciona el sitio interno. Define la dirección HTTPS privada de Tailscale como `host_name` del sitio. Si usas otra instalación, revisa primero su [despliegue](deployment.md); no apuntes Serve al servidor de desarrollo.
+5. Con el servidor activo, ejecuta `tailscale serve --bg http://127.0.0.1:8089` en PowerShell del servidor Windows. Sigue el enlace que ofrece Tailscale para habilitar HTTPS si hace falta. Guarda la dirección HTTPS que muestra `tailscale serve status`. No cambies un servicio Serve previo sin revisar su configuración.
 6. Abre esa dirección con `/omp` en cada computador autorizado e inicia sesión con su cuenta de OpenMultiPOS. Tailscale autoriza el acceso a la red; OpenMultiPOS conserva su propio inicio de sesión y permisos.
+
+Para registrar `host_name` en el servidor empaquetado, abre `wsl -d OpenMultiPOS -u openmultipos` desde PowerShell. En esa consola Linux ejecuta lo siguiente, sustituyendo la dirección de ejemplo por la dirección HTTPS que mostró Tailscale:
+
+```bash
+cd "$HOME/.local/share/openmultipos/bench"
+../tools/bin/bench --site omp.localhost set-config host_name https://nombre-del-servidor.nombre-de-tu-red.ts.net
+exit
+```
+
+La dirección es pública dentro de tu configuración de acceso; no incluyas contraseña ni parámetros. Detén e inicia el servidor desde su controlador para que todos los procesos lean la configuración nueva. Esa acción no concede acceso a otro equipo: también debes autorizarlo en Tailscale y crear su usuario en OpenMultiPOS.
 
 No actives Tailscale Funnel para este acceso privado. No compartas el usuario Administrator ni copies contraseñas, bases de datos o archivos del sitio a GitHub.
 

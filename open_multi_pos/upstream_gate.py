@@ -24,6 +24,7 @@ CASHIER_DENIED_METHODS = {
     "frappe.desk.query_report.background_enqueue_run",
     "frappe.desk.query_report.export_query",
     "frappe.desk.reportview.export_query",
+    "frappe.desk.doctype.dashboard_chart.dashboard_chart.get",
 }
 
 

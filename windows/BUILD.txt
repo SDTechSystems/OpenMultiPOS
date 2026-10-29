@@ -28,8 +28,19 @@ En Linux usar mcs -sdk:4.8 -platform:x64 con las mismas referencias.
 El perfil 4.8 es obligatorio: compilar contra APIs Mono más recientes puede
 producir un programa que compile y falle en el runtime Windows.
 El constructor scripts/build-windows-controller.py requiere el Manual.html
-verificado que produce el constructor del cliente. El candidato no incluye
-aún la imagen del servidor. No es la distribución final.
+verificado que produce el constructor del cliente. Ese constructor solo produce el controlador, sin imagen.
+El paquete completo de aceptación se genera con scripts/build-windows-server.py,
+que exige una imagen limpia, su manifiesto y el informe de auditoría coincidentes.
+La imagen y el manifiesto permanecen al lado del instalador: no se incrustan
+1,5 GB dentro del ejecutable. Consulta docs/release-onboarding.md.
+
+Para compilar el instalador a partir de los recursos de la carpeta padre:
+
+& "$env:WINDIR\Microsoft.NET\Framework64\v4.0.30319\csc.exe" /nologo /target:winexe /main:ServerInstaller /platform:x64 /optimize+ /r:System.Windows.Forms.dll /r:System.Drawing.dll /r:System.Web.Extensions.dll /resource:..\OpenMultiPOS-Server-Control.exe,OpenMultiPOS-Server-Control.exe /resource:..\Manual.html,Manual.html /resource:..\LICENSE,LICENSE /resource:..\LEEME.txt,LEEME.txt /resource:..\source.zip,source.zip /out:OpenMultiPOS-Server-Setup-0.1.0.exe ServerInstaller.cs Server.cs
+
+--verify-installation prueba archivos, acceso, HKCU, actualización y conservación
+de datos ficticios en una carpeta temporal Windows. No importa una imagen WSL.
+La aceptación visual y Windows limpio siguen pendientes.
 
 --self-test comprueba comillas y rechazo de una imagen corrupta, sin WSL.
 --verify-server OpenMultiPOS-<nombre>QA comprueba el transporte, protocolo y

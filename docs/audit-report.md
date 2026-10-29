@@ -376,3 +376,25 @@ La automatización visual de Windows no pudo inicializarse: node_repl rechazó s
 
 
 La CI del controlador en `270fb241b33e9ca901c8afee078e8980e3ca1576` aprobó privacidad, Python, navegador demo, construcción de clientes/controlador y contratos del ejecutable entregado sobre Windows: [ejecución 40642979402](https://github.com/SDTechSystems/OpenMultiPOS/actions/runs/40642979402). Bench se omitió en ese push; esta CI no sustituye la prueba QA local del proceso WSL ni acredita la interfaz visual del controlador.
+
+
+## Imagen sellada y paquetes completos de aceptación · 28/10/2026
+
+`server/seal_image.py` incorporó los manifiestos de versiones Ubuntu, fuentes Ubuntu, entornos Python, revisiones upstream y herramienta de primera ejecución. El sellado rechazó sitios, esquemas comerciales, estados privados de instalación, intentos retenidos, SSH y credenciales reutilizables. Detuvo journald y el escritor de entropía antes de retirar identificadores, registros, claves de host y cachés. La distribución se exportó en frío sin volver a iniciarla.
+
+El archivo comprimido privado tiene 1.579.694.080 bytes y corresponde a `3f6e2da1a05c3ca8e26da36619fae17486386018`. Una inspección completa de sus 209.339 miembros verificó rutas, configuración, identidad y manifiestos: cero sitios, cero esquemas de aplicación y ninguna identidad reutilizable detectada. El control no sustituye una auditoría exhaustiva de cada dependencia. La distribución de construcción sigue detenida; las copias inicializadas nunca se vuelven a exportar como imagen limpia.
+
+Una nueva copia importada desde ese archivo completó la creación nativa del sitio, las cuatro aplicaciones y la migración, sin copiar un helper corregido después de importar. En Windows, el controlador aprobó estado, transporte Unicode por stdin, inicio y parada. El mismo ejecutable importó la imagen real en otra distribución QA mediante `--verify-import` y comprobó que aún no había sitio inicializado.
+
+`scripts/build-windows-server.py` reúne el controlador, la imagen y su manifiesto, el manual, fuentes públicas y hashes. `ServerInstaller.cs` copia el programa por usuario, crea acceso de Inicio y registro de desinstalación. Verifica la imagen antes de reemplazar archivos y conserva los reemplazados. La distribución WSL y sus datos quedan separados. El contrato Windows `--verify-installation` aprobó alta, actualización, rechazo de imagen alterada, acceso, HKCU, desinstalación y conservación de datos ficticios. Usó una imagen sintética pequeña: no acredita la interfaz ni una instalación completa en Windows limpio.
+
+La primera configuración nativa se recorrió con Chrome Windows sobre la imagen recién instalada, cookie y CSRF reales. El formulario creó un usuario personal, una entidad ficticia colombiana y su plan PUC nativo. Respondió con estado ok; un inicio posterior con la cuenta personal abrió `/omp` y comprobó COP, Colombia y 2.503 cuentas nativas. No se marcaron banderas de configuración de forma artificial. El primer verificador rechazó erróneamente el fragmento legítimo `#home` de la URL después del éxito; la comprobación posterior comparó su ruta y validó los documentos persistidos. El recorrido usó English en el asistente ERPNext; no acredita todavía que la primera pantalla nativa proponga español automáticamente.
+
+Las 88 pruebas ordinarias, Ruff, formato y Prettier aprobaron. Las comprobaciones existentes de la caja no se presentan como pruebas nuevas de esta imagen. Pendientes: aceptación visual/teclado de WinForms, Windows limpio sin herramientas de desarrollo, migración de backend con copia/restauración y cierre de fuentes y licencias antes de compartir. Se recopilaron 356 de las 374 versiones de fuentes Ubuntu del inventario; 18 requieren recuperación adicional. El inventario por sí solo no acredita el código fuente correspondiente completo. Los candidatos están sin firma, privados y no aprobados para producción.
+
+
+## Restricción adicional de gráficos para cajeros · 28/10/2026
+
+El gate de cajeros también rechaza `frappe.desk.doctype.dashboard_chart.dashboard_chart.get`, antes de resolver la caché compartida por nombre de gráfico o calcular su contenido. El endpoint nativo acepta descriptores del cliente y no es necesario para la caja propia. No se modifica el código upstream ni se impide el uso nativo de managers.
+
+La suite real de seguridad HTTP aprobó 22 pruebas. El caso nuevo conserva una caché temporal ficticia, confirma que el manager puede leerla y exige 403 del gate para dos cajeros, GET/POST, v1/v2 y `cmd`, con caché y `no_cache`: 24 negativas. El resultado no acredita aislamiento integral; siguen pendientes metadatos File, Address/Contact, Price List y otras rutas de reportes.

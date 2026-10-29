@@ -2,7 +2,7 @@
 
 Requisito de entrega solicitado por el propietario: al completar y validar el alcance acordado, entregar una edición portable y una edición instalable que se puedan compartir, ambas con una primera configuración guiada. Seguimiento: [distribución Windows #37](https://github.com/SDTechSystems/OpenMultiPOS/issues/37) y [asistente inicial #38](https://github.com/SDTechSystems/OpenMultiPOS/issues/38).
 
-Este documento define el trabajo pendiente. El wheel, la demo, el lanzador local y las guías actuales no son los dos paquetes finales ni un asistente integral terminado.
+Este documento registra los candidatos disponibles y el trabajo pendiente. Los paquetes actuales permiten aceptación privada; todavía no son las entregas finales ni acreditan un asistente integral terminado.
 
 ## Cliente Windows disponible para aceptación
 
@@ -18,6 +18,22 @@ Construcción sin red en Linux, usando Mono y `markdown2` ya instalado con Frapp
 
 El script compila ambos ejecutables, prueba el contrato de direcciones, incorpora el manual sin conexión con imágenes verificadas contra el manifest y genera SHA256SUMS.txt. El ZIP incluye el código correspondiente del cliente y del instalador. El paquete empieza sin dirección privada, usuario ni contraseña. El cliente remoto exige HTTPS; permite HTTP solo para loopback y el nombre local existente. Las pruebas de compilación bajo Mono no sustituyen la aceptación de WinForms, accesos y registro en Windows.
 
+## Servidor completo disponible para aceptación privada
+
+`scripts/build-windows-server.py` genera el ZIP portable del servidor y el instalador por usuario de `windows/ServerInstaller.cs`. El paquete incluye el controlador, `OpenMultiPOS-Server.wsl`, `server-image.json`, manual sin conexión, `source.zip` y hashes. El instalador necesita la imagen y el manifiesto junto al ejecutable. Ambos formatos requieren Windows x64, .NET Framework 4.8, WSL2, virtualización habilitada y 30 GB libres. Preparar WSL puede pedir administrador, descargas y reinicio.
+
+El constructor exige que la imagen, el manifiesto y el informe de auditoría coincidan. La imagen privada sellada de 1,5 GB corresponde a la revisión `3f6e2da`; la auditoría del archivo exportado encontró cero sitios, cero esquemas de aplicación y ninguna identidad reutilizable. No se puede publicar hasta completar la aceptación y la revisión de fuentes y licencias.
+
+```bash
+<bench>/env/bin/python scripts/build-windows-server.py --output <directorio-nuevo> --image <imagen-limpia.wsl> --manifest <server-image.json> --audit <informe-auditoria.json>
+```
+
+La edición portable exige extraer la carpeta completa. El instalador copia el programa en el perfil del usuario, crea el acceso de Inicio y registra la desinstalación en HKCU. Los datos WSL quedan separados, por defecto en `%LOCALAPPDATA%\OpenMultiPOS\Servidor`. Actualizar o desinstalar el programa conserva la distribución y sus datos. Los archivos reemplazados quedan como `.previous`; actualizar este paquete no migra el backend ni los sitios existentes.
+
+En Windows real, `--verify-import` importó la imagen sellada de 1,5 GB en `OpenMultiPOS-PackageQA`. Otra distribución recién importada, `ImageQA`, aprobó `first_run.py setup` y la comprobación Windows `--verify-server`, con estado, transporte por stdin, inicio y parada del servidor. `--verify-installation` aprobó archivos, acceso directo, HKCU, actualización, rechazo de corrupción, desinstalación y conservación de un archivo de datos separado. Esta última prueba usó una imagen sintética pequeña y no recorrió la interfaz con la imagen real.
+
+El candidato está sin firma. Siguen pendientes la aceptación visual y de teclado, el recorrido completo en Windows limpio y el cierre de fuentes y licencias. Estas comprobaciones no acreditan una entrega final ni su uso en producción.
+
 ## Ediciones y datos
 
 | Edición | Resultado esperado | Evidencia necesaria |
@@ -25,7 +41,7 @@ El script compila ambos ejecutables, prueba el contrato de direcciones, incorpor
 | Portable | Paquete extraíble con inicio/parada y acceso a la aplicación sin el checkout de desarrollo. Datos propios separados y ruta visible. | Ejecución en Windows limpio y prueba de traslado a una ruta admitida. Verificar qué componentes puede transportar y cuáles requieren preparación del equipo. |
 | Instalable | Instalador Windows con preparación de componentes, accesos, actualización y desinstalación que conserve datos por defecto. | Instalación nueva, reinicio, uso, actualización con copia previa, recuperación y desinstalación en Windows limpio. |
 
-El backend sigue siendo ERPNext/Frappe. La solución de empaquetado debe incluir o gestionar sus componentes. Antes de afirmar portabilidad, comprobar requisitos de WSL/virtualización, permisos, espacio, descargas y reinicios. El operador debe poder completar el proceso sin comandos de desarrollo. Se ha elegido una distribución WSL2 en formato `.wsl` como base del servidor. La construcción limpia, el arranque privado y la recuperación inicial aprobaron en WSL. El controlador Windows ya compila y aprobó su comunicación nativa, inicio y parada. Siguen pendientes su aceptación visual, la imagen sellada y las pruebas completas de entrega. No se promete una aplicación autónoma de un solo ejecutable.
+El backend sigue siendo ERPNext/Frappe y el candidato del servidor incluye sus componentes en una distribución WSL2 `.wsl`. Antes de afirmar portabilidad, comprobar requisitos de WSL/virtualización, permisos, espacio, descargas y reinicios en Windows limpio. El operador debe poder completar el proceso sin comandos de desarrollo. La construcción limpia, el arranque privado y la recuperación inicial aprobaron en WSL. La imagen sellada, su importación y las comprobaciones nativas Windows descritas arriba ya están disponibles; siguen pendientes la aceptación visual y las pruebas completas de entrega. El paquete requiere preparar Windows y conservar varios archivos juntos.
 
 Los artefactos compartidos empiezan con una instalación limpia y generan secretos nuevos. Nunca incluyen la base operativa, identidades, productos, contactos, cuentas, documentos, contraseñas, claves, respaldos o preferencias privadas del propietario. Trasladar una instalación con datos es una operación privada de recuperación, distinta de compartir el programa.
 

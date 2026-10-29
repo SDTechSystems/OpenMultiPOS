@@ -95,8 +95,9 @@ internal sealed class ServerBackend
             if (root != null) foreach (string name in root.GetSubKeyNames()) using (RegistryKey key = root.OpenSubKey(name))
                 if (key != null && Convert.ToString(key.GetValue("DistributionName")) == Distro) { string path = Convert.ToString(key.GetValue("BasePath")); return path.StartsWith(@"\\?\") ? path.Substring(4) : path; }
         }
-        return Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.LocalApplicationData), "OpenMultiPOS", "Servidor");
+        return NewDataFolder();
     }
+    private string NewDataFolder() { return Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.LocalApplicationData), "OpenMultiPOS", Distro == "OpenMultiPOS" ? "Servidor" : Distro); }
     internal Dictionary<string, object> Status()
     {
         var result = json.Deserialize<Dictionary<string, object>>(Execute(Runtime("status"), null, false));
@@ -131,7 +132,7 @@ internal sealed class ServerBackend
     {
         if (Registered()) throw new InvalidOperationException("El servidor ya existe. Revisa su estado antes de instalar.");
         VerifyImage(folder);
-        string data = Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.LocalApplicationData), "OpenMultiPOS", "Servidor");
+        string data = NewDataFolder();
         if (Directory.Exists(data)) throw new IOException("La carpeta de datos ya existe. Se conserva para revisión.");
         Execute(new [] { "--import", Distro, data, Path.Combine(folder, "OpenMultiPOS-Server.wsl"), "--version", "2" }, null, true);
     }
@@ -293,6 +294,13 @@ internal static class ServerProgram
             try { if (!backend.Registered() || !Convert.ToBoolean(backend.Status()["installed"]) || !Directory.Exists(backend.DataFolder())) return 3; backend.VerifyInput(); backend.Start().GetAwaiter().GetResult(); backend.Stop().GetAwaiter().GetResult(); return 0; }
             catch (Exception error) { File.WriteAllText(Path.Combine(AppDomain.CurrentDomain.BaseDirectory, "verification-error.txt"), error.ToString() + "\n" + Convert.ToString(error.Data["diagnostic"])); return 4; }
             finally { try { backend.Stop().GetAwaiter().GetResult(); } catch { } }
+        }
+        if (args.Length == 3 && args[0] == "--verify-import")
+        {
+            if (!Regex.IsMatch(args[1], @"\AOpenMultiPOS-[A-Za-z0-9-]*QA\z")) return 2;
+            var backend = new ServerBackend(args[1]);
+            try { backend.Import(args[2]); return !Convert.ToBoolean(backend.Status()["installed"]) && Directory.Exists(backend.DataFolder()) ? 0 : 3; }
+            catch (Exception error) { File.WriteAllText(Path.Combine(AppDomain.CurrentDomain.BaseDirectory, "verification-error.txt"), error.ToString() + "\n" + Convert.ToString(error.Data["diagnostic"])); return 4; }
         }
         string distro = args.Length == 2 && args[0] == "--distro" ? args[1] : "OpenMultiPOS";
         try
