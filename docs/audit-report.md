@@ -423,3 +423,10 @@ Una copia QA sin sitio recibió los cuatro archivos públicos nuevos y completó
 El controlador Windows añade Crear copia y Comprobar recuperación, con ayuda y ejecución fuera del hilo de interfaz. Exige servidor detenido y reutiliza operations.backup/restore_drill. El helper root toma el bloqueo de vida, rechaza servicios activos y habilita únicamente base y Redis durante la operación. Retira la cuenta temporal de base y detiene servicios en finally. Un clon de ensayo conserva el aislamiento nativo y no sustituye el sitio original.
 
 Una copia y un ensayo reales aprobaron sobre PackageQA ficticio mediante el nuevo helper. El controlador compiló y sus contratos aprobaron. Se añadió rechazo de servidor activo/no preparado/controlador concurrente y comprobación de limpieza ante fallo. No se repiten pruebas contables ni se reconstruye la imagen completa en este incremento. Los servicios dejan de habilitarse al arranque WSL para evitar actividad de fondo al consultar el estado. La aceptación visual Windows y la entrega final siguen pendientes.
+
+
+## Fuentes verificadas para empaquetado · 28/10/2026
+
+El nuevo constructor de fuentes coteja Source y Version de cada dsc con el inventario exacto de la imagen, verifica tamaños y SHA256 de sus contenidos y contrasta la cobertura Python con ambos entornos. Ese control encontró seis resultados apt cuya versión no coincidía con la solicitada; se recuperaron las versiones correctas desde Launchpad. El estado exitoso del descargador no se usa como prueba de correspondencia.
+
+El empaquetador incluye solo los archivos verificados, sin registros, temporales ni rutas locales del recolector. Divide las fuentes en ZIP independientes sin recomprimir archivos ya comprimidos, para reducir CPU y permitir su distribución por partes. Conserva versiones y sumas en sources.json. Para barcodenumber se conserva el wheel publicado con fuente Python y GPL3, y se declara la ausencia upstream del COPYRIGHT referido; no se inventan avisos ni se afirma revisión legal externa.

@@ -78,3 +78,8 @@ Las instalaciones existentes conservan su configuración y no reciben de nuevo e
 No declarar lista la distribución hasta probar ambas ediciones sin herramientas de desarrollo: primera ejecución, interrupción y reanudación, errores, primera cuenta única, negocios con entidad compartida/separada, configuración completa, reinicio, actualización, copia/restauración y conservación de datos al desinstalar. Las pruebas usan fixtures inventados; la revisión humana de comprensión se registra cuando ocurra.
 
 El manual visual debe explicar la instalación y cada etapa con capturas ficticias. La versión compartida debe recorrer este mismo asistente con datos nuevos de quien la recibe, sin heredar el negocio ni las credenciales del propietario.
+
+
+## Fuentes de las dependencias
+
+`scripts/build-source-bundle.py --sources <coleccion-verificada> --output <directorio-nuevo>` valida versiones y contenido antes de generar los ZIP de fuentes, sources.json y SHA256SUMS.txt. Los ZIP se extraen en la misma carpeta y conservan las licencias de sus proyectos. Los cuatro proyectos editables completos están en la imagen, y source.zip acompaña el programa Windows. La revisión de avisos conocidos y la aceptación Windows siguen siendo parte de la condición de entrega.

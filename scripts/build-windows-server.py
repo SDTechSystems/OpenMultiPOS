@@ -47,6 +47,9 @@ def build(destination, image, manifest, audit, *, archive=True):
     shutil.copyfile(image, portable / "OpenMultiPOS-Server.wsl")
     shutil.copyfile(manifest, portable / "server-image.json")
     shutil.copyfile(repo / "windows/SERVIDOR.txt", portable / "LEEME.txt")
+    for path in (repo / "windows").iterdir():
+        if path.is_file():
+            shutil.copyfile(path, portable / "source" / path.name)
     # Public source only; no ignored build outputs or private fixtures.
     files = subprocess.check_output(["git", "ls-files", "-z"], cwd=repo).decode().split("\0")
     with ZipFile(portable / "source.zip", "w", ZIP_DEFLATED) as source:
