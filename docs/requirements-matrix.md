@@ -5,7 +5,7 @@ Estado de descubrimiento antes de implementar. “Existente” indica código up
 | ID | Prioridad | Estado upstream | Evidencia | Gap | Riesgo | Esfuerzo | Prueba de aceptación |
 | --- | --- | --- | --- | --- | --- | --- | --- |
 | F01 | P0 | necesita configuración / extensión | Company, Warehouse, POS Profile | Añadir marca y usuarios; probar API cruzada | Alta | M | Dos marcas / misma entidad permitida |
-| F02 | P0 | integración parcial probada | Frappe roles, hooks propios y adaptadores X POS | 9 pruebas Bench + 19 HTTP; 14 rutas de factura bloqueadas; otras APIs pendientes | Crítica | L | Cajero no consulta ni escribe negocio ajeno |
+| F02 | P0 | contrato HTTP de caja probado | Frappe roles, hooks propios y adaptadores X POS | 25 HTTP de seguridad, 20 checkout y navegador nativo; métodos y metadatos ajenos al contrato denegados | Crítica | L | Cajero no consulta ni escribe negocio ajeno; ampliar rutas exige revisión |
 | F03 | P0 | existente / necesita configuración | ERPNext Item, Barcode, Item Price | Catálogo demo y plantillas; probar CSV/variantes | Media | M | Crear vela/mouse con modelos adecuados |
 | F04 | P0 | integración en línea probada | Sales Invoice + Stock Ledger/GL nativos y caja web propia | Almacén, última unidad, rollback y E2E probados; otros movimientos pendientes | Crítica | L | Almacén correcto, stock exacto y sin duplicados |
 | F05 | P0 | integración en línea probada | PK request, quote UNIQUE, Web Locks y tombstone | Respuesta perdida, recarga, retry, dos pestañas y solicitud tardía probados; devoluciones pendientes | Crítica | L | Reintento y cobros simultáneos una sola vez |

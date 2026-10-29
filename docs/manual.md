@@ -41,6 +41,12 @@ Revisa el negocio activo y entra a la tarea que necesitas.
 
 ![Captura ficticia: Inicio](../open_multi_pos/public/manual/screenshots/home.png)
 
+## Acceso de cajeros
+
+El cliente abre `/omp`. Con una cuenta de cajero, esa dirección te lleva a `/omp_pos`. También puedes abrir Caja directamente. Los administradores conservan el menú administrativo.
+
+La cuenta de cajero permite vender, recuperar sus intentos, revisar su caja e imprimir documentos autorizados. No da acceso al escritorio general, reportes o directorios completos de clientes, contactos y archivos. Para esas tareas, solicita la intervención de un administrador. Cierra tu sesión antes de que otra persona use el mismo navegador.
+
 ## Ventas
 
 Vende productos de uno o ambos negocios y conserva una factura nativa por negocio.
