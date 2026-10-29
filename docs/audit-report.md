@@ -409,3 +409,10 @@ File, Address, Contact y Price List no tienen acceso HTTP genérico para cajeros
 El resultado final fue 25 pruebas HTTP de seguridad aprobadas, con comparación de listas filtradas entre RPC, REST v1 y REST v2. Las 20 pruebas de checkout nativo aprobaron stock, GL, pagos y concurrencia. El navegador Chromium real aprobó cookie/CSRF, respuestas perdidas, clave durable, abandono, pestañas concurrentes, cierre, segundo cajero y móvil. La revisión de código adicional fue automatizada por un agente, no una auditoría independiente externa. No se modifica core ni se afirma una auditoría integral del framework. La imagen sellada anterior debe reconstruirse con este contrato antes de entregar.
 
 Se recuperaron las 18 versiones de fuentes Ubuntu faltantes desde publicaciones oficiales de Launchpad, con tamaño y SHA256 de los contenidos cotejados contra sus dsc. El conjunto cubre las 374 versiones inventariadas. No se validaron firmas OpenPGP de esas recuperaciones; el cierre de fuentes/licencias del resto de dependencias sigue en curso.
+
+
+## Idioma de la primera configuración nativa · 28/10/2026
+
+Una extensión `setup_wizard_requires` conserva el asistente nativo y propone el idioma configurado del sitio, usando sus nombres de idioma. Admite el código regional mediante su idioma base; respeta una selección previa y deja el valor nativo si el código no está disponible. No modifica core, validaciones ni estado de configuración.
+
+Una copia QA sin sitio recibió los cuatro archivos públicos nuevos y completó la instalación nativa. Chrome Windows inició sesión y abrió su primer asistente: boot.lang es, campo de idioma Español. No se completó ni se marcó artificialmente el asistente. La prueba de lógica persistente cubre configuración es/es-CO, selección previa, código ausente/desconocido y reentrada, y se ejecuta en CI. El ensayo nativo completo de empresa/cuentas del incremento anterior sigue siendo evidencia separada.

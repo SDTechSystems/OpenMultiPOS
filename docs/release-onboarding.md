@@ -47,6 +47,10 @@ Los artefactos compartidos empiezan con una instalación limpia y generan secret
 
 La entrega debe tener versión, hashes, dependencias fijadas, licencias/avisos y construcción reproducible. Evaluar firma del instalador y documentar su estado. Mantener separado el programa de los datos, conservar estos al desinstalar por defecto y documentar actualización/restauración. El alcance físico de impresión/lectura sigue siendo el equipo ya configurado.
 
+## Idioma del asistente nativo
+
+La primera pantalla de ERPNext propone el idioma configurado del sitio mediante una extensión soportada. En el ensayo de instalación nueva, la configuración es produjo Español. Puedes cambiarlo: la extensión respeta la selección conservada por el asistente nativo. No sustituye sus validaciones ni completa pasos por su cuenta.
+
 ## Diseño del asistente
 
 Se aplican onboard, frontend-design, accessibility y unslop. El [contexto visual existente](design-context.md) ya define audiencia y estilo: administradores con poco tiempo, tareas comprensibles, navegación azul, formularios legibles y ayuda en el lugar de uso. No se rediseña el producto como una portada comercial.

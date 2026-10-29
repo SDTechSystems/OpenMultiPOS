@@ -7,6 +7,7 @@ app_description = "Marcas, caja nativa y contexto de impresión para ERPNext"
 app_email = ""
 app_license = "GPL-3.0-only"
 required_apps = ["erpnext"]
+setup_wizard_requires = "assets/open_multi_pos/setup-wizard-language.js"
 before_install = "open_multi_pos.setup.create_cashier_role"
 after_install = "open_multi_pos.setup.ensure_cashier_role"
 after_migrate = "open_multi_pos.setup.ensure_cashier_role"
