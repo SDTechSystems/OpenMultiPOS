@@ -1,8 +1,18 @@
 # Respaldo y recuperación local
 
-La operación usa Windows para abrir el programa y Ubuntu WSL para MariaDB, Redis, web y worker. El respaldo privado se guarda fuera del repositorio y del sitio. El temporizador se ejecuta a las 03:15, hora de Bogotá, con un pequeño retraso variable. Si el computador estaba apagado, ejecuta la copia pendiente cuando se inicia WSL y el temporizador. No puede copiar mientras el equipo está apagado.
+La operación usa Windows para abrir el programa y Linux WSL para MariaDB, Redis, web y worker. El respaldo privado se guarda fuera del repositorio y del sitio. El temporizador se ejecuta a las 03:15, hora de Bogotá, con un pequeño retraso variable. Si el computador estaba apagado, ejecuta la copia pendiente cuando se inicia WSL y el temporizador. No puede copiar mientras el equipo está apagado.
 
-## Abrir después de encender Windows
+## Usar el paquete Windows
+
+Abre OpenMultiPOS Servidor desde Inicio, o `OpenMultiPOS-Server-Control.exe` en la carpeta portable. Pulsa Iniciar servidor y Abrir aplicación. Mantén el controlador abierto mientras trabajas.
+
+Para crear una copia, termina las operaciones pendientes y pulsa Detener servidor. Pulsa Crear copia y espera el resultado. Para probar su recuperación, pulsa Comprobar recuperación: crea otra copia y la restaura en un sitio aislado sin reemplazar el original. Ambas acciones dejan los servicios detenidos. Pulsa Iniciar servidor al terminar y revisa Ajustes > Respaldo y recuperación.
+
+Con WSL activo, puedes abrir la carpeta de copias en el Explorador pegando `\\wsl.localhost\OpenMultiPOS\home\openmultipos\.local\share\openmultipos\recovery` en su barra de dirección. Los directorios que contienen manifest.json son copias terminadas. Conserva cada directorio completo, incluidas sus claves privadas, y protégelo con cifrado al copiarlo fuera del computador. No copies ext4.vhdx ni los archivos de MariaDB en vivo. No borres copias anteriores hasta comprobar la nueva y su destino externo.
+
+Las instrucciones de consola siguientes corresponden a instalaciones administradas. El paquete Windows permite crear la copia y ensayar su restauración con los botones anteriores.
+
+## Abrir una instalación administrada en Ubuntu
 
 Ejecuta `scripts/start-openmultipos.cmd` desde el Explorador. Inicia MariaDB y Redis en Ubuntu, después web, worker y el temporizador de copia; abre Administración. Los servicios deben haberse instalado siguiendo [servicios locales](local-services.md). El lanzador mantiene un único cliente WSL en segundo plano para que el backend siga disponible al cerrar la terminal. Volver a abrirlo no crea otro proceso de mantenimiento. No contiene credenciales. La distribución debe llamarse Ubuntu y tener configurado el usuario Linux predeterminado.
 

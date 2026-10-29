@@ -56,7 +56,7 @@ def build(destination):
 <meta name="viewport" content="width=device-width,initial-scale=1"><title>Manual OpenMultiPOS</title>
 <style>body{font:16px/1.6 'Segoe UI',sans-serif;max-width:1000px;margin:auto;padding:24px;color:#182536}img{max-width:100%;height:auto}table{border-collapse:collapse}td,th{border:1px solid #d5dfe9;padding:8px}pre{overflow:auto;padding:12px;background:#f3f6fa}article{margin:40px 0;border-top:1px solid #d5dfe9}a{color:#245fa4}nav{position:sticky;top:0;background:white;padding:8px}@media print{nav{display:none}article{break-before:page}}</style>
 <nav><a href="#doc-manual">Manual de uso</a> · <a href="#doc-online-access">Datos compartidos</a> · <a href="#doc-recovery">Respaldos</a></nav>
-<p>Cliente Windows 0.1.0. Requiere un servidor ya configurado. Las capturas usan datos ficticios. La distribución autónoma del servidor y la aceptación en Windows limpio siguen pendientes.</p>
+<p>Manual OpenMultiPOS 0.1.0. La edición del cliente requiere un servidor ya configurado. La edición completa incluye su controlador y una imagen limpia. Las capturas usan datos ficticios. La aceptación visual y en Windows limpio sigue pendiente.</p>
 """
         + "\n".join(articles)
         + "</html>"
