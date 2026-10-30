@@ -978,3 +978,19 @@ fieldset {
 #cost-review .table-wrap {
   margin-bottom: 20px;
 }
+.preserve {
+  white-space: pre-wrap;
+}
+.link-button {
+  background: none;
+  border: 0;
+  padding: 0;
+  min-height: 0;
+  color: var(--action, #245fa4);
+  text-decoration: underline;
+  font: inherit;
+  cursor: pointer;
+}
+#warranty-notes {
+  padding-left: 20px;
+}

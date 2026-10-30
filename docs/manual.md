@@ -57,6 +57,18 @@ Las series/lotes, cantidades fraccionarias, descuentos globales, cargos fijos, n
 
 ![Captura ficticia: Devoluciones](../open_multi_pos/public/manual/screenshots/returns.png)
 
+## Garantías
+
+Registra el reclamo de un producto vendido por el negocio activo y sigue su atención. Cada reclamación es una **Garantía (Warranty Claim)** nativa de ERPNext vinculada a la venta, al producto, al cliente de la venta y a la empresa del negocio. Registrar o cambiar una reclamación no cobra, no reembolsa ni mueve existencias. Si devuelves dinero, usa Devoluciones; si entregas un reemplazo, regístralo en su flujo de inventario o de venta.
+
+1. **Consulta las reclamaciones.** La lista muestra las 50 más recientes del negocio activo. Filtra por estado: Abierta, En revisión, Cerrada o Anulada. Pulsa el número para abrirla.
+2. **Selecciona la venta.** Pulsa Nueva reclamación. Elige una factura reciente o escribe su número completo y pulsa Cargar factura. Solo se admiten ventas de caja vigentes del negocio activo. Si la venta ya tiene reclamaciones, se muestran sus números.
+3. **Describe el reclamo.** Elige el producto, la fecha en que el cliente reporta la falla y qué reporta. La fecha debe estar entre la venta y hoy. El programa no calcula periodos de garantía ni marca automáticamente si el producto está cubierto.
+4. **Registra una sola vez.** Registrar reclamación crea el documento con una clave persistente. Si se pierde la respuesta, conserva el intento: Consultar estado lo recupera, Reintentar registro usa la misma clave y Resolver sin registrar otra recupera lo ya guardado o bloquea un registro tardío.
+5. **Sigue y cierra.** Cambia el estado y agrega notas de seguimiento. Para cerrar, describe la solución; la fecha de cierre la registra ERPNext. Si otra persona actualizó la reclamación, el programa no sobrescribe sus cambios: carga la versión actual, conserva tu nota y te pide revisar antes de guardar. Si se pierde la respuesta al guardar, abre la reclamación y revisa si la nota ya aparece antes de repetirla.
+
+Ver en ERPNext abre el formulario nativo. Las órdenes de reparación o servicio pagadas, los números de serie y lote y los plazos automáticos no forman parte de esta versión.
+
 ## Inventario
 
 Crea productos con propietario y registra unidades en el almacén correcto.

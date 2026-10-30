@@ -283,3 +283,18 @@ Los ensayos se ejecutaron con Bubblewrap, espacio de red aislado sin salida exte
 El recorrido Chromium se amplía para comprobar pérdida de respuesta antes del envío y después de confirmar abandono, recarga, UUID y nueva operación. La ejecución local quedó bloqueada antes de abrir el navegador por ausencia de `libnspr4.so`; no se presenta como navegador aprobado. CI conserva el recorrido con sus dependencias de navegador y repite la instalación, regresiones y restauración. El comparador incorpora las cinco tablas nativas de LCV y su marca de abandono. La [ejecución CI del commit `8f943e08f235c2b0bacf11158c1680f14c4da3bc`](https://github.com/SDTechSystems/OpenMultiPOS/actions/runs/39721182887) aprobó los cuatro jobs: privacidad, Python, navegador demo y Bench real. El recorrido Chromium nativo confirmó pérdida de respuesta de abandono, recarga, nueva operación, teclado, 390/1366 px y cero infracciones axe en la sección. El reinicio y la restauración aislada aprobaron la conciliación de 27 tablas, dos archivos y secreto cifrado; se rechazó sobrescribir un sitio existente. PR #42 integrado mediante `ed8dcdf682f51022749e1b4e4eb969964a99af1c`.
 
 Revisión de seguridad enfocada en autorización, aislamiento e idempotencia; no es una auditoría integral. Conciliación de recálculos posteriores y márgenes de #22 siguen pendientes. No se amplía hardware, offline, DIAN ni distribución Windows.
+
+## Garantías · #21 · 30/10/2026
+
+Primer incremento confirmado: reclamaciones vinculadas a una venta y un artículo, con estado, fechas y notas. Inspección de `erpnext/support/doctype/warranty_claim` en ERPNext `5af6561f5aa48104559692fb4fd82f2580e8d338`: documento no enviable, estado Abierta/En revisión/Cerrada/Anulada, cliente y empresa obligatorios, fecha de cierre asignada por el controlador. Se reutiliza ese documento; no se modifica core ni se usa `ignore_permissions`.
+
+Implementación: `warranty_contract.py` (contrato sin Frappe), `warranty.py` (servicio), marca `OMP Warranty Tombstone`, cinco campos de extensión y permisos nativos para `OMP Administrator` sin borrado. Sección Garantías en `/omp` con recuperación de intento, filtro, detalle, notas y enlace al formulario nativo; manual, guía por pasos y traducciones. La restauración compara 29 tablas.
+
+Evidencia de esta sesión (entorno Linux sin Bench ni MariaDB, Python 3.13):
+
+- Inspección: fuentes de Warranty Claim en el commit fijado.
+- Contratos/simulador: **74 pruebas sin Frappe** aprobadas, incluidas 6 nuevas del contrato de garantías (normalización, límites, estados nativos, solución obligatoria al cerrar y escape del texto). No validan ERPNext.
+- Ruff 0.14.1 (`check` y `format --check`), Prettier 3.6.2 y `node --check` aprobados.
+- Integración: `scripts/test-warranty-http.py` (9 pruebas HTTP) y el tramo de Garantías en `scripts/workspace-smoke.cjs` se añadieron a CI. **No se ejecutaron localmente**: no hay Bench en este entorno. El resultado se registrará con la ejecución CI del commit publicado; hasta entonces no se afirma que pasen.
+
+Límites: sin series/lotes, órdenes de servicio pagadas, periodos ni estado de cobertura. Una nota con respuesta perdida no tiene clave propia: la interfaz pide revisar el seguimiento antes de repetirla. No se amplía hardware, offline, DIAN ni distribución Windows.

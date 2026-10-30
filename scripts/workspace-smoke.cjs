@@ -20,6 +20,7 @@ async function go(page, id) {
       home: "Inicio",
       sales: "Ventas",
       returns: "Devoluciones",
+      warranty: "Garantías",
       imports: "Importar inventario",
       inventory: "Inventario",
       purchases: "Compras",
@@ -548,6 +549,86 @@ async function go(page, id) {
     await go(page, "settings");
     console.log(
       "PASS guided return, same-key lost-response recovery, original receipt, keyboard, mobile and axe",
+    );
+    await go(page, "warranty");
+    await page.locator("#warranty-new").click();
+    await ready(page);
+    await page.locator("#warranty-load-button").click();
+    await ready(page);
+    await page
+      .locator("#warranty-complaint")
+      .fill("Producto ficticio que no enciende");
+    let lostClaim = false;
+    await page.route(
+      "**/api/method/open_multi_pos.warranty.create",
+      async (route) => {
+        const response = await route.fetch();
+        assert.equal(response.status(), 200);
+        if (!lostClaim) {
+          lostClaim = true;
+          await route.abort("failed");
+        } else await route.fulfill({ response });
+      },
+    );
+    await page.locator("#warranty-submit").focus();
+    await page.keyboard.press("Enter");
+    await ready(page);
+    await page.locator("#warranty-recovery").waitFor();
+    await page.reload();
+    await ready(page);
+    await page.locator("#warranty-detail").waitFor();
+    assert.equal(await page.locator("#warranty-recovery").isHidden(), true);
+    const claim = await page.locator("#warranty-title").textContent();
+    assert.equal(
+      await page
+        .locator("#warranty-list tbody tr")
+        .filter({ hasText: claim })
+        .count(),
+      1,
+    );
+    await page.locator("#warranty-state").selectOption("Closed");
+    await page.locator("#warranty-save").click();
+    await ready(page);
+    assert.equal(
+      await page.locator("#notice").getAttribute("data-error"),
+      "true",
+    );
+    await page
+      .locator("#warranty-resolution")
+      .fill("Reemplazo ficticio entregado por su flujo propio");
+    await page.locator("#warranty-note").fill("Nota ficticia de seguimiento");
+    await page.locator("#warranty-save").focus();
+    await page.keyboard.press("Enter");
+    await ready(page);
+    await page
+      .locator("#warranty-notes")
+      .getByText("Nota ficticia de seguimiento")
+      .waitFor();
+    assert.equal(await page.locator("#warranty-state").inputValue(), "Closed");
+    await page.evaluate(() => {
+      document.activeElement?.blur();
+      window.scrollTo(0, 0);
+    });
+    const warrantyAxe = await new AxeBuilder({ page })
+      .withTags(["wcag2a", "wcag2aa", "wcag21aa", "wcag22aa"])
+      .analyze();
+    assert.deepEqual(
+      warrantyAxe.violations
+        .filter((v) => ["serious", "critical"].includes(v.impact))
+        .map((v) => v.id),
+      [],
+    );
+    await page.setViewportSize({ width: 390, height: 844 });
+    assert.equal(
+      await page.evaluate(
+        () => document.documentElement.scrollWidth <= innerWidth,
+      ),
+      true,
+    );
+    await page.setViewportSize({ width: 1440, height: 1000 });
+    await go(page, "settings");
+    console.log(
+      "PASS warranty claim, same-key lost-response recovery, follow-up, keyboard, mobile and axe",
     );
     await go(page, "imports");
     const [template] = await Promise.all([

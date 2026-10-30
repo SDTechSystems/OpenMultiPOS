@@ -115,6 +115,43 @@
     ]
   },
   {
+    "id": "warranty",
+    "title": "Garantías",
+    "intro": "Registra el reclamo de un producto vendido por el negocio activo y sigue su atención hasta cerrarlo.",
+    "steps": [
+      {
+        "title": "Consulta las reclamaciones",
+        "body": "Filtra por estado para ver qué falta atender. Abre una reclamación para revisar el reclamo, la solución y las notas.",
+        "target": "#warranty-list"
+      },
+      {
+        "title": "Selecciona la venta",
+        "body": "Nueva reclamación muestra las facturas recientes del negocio activo. Escribe el número completo para una factura anterior. Solo puedes usar ventas de este negocio.",
+        "target": "#warranty-new"
+      },
+      {
+        "title": "Describe el reclamo",
+        "body": "Elige el producto, la fecha en que el cliente reporta la falla y qué reporta. La fecha debe estar entre la venta y hoy. El programa no calcula periodos de garantía.",
+        "target": "#warranty-form"
+      },
+      {
+        "title": "Registra una sola vez",
+        "body": "Si se pierde la respuesta, conserva el intento y consulta su estado. Reintentar usa la misma clave; resolver bloquea un registro tardío o recupera el ya guardado.",
+        "target": "#warranty-recovery"
+      },
+      {
+        "title": "Sigue y cierra",
+        "body": "Cambia el estado, agrega notas y describe la solución antes de cerrar. Si otra persona actualizó la reclamación, carga sus cambios y revisa antes de guardar.",
+        "target": "#warranty-detail"
+      }
+    ],
+    "notes": [
+      "Registrar o cambiar una reclamación no cobra, no reembolsa ni mueve existencias. Una devolución de dinero se registra en Devoluciones; un reemplazo, en su flujo de inventario o venta.",
+      "La reclamación usa el documento nativo Garantía (Warranty Claim) de ERPNext, vinculado a la venta, al producto y a la empresa del negocio. Ver en ERPNext abre el formulario nativo.",
+      "Las órdenes de reparación o servicio pagadas, los números de serie y los plazos automáticos no forman parte de esta versión."
+    ]
+  },
+  {
     "id": "inventory",
     "title": "Inventario",
     "intro": "Crea productos con propietario y registra unidades en el almacén correcto.",

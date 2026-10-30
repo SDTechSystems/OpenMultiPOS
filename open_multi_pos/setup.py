@@ -16,6 +16,7 @@ def create_cashier_role():
 def ensure_cashier_role():
     create_cashier_role()
     ensure_landed_cost_fields()
+    ensure_warranty_fields()
     if frappe.db.exists("DocType", "OMP Import Request"):
         frappe.db.add_index(
             "OMP Import Request", ["brand", "source_hash", "status"], "omp_import_content"
@@ -145,3 +146,64 @@ def ensure_landed_cost_fields():
     for field in fields:
         field.update({"hidden": 1, "read_only": 1, "no_copy": 1})
     create_custom_fields({"Landed Cost Voucher": fields})
+
+
+def ensure_warranty_fields():
+    from frappe.custom.doctype.custom_field.custom_field import create_custom_fields
+
+    hidden = {"hidden": 1, "read_only": 1, "no_copy": 1}
+    create_custom_fields(
+        {
+            "Warranty Claim": [
+                {
+                    "fieldname": "omp_operation_key",
+                    "fieldtype": "Data",
+                    "label": "Operación OMP",
+                    "unique": 1,
+                    **hidden,
+                },
+                {
+                    "fieldname": "omp_payload_hash",
+                    "fieldtype": "Data",
+                    "label": "Huella OMP",
+                    **hidden,
+                },
+                {
+                    "fieldname": "omp_invoice_item",
+                    "fieldtype": "Data",
+                    "label": "Línea de la venta",
+                    **hidden,
+                },
+                {
+                    "fieldname": "omp_business_brand",
+                    "fieldtype": "Link",
+                    "options": "OMP Business Brand",
+                    "label": "Negocio",
+                    "insert_after": "company",
+                    "read_only": 1,
+                    "no_copy": 1,
+                    "in_standard_filter": 1,
+                },
+                {
+                    "fieldname": "omp_sales_invoice",
+                    "fieldtype": "Link",
+                    "options": "Sales Invoice",
+                    "label": "Venta",
+                    "insert_after": "omp_business_brand",
+                    "read_only": 1,
+                    "no_copy": 1,
+                },
+            ]
+        }
+    )
+    # Workspace administrators manage claims with native permissions; never delete.
+    # Cashiers receive no Warranty Claim permission.
+    add_permission("Warranty Claim", "OMP Administrator", ptype="read")
+    name = frappe.db.get_value(
+        "Custom DocPerm", {"parent": "Warranty Claim", "role": "OMP Administrator", "permlevel": 0}
+    )
+    rule = frappe.get_doc("Custom DocPerm", name)
+    if any(not rule.get(ptype) for ptype in ("read", "create", "write", "report")):
+        rule.update(dict.fromkeys(("read", "create", "write", "report"), 1))
+        rule.save()
+        frappe.clear_cache(doctype="Warranty Claim")

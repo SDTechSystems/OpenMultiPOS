@@ -104,6 +104,7 @@ jobs:
           env/bin/python "$GITHUB_WORKSPACE/scripts/test-returns-http.py" --bench "$RUNNER_TEMP/omp-bench"
           env/bin/python "$GITHUB_WORKSPACE/scripts/test-imports-http.py" --bench "$RUNNER_TEMP/omp-bench"
           env/bin/python "$GITHUB_WORKSPACE/scripts/test-landed-costs-http.py" --bench "$RUNNER_TEMP/omp-bench"
+          env/bin/python "$GITHUB_WORKSPACE/scripts/test-warranty-http.py" --bench "$RUNNER_TEMP/omp-bench"
           OMP_BROWSER_CHANNEL=chromium env/bin/python "$GITHUB_WORKSPACE/scripts/test-landed-costs-browser.py" --bench "$RUNNER_TEMP/omp-bench"
           OMP_BROWSER_CHANNEL=chromium env/bin/python "$GITHUB_WORKSPACE/scripts/test-workspace-browser.py" --bench "$RUNNER_TEMP/omp-bench"
       - name: Recover operations and restore a private isolated copy

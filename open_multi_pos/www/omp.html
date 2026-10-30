@@ -11,6 +11,7 @@
     <script src="/assets/open_multi_pos/workspace-core.js" defer></script>
     <script src="/assets/open_multi_pos/workspace-sales.js" defer></script>
     <script src="/assets/open_multi_pos/workspace-returns.js" defer></script>
+    <script src="/assets/open_multi_pos/workspace-warranty.js" defer></script>
     <script src="/assets/open_multi_pos/workspace-imports.js" defer></script>
     <script
       src="/assets/open_multi_pos/workspace-landed-costs.js"
@@ -219,6 +220,119 @@
           <button id="return-native-list" class="secondary">
             Revisar notas crédito en ERPNext
           </button>
+        </section>
+        <section id="view-warranty" class="view" hidden>
+          <p class="hint">
+            Registra el reclamo de un producto vendido por el negocio activo y
+            sigue su atención. Registrar o cambiar el estado no cobra, no
+            reembolsa ni mueve existencias. Para devolver dinero usa
+            Devoluciones.
+          </p>
+          <div id="warranty-recovery" class="warning" hidden>
+            <h2>Hay una reclamación por resolver</h2>
+            <p id="warranty-operation"></p>
+            <p>
+              Una respuesta perdida no confirma un fallo. Consulta el estado
+              antes de registrarla otra vez. Reintentar conserva la misma clave;
+              resolver bloquea un registro tardío o recupera el ya guardado.
+            </p>
+            <button id="warranty-status" class="secondary">
+              Consultar estado
+            </button>
+            <button id="warranty-retry">Reintentar registro</button>
+            <button id="warranty-abandon" class="secondary">
+              Resolver sin registrar otra
+            </button>
+          </div>
+          <div class="actions">
+            <label for="warranty-filter">Estado</label>
+            <select id="warranty-filter">
+              <option value="">Todas</option>
+              <option value="Open">Abierta</option>
+              <option value="Work In Progress">En revisión</option>
+              <option value="Closed">Cerrada</option>
+              <option value="Cancelled">Anulada</option>
+            </select>
+            <button id="warranty-new">Nueva reclamación</button>
+          </div>
+          <div id="warranty-list"></div>
+          <form id="warranty-load" class="form-sheet" hidden>
+            <h2>1. Selecciona la venta</h2>
+            <label for="warranty-recent"
+              >Facturas recientes del negocio activo</label
+            >
+            <select id="warranty-recent"></select>
+            <label for="warranty-invoice"
+              >Número de factura anterior (opcional)</label
+            >
+            <input
+              id="warranty-invoice"
+              autocomplete="off"
+              aria-describedby="warranty-invoice-help"
+            />
+            <p id="warranty-invoice-help">
+              Escribe el número completo para una factura anterior. Déjalo vacío
+              para usar la selección reciente.
+            </p>
+            <button id="warranty-load-button">Cargar factura</button>
+          </form>
+          <form id="warranty-form" class="form-sheet" hidden>
+            <h2>2. Describe el reclamo</h2>
+            <p id="warranty-source"></p>
+            <label for="warranty-item">Producto reclamado</label>
+            <select id="warranty-item" required></select>
+            <label for="warranty-date">Fecha del reclamo</label>
+            <input
+              id="warranty-date"
+              type="date"
+              required
+              aria-describedby="warranty-date-help"
+            />
+            <p id="warranty-date-help">
+              Entre la fecha de la venta y hoy. El programa no calcula periodos
+              de garantía.
+            </p>
+            <label for="warranty-complaint">Qué reporta el cliente</label>
+            <textarea
+              id="warranty-complaint"
+              maxlength="2000"
+              required
+            ></textarea>
+            <button id="warranty-submit">Registrar reclamación</button>
+            <button id="warranty-cancel" type="button" class="secondary">
+              Cancelar
+            </button>
+          </form>
+          <form id="warranty-detail" class="form-sheet" hidden>
+            <h2 id="warranty-title"></h2>
+            <p id="warranty-summary"></p>
+            <p id="warranty-complaint-text" class="preserve"></p>
+            <label for="warranty-state">Estado</label>
+            <select id="warranty-state">
+              <option value="Open">Abierta</option>
+              <option value="Work In Progress">En revisión</option>
+              <option value="Closed">Cerrada</option>
+              <option value="Cancelled">Anulada</option>
+            </select>
+            <label for="warranty-resolution">Solución</label>
+            <textarea
+              id="warranty-resolution"
+              maxlength="2000"
+              aria-describedby="warranty-resolution-help"
+            ></textarea>
+            <p id="warranty-resolution-help">
+              Obligatoria para cerrar. Si entregas dinero o un reemplazo,
+              regístralo en su flujo propio.
+            </p>
+            <label for="warranty-note">Nota de seguimiento (opcional)</label>
+            <textarea id="warranty-note" maxlength="1000"></textarea>
+            <button id="warranty-save">Guardar seguimiento</button>
+            <a id="warranty-native" target="_blank" rel="noopener"
+              >Ver en ERPNext</a
+            >
+            <h3>Seguimiento</h3>
+            <ol id="warranty-notes"></ol>
+          </form>
         </section>
         <section id="view-sales" class="view" hidden>
           <div id="shift-strip" class="shift-strip"></div>

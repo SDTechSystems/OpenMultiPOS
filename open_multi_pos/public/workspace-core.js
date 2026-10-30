@@ -80,6 +80,7 @@ window.OMPWorkspace = (() => {
     $("business-picker").disabled = true;
     window.OMPSales?.controls();
     window.OMPReturns?.controls();
+    window.OMPWarranty?.controls();
     window.OMPImports?.controls();
     window.OMPLandedCosts?.controls();
     try {
@@ -92,6 +93,7 @@ window.OMPWorkspace = (() => {
       $("business-picker").disabled = false;
       window.OMPSales?.controls();
       window.OMPReturns?.controls();
+      window.OMPWarranty?.controls();
       window.OMPImports?.controls();
       window.OMPLandedCosts?.controls();
     }

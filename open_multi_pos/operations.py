@@ -40,6 +40,8 @@ TABLES = (
     "Landed Cost Taxes and Charges",
     "Landed Cost Purchase Receipt",
     "Landed Cost Vendor Invoice",
+    "Warranty Claim",
+    "OMP Warranty Tombstone",
     "POS Opening Entry",
     "POS Closing Entry",
 )

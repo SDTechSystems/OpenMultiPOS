@@ -16,7 +16,7 @@ La identidad, los contactos, los NIT, los productos y las cuentas reales se conf
 | P0 | Manual, capturas, guías y ayuda por opción | [F27 · #15](https://github.com/SDTechSystems/OpenMultiPOS/issues/15). Doce secciones documentadas, tutoriales opcionales y capturas exclusivamente ficticias. |
 | P0 | SKU automático por negocio y datos del producto | [F28 · #16](https://github.com/SDTechSystems/OpenMultiPOS/issues/16). Prefijo editable, nombre normalizado y consecutivo; no modifica códigos existentes y recupera el alta con la misma clave. |
 | P0 implementado | Recuperación operativa y cierre de APIs anteriores | [#7](https://github.com/SDTechSystems/OpenMultiPOS/issues/7). Reinicio real de servicios, sesiones/intentos; copia privada diaria y restauración aislada de 18 tablas/archivos/secretos con conciliación; gate HTTP de X POS. Fusionado en `main` mediante #17, sin reemplazar el sitio operativo. |
-| P1 | Reclamaciones de garantía | [#21](https://github.com/SDTechSystems/OpenMultiPOS/issues/21). Vinculadas a venta/artículo, con estado, fechas y notas; alcance inicial confirmado, implementación pendiente. |
+| P1 en revisión | Reclamaciones de garantía | [#21](https://github.com/SDTechSystems/OpenMultiPOS/issues/21). Warranty Claim nativo vinculado a venta/artículo, con estado, fechas, solución y notas; recuperación sin duplicados y edición concurrente detectada. Pendiente de CI con Bench real y revisión. [Guía](warranty.md). |
 | P1 parcialmente integrado | Costos de compra guiados | [#22](https://github.com/SDTechSystems/OpenMultiPOS/issues/22). LCV, estimaciones y recuperación integrados mediante #42; conciliación de recálculos y márgenes pendientes. |
 | P1 integrado | Vista previa del recibo en Impresión de ERPNext | [#18](https://github.com/SDTechSystems/OpenMultiPOS/issues/18). Integrado mediante #35. Selección autorizada, instantánea histórica y vista compacta sin cobrar ni marcar como impreso. |
 | P1 integrado | Devoluciones guiadas por negocio | [#19](https://github.com/SDTechSystems/OpenMultiPOS/issues/19). Notas crédito parciales/totales vinculadas, stock y reembolsos nativos, recuperación sin duplicados y comprobante histórico. Integrado mediante #36. |
@@ -49,7 +49,7 @@ Ver [respaldo y restauración](recovery.md) y [revisión de APIs](upstream-api-r
 
 ## Próximas entregas
 
-- #21: reclamaciones de garantía vinculadas a venta/artículo, con estado, fechas y notas; siguiente incremento funcional. No incluir servicios pagados ni automatizar periodos o plazos sin reglas definidas.
+- #21: primer incremento implementado en la rama de desarrollo (Warranty Claim nativo, seguimiento y recuperación). Queda pendiente su validación en CI con Bench real y revisión. Servicios pagados, series y plazos automáticos siguen fuera de alcance.
 - #22: conciliación de recálculos de valoración y márgenes. Costos de compra y su recuperación están integrados mediante #42.
 - #37 y #38: versiones Windows portátil e instalable y configuración inicial guiada, reanudable y en español. Se construirán cuando la base funcional esté lista, con instalaciones limpias sin datos, claves ni respaldos privados. Los requisitos y criterios de aceptación se registran en #39 y [release-onboarding.md](release-onboarding.md); los paquetes y el asistente integral siguen sin implementar.
 - #6: operación sin conexión, con su propia conciliación.
