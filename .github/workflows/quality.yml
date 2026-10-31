@@ -128,7 +128,7 @@ jobs:
           PY
           env/bin/python "$GITHUB_WORKSPACE/scripts/test-restore-drill.py" --bench "$RUNNER_TEMP/omp-bench" --db-admin-file "$RUNNER_TEMP/omp-drill-admin.json"
           rm "$RUNNER_TEMP/omp-drill-admin.json"
-      - uses: actions/upload-artifact@v4
+      - uses: actions/upload-artifact@v7
         if: always()
         with:
           name: native-cashier-browser-results
@@ -168,15 +168,15 @@ jobs:
           (root / 'audit.json').write_text(json.dumps({**info, 'sites': 0, 'application_schemas': 0, 'reusable_identity': False}))
           PY
           python scripts/build-windows-server.py --output test-results/server-fixture --image test-results/image-fixture/fixture.wsl --manifest test-results/image-fixture/manifest.json --audit test-results/image-fixture/audit.json --no-archive
-      - uses: actions/upload-artifact@v4
+      - uses: actions/upload-artifact@v7
         with:
           name: windows-server-installer-contract-fixture
           path: test-results/server-fixture/OpenMultiPOS-Server-0.1.0/OpenMultiPOS-Server-Setup-0.1.0.exe
-      - uses: actions/upload-artifact@v4
+      - uses: actions/upload-artifact@v7
         with:
           name: windows-server-controller-candidate
           path: test-results/windows-server-control/
-      - uses: actions/upload-artifact@v4
+      - uses: actions/upload-artifact@v7
         with:
           name: windows-client-candidates
           path: |
@@ -211,7 +211,7 @@ jobs:
           npm run test:ui
           npm run test:tooltips
           python scripts/check-receipt-pdfs.py
-      - uses: actions/upload-artifact@v4
+      - uses: actions/upload-artifact@v7
         if: always()
         with:
           name: demo-browser-results
