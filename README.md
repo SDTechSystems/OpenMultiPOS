@@ -12,10 +12,16 @@ El espacio administrativo se abre en `/omp` y la caja en `/omp_pos`. Cada usuari
 - Gestionar devoluciones e importar catálogos y existencias con revisión previa.
 - Distribuir costos de compra mediante los comprobantes nativos de ERPNext.
 - Consultar guías por sección y un manual visual de administración.
+- Respaldar y comprobar la restauración desde el controlador de Windows.
+- Reclamaciones de garantía vinculadas a la venta y al artículo.
 
 La configuración inicial usa español latinoamericano, pesos colombianos y la zona horaria de Bogotá. Las operaciones conservan los documentos, permisos, movimientos de inventario y contabilidad de ERPNext.
 
 La aplicación está en desarrollo. La operación de caja requiere conexión con el servidor local. Los recibos son internos; la facturación electrónica DIAN no está habilitada. La impresión necesita un perfil calibrado para el equipo utilizado.
+
+## Servidor y clientes Windows
+
+El paquete Windows ofrece dos opciones. **Servidor propio** crea una instalación independiente y guarda los datos en el computador de quien lo instala. **Conectar a mi servidor** pide la dirección del servidor de su negocio. Ningún paquete público trae una conexión al computador del creador ni incluye su instalación privada. Consultar [ediciones y propiedad de los datos](docs/editions.md), [los mismos datos en varios computadores](docs/online-access.md) y [estado de la distribución](docs/release-onboarding.md). La aceptación en un Windows limpio sigue pendiente.
 
 ## Probar la demo
 

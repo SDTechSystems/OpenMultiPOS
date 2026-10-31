@@ -1,5 +1,6 @@
 """Administrative workspace using native ERPNext documents and permissions."""
 
+import json
 from uuid import uuid4
 from zoneinfo import ZoneInfo, ZoneInfoNotFoundError
 
@@ -104,7 +105,11 @@ def boot():
         limit=100,
     ):
         brands.append(get_brand_context(name))
+    saved_setup = json.loads(
+        frappe.db.get_value("OMP Setup Progress", "Workspace", "state_json") or "{}"
+    )
     return {
+        "setup_active": bool(saved_setup.get("active")),
         "user": frappe.session.user,
         "full_name": frappe.db.get_value("User", frappe.session.user, "full_name"),
         "first_setup": not bool(

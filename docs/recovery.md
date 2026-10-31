@@ -1,8 +1,18 @@
 # Respaldo y recuperación local
 
-La operación usa Windows para abrir el programa y Ubuntu WSL para MariaDB, Redis, web y worker. El respaldo privado se guarda fuera del repositorio y del sitio. El temporizador se ejecuta a las 03:15, hora de Bogotá, con un pequeño retraso variable. Si el computador estaba apagado, ejecuta la copia pendiente cuando se inicia WSL y el temporizador. No puede copiar mientras el equipo está apagado.
+La operación usa Windows para abrir el programa y Linux WSL para MariaDB, Redis, web y worker. El respaldo privado se guarda fuera del repositorio y del sitio. El temporizador se ejecuta a las 03:15, hora de Bogotá, con un pequeño retraso variable. Si el computador estaba apagado, ejecuta la copia pendiente cuando se inicia WSL y el temporizador. No puede copiar mientras el equipo está apagado.
 
-## Abrir después de encender Windows
+## Usar el paquete Windows
+
+Abre OpenMultiPOS Servidor desde Inicio, o `OpenMultiPOS-Server-Control.exe` en la carpeta portable. Pulsa Iniciar servidor y Abrir aplicación. Mantén el controlador abierto mientras trabajas.
+
+Para crear una copia, termina las operaciones pendientes y pulsa Detener servidor. Pulsa Crear copia y espera el resultado. Para probar su recuperación, pulsa Comprobar recuperación: crea otra copia y la restaura en un sitio aislado sin reemplazar el original. Ambas acciones dejan los servicios detenidos. Pulsa Iniciar servidor al terminar y revisa Ajustes > Respaldo y recuperación.
+
+Con WSL activo, puedes abrir la carpeta de copias en el Explorador pegando `\\wsl.localhost\OpenMultiPOS\home\openmultipos\.local\share\openmultipos\recovery` en su barra de dirección. Los directorios que contienen manifest.json son copias terminadas. Conserva cada directorio completo, incluidas sus claves privadas, y protégelo con cifrado al copiarlo fuera del computador. No copies ext4.vhdx ni los archivos de MariaDB en vivo. No borres copias anteriores hasta comprobar la nueva y su destino externo.
+
+Las instrucciones de consola siguientes corresponden a instalaciones administradas. El paquete Windows permite crear la copia y ensayar su restauración con los botones anteriores.
+
+## Abrir una instalación administrada en Ubuntu
 
 Ejecuta `scripts/start-openmultipos.cmd` desde el Explorador. Inicia MariaDB y Redis en Ubuntu, después web, worker y el temporizador de copia; abre Administración. Los servicios deben haberse instalado siguiendo [servicios locales](local-services.md). El lanzador mantiene un único cliente WSL en segundo plano para que el backend siga disponible al cerrar la terminal. Volver a abrirlo no crea otro proceso de mantenimiento. No contiene credenciales. La distribución debe llamarse Ubuntu y tener configurado el usuario Linux predeterminado.
 
@@ -51,7 +61,7 @@ sudo env/bin/python -m open_multi_pos.operations --bench "$PWD" restore-drill \
 
 Usa entre 8 y 32 caracteres hexadecimales nuevos después de `omp-restore-`. Una repetición con el mismo nombre se rechaza. El SQL se valida con Frappe y no se permite retroceder de versión. Los archivos se extraen con validación de sitio/ruta; se rechazan enlaces y dispositivos.
 
-Se comparan 27 tablas completas: facturas, líneas, pagos, impuestos, entradas/lineas de stock, ledger de stock, GL, Bin, productos, códigos de barras, precios, negocios, terminales, journals de cobro/cesta/devolución/importación, marcas de abandono, aperturas/cierres y las cinco tablas nativas de Landed Cost Voucher. También se comparan todos los archivos y una prueba de descifrado de un secreto guardado cuando existe. La conciliación comprueba igualdad débito/crédito por voucher, existencias de Bin frente al ledger y facturas enviadas con asientos contables. No sustituye la conciliación bancaria ni certifica la configuración tributaria.
+Se comparan 34 tablas completas: facturas, líneas, pagos, impuestos, entradas/lineas de stock, ledger de stock, GL, Bin, productos, códigos de barras, precios, negocios, terminales, journals de cobro/cesta/devolución/importación/garantías/preparación, progreso de preparación, reclamaciones, marcas de abandono, aperturas/cierres, las cinco tablas de Landed Cost Voucher y las tareas de recálculo de stock y contabilidad con sus líneas. También se comparan todos los archivos y una prueba de descifrado de un secreto guardado cuando existe. La conciliación comprueba igualdad débito/crédito por voucher, existencias de Bin frente al ledger y facturas enviadas con asientos contables. No sustituye la conciliación bancaria ni certifica la configuración tributaria.
 
 Un resultado correcto queda en `latest-restore.json` y dentro de `private/restore-result.json` del clon. Si falla, el clon permanece aislado y los detalles se conservan solo en archivos privados. Corrige la causa y repite con un nombre nuevo. El sitio original no se restaura ni modifica mediante este comando.
 

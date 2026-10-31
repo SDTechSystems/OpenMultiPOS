@@ -68,8 +68,35 @@ class WorkspaceHTTP(unittest.TestCase):
                 raise AssertionError("Crear negocio: " + response.text[-1800:])
             context = response.json()["message"]
             terminal = cls.request("workspace.terminal_for", {"brand": context["brand"]}, post=True)
+            if terminal.status_code != 200:
+                raise AssertionError("Preparar terminal: " + terminal.text[-1800:])
             context["terminal"] = terminal.json()["message"]["terminal"]
             cls.businesses.append(context)
+
+        cls.ensure_fiscal_years()
+
+    @classmethod
+    def ensure_fiscal_years(cls):
+        # The HTTP-created companies committed through another database connection.
+        frappe.db.rollback()
+        from erpnext.accounts.utils import get_fiscal_year
+        from frappe.utils import nowdate
+
+        today = nowdate()
+        year = today[:4]
+        for company in sorted({brand["company"] for brand in cls.businesses}):
+            if get_fiscal_year(today, company=company, raise_on_missing=False):
+                continue
+            frappe.get_doc(
+                {
+                    "doctype": "Fiscal Year",
+                    "year": "OMP Workspace HTTP " + year + " " + uuid4().hex[:8],
+                    "year_start_date": year + "-01-01",
+                    "year_end_date": year + "-12-31",
+                    "companies": [{"company": company}],
+                }
+            ).insert()
+        frappe.db.commit()
 
     @classmethod
     def request(cls, method, args=None, *, post=False, guest=False):
@@ -551,6 +578,7 @@ class WorkspaceHTTP(unittest.TestCase):
             "workspace.terminal_for", {"brand": brand["brand"]}, post=True
         )["terminal"]
         self.businesses.append(brand)
+        self.ensure_fiscal_years()
         child = self.sale(brand, self.product(brand))
         group = {"request_id": str(uuid4()), "sales": [child]}
         result = self.result("batch.checkout", {"data": group}, post=True)

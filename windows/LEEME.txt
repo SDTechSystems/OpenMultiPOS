@@ -1,0 +1,31 @@
+OpenMultiPOS 0.1.0 · Conectar a mi servidor
+
+Esta edición conecta con la dirección que tú introduces. Los datos se guardan
+en ese servidor. No contiene una dirección del creador del programa ni conecta
+automáticamente con su computador. Para una instalación independiente que
+guarde datos en tu propio computador, usa la edición Servidor propio.
+
+1. Extrae todos los archivos del ZIP en una carpeta propia.
+2. Abre OpenMultiPOS.exe e introduce la dirección de tu servidor.
+3. Inicia sesión con tu cuenta personal en el navegador.
+4. Para cambiar de servidor, abre Configurar.cmd.
+5. Manual.html contiene el manual con capturas ficticias y la guía de acceso privado.
+
+Este paquete contiene el cliente. No incluye Frappe, ERPNext, MariaDB, una
+instalación WSL ni datos comerciales. Requiere un servidor OpenMultiPOS ya
+configurado y disponible. En otro computador usa su dirección HTTPS privada
+y la red autorizada. En el servidor existente, el lanzador local se entrega
+por separado. El cliente no instala controladores ni activa acceso remoto.
+
+Windows 10/11 x64 con .NET Framework 4.8 y un navegador Chrome/Edge actualizado.
+El cliente no guarda contraseñas. Conserva solo la dirección en
+%LOCALAPPDATA%\OpenMultiPOS\connection.txt. Borrar o trasladar la carpeta
+portable no borra los datos del servidor. No se comparte ese archivo privado.
+Cambiar de dirección no copia, mezcla ni traslada datos entre servidores.
+
+Los ejecutables no están firmados. Comprueba SHA256SUMS.txt contra los hashes
+publicados por el canal de entrega antes de abrirlos. Las pruebas en una
+instalación limpia de Windows siguen pendientes. No es una distribución
+autónoma del servidor ni una declaración de aptitud para producción.
+
+Licencia GPL-3.0-only. Código correspondiente incluido en source/.

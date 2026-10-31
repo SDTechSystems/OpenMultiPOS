@@ -26,6 +26,8 @@ class LandedCostsBrowser(landed.LandedCostsHTTP):
         doc = self.purchase()
         rejected = self.purchase()
         account = self.data(doc)["charges"][0]["account"]
+        code = doc.items[0].item_code
+        self.result("checkout.checkout", {"data": self.sale(self.businesses[0], code)}, post=True)
         old = frappe.db.sql(
             "SELECT password, encrypted FROM __Auth WHERE doctype='User' AND name=%s AND fieldname='password'",
             self.user,
@@ -49,6 +51,7 @@ class LandedCostsBrowser(landed.LandedCostsHTTP):
                         "receipt": doc.name,
                         "pending_receipt": rejected.name,
                         "account": account,
+                        "item_code": code,
                     }
                 ),
                 text=True,

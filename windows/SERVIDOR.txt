@@ -1,0 +1,66 @@
+OpenMultiPOS 0.1.0 · Servidor propio · candidato de aceptación
+
+Esta edición crea una instalación independiente en el computador de quien
+la instala. Sus datos se guardan allí, no en el computador del creador del
+programa. No incluye la dirección, cuentas, red privada ni datos del propietario
+de otra instalación. Cada persona configura su propio negocio y acceso.
+
+Esta edición incluye el servidor. Todavía no está aprobada para producción ni
+para compartir. Consulta build-info.json y Manual.html para conocer los límites.
+No contiene negocios, sitios, cuentas ni contraseñas de otra instalación.
+
+Requisitos
+Windows x64, .NET Framework 4.8, navegador actualizado, virtualización habilitada,
+WSL2 instalado y 30 GB libres. Preparar WSL puede requerir administrador,
+descargas y reinicio. No es una aplicación autónoma que funcione desde un USB
+sin preparar Windows. Usa almacenamiento local, nunca una carpeta sincronizada.
+
+Portable
+Extrae el ZIP completo en una carpeta local. Conserva juntos el controlador,
+OpenMultiPOS-Server.wsl, server-image.json y Manual.html. Abre
+OpenMultiPOS-Server-Control.exe. Puedes trasladar la carpeta del programa cuando
+el controlador esté cerrado. Los datos WSL quedan separados en el computador.
+
+Instalable
+Ejecuta OpenMultiPOS-Server-Setup-0.1.0.exe desde la carpeta completa extraída.
+El instalador necesita la imagen y su manifest al lado. Instala para tu usuario,
+sin pedir permisos de administrador. Preparar WSL sí puede necesitarlos.
+Después abre OpenMultiPOS Servidor desde Inicio.
+
+Primera ejecución
+Si Windows no confirma WSL disponible, pulsa Preparar Windows. Sigue la ventana
+de Windows y su permiso de administrador. Puede descargar componentes y pedir
+reinicio. El programa no reinicia el computador. Después vuelve a abrir el
+controlador y pulsa Actualizar estado. No agrega otra distribución Linux.
+
+1. Importa la imagen. El controlador verifica su hash y conserva cualquier
+   servidor o carpeta previa. No borres esos datos si aparece un conflicto.
+2. Crea y confirma una contraseña inicial de 12 a 128 caracteres.
+3. Prepara el sitio. Espera a que termine. Si se interrumpe, vuelve a consultar
+   el estado y reintenta. Recuperar conserva el intento previo y solo permite
+   instalaciones sin datos comerciales ni cuentas personales.
+4. Inicia el servidor y abre http://localhost:8089/omp. Entra como Administrator
+   con la contraseña inicial. Completa el asistente nativo de ERPNext y después
+   el recorrido de preparación de OpenMultiPOS. Crea cuentas personales.
+5. Mantén el controlador abierto mientras otros computadores trabajen.
+
+Los datos se guardan en %LOCALAPPDATA%\OpenMultiPOS\Servidor. El controlador
+muestra la ubicación registrada. No muevas ni sincronices ext4.vhdx en vivo.
+Detener cierra los servicios ordenadamente; los demás equipos pierden acceso.
+
+Actualizar o desinstalar el programa conserva la distribución y sus datos.
+El instalador conserva archivos reemplazados como .previous. Esto actualiza
+el controlador y la imagen para instalaciones nuevas, no migra un sitio previo.
+Antes de actualizar el backend se requiere copia privada verificada, ensayo de
+restauración y migración en una copia. Consulta recuperación en el manual.
+Desinstalar nunca ejecuta wsl --unregister. No uses ese comando para quitar el
+programa: destruye la distribución y sus datos.
+
+Para varios computadores usa la misma dirección HTTPS privada del servidor,
+con cuentas personales. Manual.html incluye la guía de Tailscale y respaldos.
+Tus terminales usan Conectar a mi servidor y la dirección de TU servidor.
+La red privada y sus permisos se configuran por separado en cada negocio.
+No sincronices la base de datos por archivos y no publiques respaldos en GitHub.
+
+Sin firma digital. Capturas del manual ficticias. DIAN y operación sin conexión
+desactivadas. Las pruebas de interfaz y Windows limpio siguen pendientes.

@@ -6,6 +6,34 @@ Las capturas contienen datos inventados. Los nombres, NIT, contactos, correos, c
 
 Atajos: **Ctrl K** busca una sección; **Tab** recorre controles; **Enter** activa un botón o confirma el código del lector; **Escape** cierra ayudas y tutoriales. Cada formulario incluye ayuda con `?`. Las guías son opcionales y se pueden repetir desde Guía de esta sección o Ayuda.
 
+Los botones del menú y las acciones principales muestran una explicación al pasar el puntero o recibir foco con Tab. Escape la cierra. En una pantalla táctil, consulta la descripción de la sección, los botones `?` y su guía.
+
+Para usar los mismos datos desde otros computadores, consulta [acceso privado y datos compartidos](online-access.md). Todos usan el mismo servidor Windows con cuentas personales. La conexión debe estar disponible para guardar operaciones.
+
+## Instalar el servidor en Windows
+
+Hay dos ediciones con el mismo código de aplicación: **Servidor propio** crea un servidor independiente y guarda los datos en el computador de quien lo instala. **Conectar a mi servidor** pide la dirección de un servidor de ese negocio y guarda los datos allí. Ninguna edición pública contiene una conexión al computador del creador. La instalación privada y su configuración no forman parte del programa compartido. Consulta [ediciones y propiedad de los datos](editions.md).
+
+La edición completa del servidor está en aceptación privada. Todavía no está aprobada para producción ni para compartir. El cliente Windows separado solo abre un servidor existente.
+
+Prepara Windows x64, .NET Framework 4.8, WSL2, virtualización y 30 GB libres. La preparación de WSL puede pedir administrador, descargas y reinicio. Extrae todo el ZIP en una carpeta local. Para usarlo como portable, abre `OpenMultiPOS-Server-Control.exe`. Para instalar el programa en tu perfil, ejecuta `OpenMultiPOS-Server-Setup-0.1.0.exe` desde esa misma carpeta completa y después abre OpenMultiPOS Servidor desde Inicio. Conserva la imagen `.wsl` y `server-image.json` junto al instalador.
+
+Si el controlador indica que falta preparar Windows, pulsa Preparar Windows y acepta la solicitud de administrador cuando estés listo. Sigue la ventana de Windows y espera a que termine. Instala el componente WSL sin agregar otra distribución Linux; OpenMultiPOS ya incluye su propia imagen. Si Windows pide reiniciar, guarda tu trabajo y reinicia cuando puedas. El programa no reinicia el computador. Después vuelve a abrir el controlador y pulsa Actualizar estado. Instalar servidor comprueba que haya al menos 30 GB libres en la unidad de datos antes de importar la imagen.
+
+Si la preparación no termina, comprueba Windows Update y que la virtualización esté habilitada en el equipo. El [manual oficial de instalación de WSL](https://learn.microsoft.com/windows/wsl/install) explica los requisitos de Windows y la solución de errores. No borres ninguna distribución ni carpeta existente para resolver un error de preparación.
+
+1. Pulsa Instalar servidor. Espera la verificación y la importación. Si ya hay un servidor o una carpeta de datos, el programa los conserva; revisa el estado antes de continuar.
+2. Escribe y confirma una contraseña inicial de 12 a 128 caracteres. Pulsa Preparar acceso y espera. Si se interrumpe, vuelve a consultar el estado y reintenta. Recuperar preparación conserva el intento anterior y solo permite preparaciones sin cuentas personales ni datos comerciales.
+3. Pulsa Iniciar servidor y Abrir aplicación. Entra como Administrator con la contraseña inicial. En el asistente nativo de ERPNext selecciona español, Colombia, COP y America/Bogota, o las preferencias que realmente necesites. Crea tu cuenta personal y completa la entidad legal y su configuración contable antes de operar.
+4. Continúa con la preparación de Inicio en OpenMultiPOS. El progreso se guarda en el servidor. Revisa tus usuarios, negocios, existencias, recibos y recuperación.
+5. Conserva abierta la ventana del servidor mientras trabajan los demás computadores. Detener cierra los servicios ordenadamente y los desconecta hasta volver a iniciar.
+
+La ventana muestra dónde están los datos. Por defecto, WSL los conserva en `%LOCALAPPDATA%\OpenMultiPOS\Servidor`, separados del programa. Puedes mover la carpeta portable con el controlador cerrado; eso no traslada la base de datos. No muevas ni sincronices el disco WSL en vivo.
+
+Para una copia local, detén el servidor y pulsa Crear copia en su controlador. Comprobar recuperación crea una copia nueva y la restaura en otro sitio aislado, sin reemplazar el original. Conserva el ensayo para revisión y necesita espacio libre. Después inicia el servidor y actualiza Recuperación en la aplicación. Las copias quedan en el directorio recovery del servidor, separado del sitio. No protegen contra la pérdida del disco: guarda también una copia cifrada fuera del equipo.
+
+Actualizar o desinstalar el programa conserva el servidor y sus datos. El instalador guarda los archivos de programa reemplazados con extensión `.previous`. Esta actualización no migra el backend de un sitio existente: esa operación exige copia verificada, ensayo de restauración y migración en una copia. Consulta [recuperación](recovery.md). No uses `wsl --unregister` para quitar el programa, porque destruye la distribución y sus datos.
+
 ## Inicio
 
 Revisa el negocio activo y entra a la tarea que necesitas.
@@ -20,6 +48,12 @@ Revisa el negocio activo y entra a la tarea que necesitas.
 - Todos los datos de las capturas del manual son ficticios.
 
 ![Captura ficticia: Inicio](../open_multi_pos/public/manual/screenshots/home.png)
+
+## Acceso de cajeros
+
+El cliente abre `/omp`. Con una cuenta de cajero, esa dirección te lleva a `/omp_pos`. También puedes abrir Caja directamente. Los administradores conservan el menú administrativo.
+
+La cuenta de cajero permite vender, recuperar sus intentos, revisar su caja e imprimir documentos autorizados. No da acceso al escritorio general, reportes o directorios completos de clientes, contactos y archivos. Para esas tareas, solicita la intervención de un administrador. Cierra tu sesión antes de que otra persona use el mismo navegador.
 
 ## Ventas
 
@@ -197,16 +231,16 @@ Abre **Importar inventario** en el menú o **Importar archivo** en Inventario. C
 3. Revisa negocio, almacén, precios, códigos, cantidades anteriores y resultantes, y valor de entrada. Marca la confirmación y pulsa Aplicar. Si el catálogo o las existencias cambiaron, actualiza y revisa otra vez la vista previa.
 4. Consulta los SKU resultantes y el movimiento nativo. Un SKU vacío en una fila nueva se genera con el prefijo configurado del negocio. Los SKU existentes se conservan.
 
-| Columna | Uso |
-| --- | --- |
-| accion | `crear`, `actualizar` o `ingresar`. |
-| sku | Obligatorio para actualizar o ingresar; opcional para crear. Debe ser único. |
-| nombre | Obligatorio para crear; vacío conserva el nombre al actualizar. |
+| Columna       | Uso                                                                                                              |
+| ------------- | ---------------------------------------------------------------------------------------------------------------- |
+| accion        | `crear`, `actualizar` o `ingresar`.                                                                              |
+| sku           | Obligatorio para actualizar o ingresar; opcional para crear. Debe ser único.                                     |
+| nombre        | Obligatorio para crear; vacío conserva el nombre al actualizar.                                                  |
 | codigo_barras | Opcional al crear o actualizar; agrega un código sin borrar los anteriores. No puede pertenecer a otro producto. |
-| grupo | Grupo final permitido por el perfil; obligatorio al crear. |
-| precio | Precio de venta positivo, sin símbolo ni separadores de miles; vacío conserva el precio al actualizar. |
-| cantidad | Unidades enteras que se **suman** al almacén, no el saldo final. Cero o vacío no mueve stock. |
-| costo | Costo unitario positivo obligatorio si hay cantidad; vacío cuando no hay entrada. |
+| grupo         | Grupo final permitido por el perfil; obligatorio al crear.                                                       |
+| precio        | Precio de venta positivo, sin símbolo ni separadores de miles; vacío conserva el precio al actualizar.           |
+| cantidad      | Unidades enteras que se **suman** al almacén, no el saldo final. Cero o vacío no mueve stock.                    |
+| costo         | Costo unitario positivo obligatorio si hay cantidad; vacío cuando no hay entrada.                                |
 
 Para `ingresar`, indica SKU, cantidad y costo; deja vacíos los campos de catálogo. Puede recibir stock de un producto que todavía no tenga precio de venta. Los decimales admiten punto o coma; si la coma también separa columnas, encierra ese campo entre comillas. No incluyas fórmulas de hoja de cálculo.
 
@@ -220,7 +254,7 @@ Este flujo admite productos simples de stock con unidad Nos. Series, lotes, vari
 
 ## Si algo no responde
 
-Después de encender Windows, usa `scripts/start-openmultipos.cmd` para iniciar el programa. El [manual de respaldo y recuperación](recovery.md) explica cómo crear/verificar copias, ensayar su restauración y actuar si falla el disco o el sitio.
+Después de encender Windows, abre OpenMultiPOS Servidor desde Inicio, o `OpenMultiPOS-Server-Control.exe` en la carpeta portable. Pulsa Iniciar servidor y Abrir aplicación. El [manual de respaldo y recuperación](recovery.md) explica cómo crear/verificar copias, ensayar su restauración y actuar si falla el disco o el sitio.
 
 - **Venta pendiente:** conserva la sesión y el almacenamiento. Consultar estado recupera el resultado; Reintentar conserva la misma clave. Resolver sin crear venta recupera lo guardado o bloquea el intento. No vuelvas a cobrar por una respuesta perdida.
 - **Entrada pendiente:** revisa la misma entrada o resuélvela antes de crear otra. No combines recepción directa y compra con stock para la misma mercancía.
@@ -231,23 +265,56 @@ Después de encender Windows, usa `scripts/start-openmultipos.cmd` para iniciar 
 
 ## Herramientas nativas por tarea
 
-| Necesito | Sección y herramienta | Qué revisar |
-| --- | --- | --- |
-| Registrar una factura de proveedor | Compras > Facturas de compra | Proveedor, empresa, productos, impuestos y recepción relacionada. |
-| Pedir mercancía | Compras > Órdenes de compra | Cantidades, fecha y proveedor; crear recepción desde el pedido. |
-| Registrar mercancía recibida | Compras > Recepción de mercancía | Almacén, cantidades y pedido; conservar la relación con la factura. |
-| Registrar un gasto | Finanzas > Gastos y facturas | Cuenta de gasto, tercero, impuestos y que no esté ya registrado. |
-| Pagar o cobrar una obligación | Finanzas > Cobros y pagos | Tipo, tercero, cuenta, importe y facturas conciliadas. |
-| Revisar movimientos de cuenta | Finanzas > Libro mayor | Empresa, cuenta, fechas y documentos enviados. |
-| Revisar obligaciones pendientes | Finanzas > Cuentas por cobrar / pagar | Tercero, fechas, vencimiento y moneda. |
-| Revisar ingresos y gastos | Finanzas > Resultados | Empresa, ejercicio y periodo. No equivale al saldo de caja. |
-| Registrar un ajuste contable | Finanzas > Asientos contables | Débitos/créditos, cuentas y documentos relacionados. |
-| Mantener cuentas | Finanzas > Plan de cuentas | Empresa, grupo, tipo y moneda de cuenta. |
-| Mantener datos de clientes | Clientes y pedidos > Clientes | Nombre, grupo y contactos; buscar antes de duplicar. |
-| Seguir un encargo | Clientes y pedidos > Pedidos de venta | Cliente, fecha, productos y estado; crear documentos relacionados. |
-| Entregar un pedido | Clientes y pedidos > Entregas | Pedido, almacén y cantidades pendientes. |
-| Actualizar una cuenta personal | Mi perfil | Datos de acceso y contraseña. |
+| Necesito                           | Sección y herramienta                 | Qué revisar                                                         |
+| ---------------------------------- | ------------------------------------- | ------------------------------------------------------------------- |
+| Registrar una factura de proveedor | Compras > Facturas de compra          | Proveedor, empresa, productos, impuestos y recepción relacionada.   |
+| Pedir mercancía                    | Compras > Órdenes de compra           | Cantidades, fecha y proveedor; crear recepción desde el pedido.     |
+| Registrar mercancía recibida       | Compras > Recepción de mercancía      | Almacén, cantidades y pedido; conservar la relación con la factura. |
+| Registrar un gasto                 | Finanzas > Gastos y facturas          | Cuenta de gasto, tercero, impuestos y que no esté ya registrado.    |
+| Pagar o cobrar una obligación      | Finanzas > Cobros y pagos             | Tipo, tercero, cuenta, importe y facturas conciliadas.              |
+| Revisar movimientos de cuenta      | Finanzas > Libro mayor                | Empresa, cuenta, fechas y documentos enviados.                      |
+| Revisar obligaciones pendientes    | Finanzas > Cuentas por cobrar / pagar | Tercero, fechas, vencimiento y moneda.                              |
+| Revisar ingresos y gastos          | Finanzas > Resultados                 | Empresa, ejercicio y periodo. No equivale al saldo de caja.         |
+| Registrar un ajuste contable       | Finanzas > Asientos contables         | Débitos/créditos, cuentas y documentos relacionados.                |
+| Mantener cuentas                   | Finanzas > Plan de cuentas            | Empresa, grupo, tipo y moneda de cuenta.                            |
+| Mantener datos de clientes         | Clientes y pedidos > Clientes         | Nombre, grupo y contactos; buscar antes de duplicar.                |
+| Seguir un encargo                  | Clientes y pedidos > Pedidos de venta | Cliente, fecha, productos y estado; crear documentos relacionados.  |
+| Entregar un pedido                 | Clientes y pedidos > Entregas         | Pedido, almacén y cantidades pendientes.                            |
+| Actualizar una cuenta personal     | Mi perfil                             | Datos de acceso y contraseña.                                       |
 
 Los clientes y proveedores se comparten en el sitio; sus facturas, pedidos y movimientos conservan su empresa. Revisa Empresa al crear esos documentos.
 
 Una cuenta administrativa conserva acceso amplio a los documentos del sitio. Revisa Empresa dentro de cada formulario; el filtro del menú se puede cambiar y no representa una restricción de seguridad.
+
+## Garantías
+
+1. Selecciona el negocio y abre Garantías. Escribe el número de la venta original y usa Consultar venta.
+2. Selecciona el artículo, la fecha de recepción y el motivo. Registrar reclamación crea el documento nativo sin cobrar ni mover inventario.
+3. Si se pierde la respuesta, consulta o reintenta el mismo intento. Abandonar confirma el resultado o bloquea una solicitud tardía antes de permitir otra reclamación.
+4. Abre una reclamación reciente o búscala por número. Actualizar seguimiento permite revisar estado y notas; si alguien la cambió, vuelve a consultarla antes de guardar.
+5. Cerrar registra la fecha nativa de resolución. El seguimiento no confirma cobertura ni calcula periodos/plazos automáticos.
+
+[Recuperación, permisos y límites](warranties.md). Las reparaciones pagadas, devoluciones y cambios de existencias mantienen flujos separados.
+
+![Captura ficticia: Garantías](../open_multi_pos/public/manual/screenshots/warranties.png)
+
+## Costos de compra y margen
+
+1. Selecciona el negocio y abre Costos de compra. Registra primero la compra en ERPNext y selecciona sus documentos enviados. Revisa que no representen dos veces la misma mercancía.
+2. Escribe los costos, sus cuentas y tasas, calcula la vista previa y revisa la distribución. Guardar estimación conserva un borrador. Enviar distribución afecta la valoración mediante el comprobante nativo. Una respuesta perdida se resuelve consultando o reintentando la misma clave.
+3. Abre Revisar recálculos y margen bruto y consulta el período. Si hay tareas abiertas, fallidas o parciales, se ocultan los importes. Revisa sus enlaces en ERPNext y vuelve a consultar cuando estén resueltas. No registres otro costo para resolver una tarea pendiente.
+4. Con las colas despejadas, revisa ventas netas, costo y margen bruto del almacén activo, incluidos sus subalmacenes. Los totales proceden del informe nativo. El margen bruto no representa utilidad neta ni saldo bancario. Consulta de nuevo tras cambios desde otro computador; la fecha mostrada identifica el momento observado.
+
+[Distribución, recuperación y alcance del margen](landed-costs.md).
+
+![Captura ficticia: Margen bruto nativo](../open_multi_pos/public/manual/screenshots/valuation.png)
+
+![Captura ficticia: Costos de compra](../open_multi_pos/public/manual/screenshots/costs.png)
+
+## Preparación que puedes continuar después
+
+En Inicio, abre **Revisar preparación inicial**. El asistente conserva el paso en el servidor y comprueba seis requisitos: cuenta personal, preferencias, dos negocios, un producto con precio y existencias, muestra de recibo de cada negocio y respaldo con ensayo de recuperación. Puedes salir y volver al mismo paso. Completa antes la configuración nativa de ERPNext en Escritorio.
+
+Revisa cada muestra de recibo con los datos y el equipo que vas a utilizar. Confirma su revisión en el asistente. Si cambias las preferencias o el perfil del negocio, vuelve a revisar la muestra. Tener un producto sin precio vigente o sin existencias no completa el paso de inventario. El estado del respaldo procede del servidor; el asistente no crea una copia ni un ensayo por marcar una casilla. Sigue [las instrucciones de recuperación](recovery.md).
+
+Si se interrumpe el alta de una cuenta o negocio, aparecerá una configuración pendiente. Primero consulta su estado. Puedes reintentar los mismos datos o resolver el intento antes de empezar otro. Resolver recupera el registro si ya se guardó, o bloquea solicitudes tardías si no se guardó. La contraseña no se guarda en el navegador; si necesitas reintentar una cuenta, introdúcela otra vez. Un reintento de una cuenta ya creada no cambia su contraseña. Usa Equipo para administrar perfiles existentes.

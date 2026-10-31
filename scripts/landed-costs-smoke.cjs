@@ -39,6 +39,31 @@ const input = JSON.parse(fs.readFileSync(0, "utf8"));
       await W.run(() => window.OMPLandedCosts.enter());
     }, input.brand);
     await ready();
+    await page.locator("#valuation summary").focus();
+    await page.keyboard.press("Enter");
+    await page.locator("#valuation-refresh").focus();
+    await page.keyboard.press("Enter");
+    await ready();
+    assert.match(
+      await page.locator("#valuation-status").textContent(),
+      /Sin recálculos abiertos/,
+    );
+    assert.match(
+      await page.locator("#valuation-result").textContent(),
+      new RegExp(input.item_code),
+    );
+    assert.equal(await page.locator("#valuation-native").isVisible(), true);
+    fs.mkdirSync(out, { recursive: true });
+    await page
+      .locator("#valuation")
+      .screenshot({ path: path.join(out, "margin.png") });
+    const fromDate = await page.locator("#valuation-from").inputValue();
+    await page.locator("#valuation-from").fill("2000-01-01");
+    assert.equal(await page.locator("#valuation-result").textContent(), "");
+    assert.equal(await page.locator("#valuation-native").isVisible(), false);
+    await page.locator("#valuation-from").fill(fromDate);
+    await page.locator("#valuation-refresh").click();
+    await ready();
     await page
       .locator("#cost-receipts label")
       .filter({ hasText: input.receipt })
@@ -61,6 +86,7 @@ const input = JSON.parse(fs.readFileSync(0, "utf8"));
       await page.locator("#cost-state").textContent(),
       /Estimación en borrador/,
     );
+    assert.equal(await page.locator("#valuation-result").textContent(), "");
     const journal = await page.evaluate(() =>
       Object.entries(localStorage).find(([k]) =>
         k.startsWith("omp:landed-costs:"),
@@ -89,6 +115,20 @@ const input = JSON.parse(fs.readFileSync(0, "utf8"));
     );
     await page.locator("#cost-status").click();
     await ready();
+    await page.locator("#valuation summary").click();
+    await page.locator("#valuation-refresh").click();
+    await ready();
+    const valuation = await page.locator("#valuation-status").textContent();
+    assert.match(valuation, /Hay recálculos abiertos|Sin recálculos abiertos/);
+    if (valuation.includes("Hay recálculos abiertos")) {
+      assert.equal(await page.locator("#valuation-native").isVisible(), false);
+      assert.equal(
+        await page
+          .getByRole("columnheader", { name: "Margen bruto", exact: true })
+          .count(),
+        0,
+      );
+    }
     const desktop = await page.evaluate(() => ({
       viewport: innerWidth,
       width: document.documentElement.scrollWidth,

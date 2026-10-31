@@ -21,31 +21,7 @@ spec.loader.exec_module(fixtures)
 
 
 class LandedCostsHTTP(fixtures.WorkspaceHTTP):
-    @classmethod
-    def setUpClass(cls):
-        super().setUpClass()
-        # The HTTP-created companies committed through another database connection.
-        frappe.db.rollback()
-        from erpnext.accounts.utils import get_fiscal_year
-        from frappe.utils import nowdate
-
-        today = nowdate()
-        year = today[:4]
-        for company in sorted({brand["company"] for brand in cls.businesses}):
-            if get_fiscal_year(today, company=company, raise_on_missing=False):
-                continue
-            frappe.get_doc(
-                {
-                    "doctype": "Fiscal Year",
-                    "year": "OMP LCV HTTP " + year + " " + uuid4().hex[:8],
-                    "year_start_date": year + "-01-01",
-                    "year_end_date": year + "-12-31",
-                    "companies": [{"company": company}],
-                }
-            ).insert()
-        frappe.db.commit()
-
-    def purchase(self, brand=None, doctype="Purchase Receipt", valuation_tax=0):
+    def purchase(self, brand=None, doctype="Purchase Receipt", valuation_tax=0, posting_time=None):
         brand = brand or self.businesses[0]
         code = self.product(brand, stock=False)
         frappe.db.rollback()
@@ -63,6 +39,7 @@ class LandedCostsHTTP(fixtures.WorkspaceHTTP):
                 "supplier": supplier.name,
                 "currency": "COP",
                 "conversion_rate": 1,
+                **({"set_posting_time": 1, "posting_time": posting_time} if posting_time else {}),
                 "update_stock": 1,
                 "items": [
                     {
@@ -139,6 +116,238 @@ class LandedCostsHTTP(fixtures.WorkspaceHTTP):
             "plan_hash": quote["plan_hash"],
             "submit": submit,
         }, quote
+
+    def test_13_future_sale_repost_reconciles_native_margin_and_gl(self):
+        from erpnext.stock.doctype.repost_item_valuation.repost_item_valuation import repost
+        from frappe.utils import nowdate
+
+        brand = self.businesses[0]
+        settings = frappe.get_single("Stock Reposting Settings")
+        old_settings = {
+            key: settings.get(key)
+            for key in ("item_based_reposting", "enable_separate_reposting_for_gl")
+        }
+
+        def restore_settings():
+            frappe.db.rollback()
+            frappe.get_single("Stock Reposting Settings").update(old_settings).save()
+            frappe.db.commit()
+
+        self.addCleanup(restore_settings)
+        settings.update({"item_based_reposting": 1, "enable_separate_reposting_for_gl": 1}).save()
+        frappe.db.commit()
+        doc = self.purchase(posting_time="00:00:00")
+        code = doc.items[0].item_code
+        sale = self.result("checkout.checkout", {"data": self.sale(brand, code)}, post=True)
+        invoice = sale["invoice"]
+        query = {"brand": brand["brand"], "from_date": nowdate(), "to_date": nowdate()}
+
+        def finish_reposts():
+            for _ in range(20):
+                frappe.db.rollback()
+                jobs = frappe.get_all(
+                    "Repost Item Valuation",
+                    filters={
+                        "company": brand["company"],
+                        "docstatus": 1,
+                        "status": ["in", ["Queued", "In Progress"]],
+                    },
+                    pluck="name",
+                    order_by="creation asc",
+                )
+                if not jobs:
+                    return
+                for name in jobs:
+                    repost(frappe.get_doc("Repost Item Valuation", name))
+                    frappe.db.commit()
+                    self.assertEqual(
+                        frappe.db.get_value("Repost Item Valuation", name, "status"), "Completed"
+                    )
+            self.fail("Native repost queue did not drain")
+
+        def margin():
+            response = self.result("valuation.review", query, post=True)
+            self.assertEqual(response["status"], "current")
+            return next(row["amounts"] for row in response["rows"] if row["item_code"] == code)
+
+        finish_reposts()
+        self.assertEqual(Decimal(margin()["cost"]), 1000)
+        self.assertEqual(Decimal(margin()["margin"]), 1500)
+        args, _ = self.prepared(self.data(doc))
+        self.result("landed_costs.save", args, post=True)
+        pending = self.result("valuation.review", query, post=True)
+        self.assertEqual(pending["status"], "pending")
+        self.assertEqual(pending["rows"], [])
+        frappe.db.rollback()
+        jobs = frappe.get_all(
+            "Repost Item Valuation",
+            filters={"company": brand["company"], "docstatus": 1, "status": "Queued"},
+            pluck="name",
+        )
+        self.assertTrue(jobs, "The native LCV must queue a real future-sale repost")
+        # A worker failure must hide the same stale amounts too.
+        frappe.db.set_value("Repost Item Valuation", jobs[0], "status", "Failed")
+        frappe.db.commit()
+        failed = self.result("valuation.review", query, post=True)
+        self.assertEqual(failed["rows"], [])
+        self.assertTrue(any(job["status"] == "Failed" for job in failed["jobs"]))
+        frappe.db.set_value("Repost Item Valuation", jobs[0], "status", "Queued")
+        frappe.db.commit()
+        repost(frappe.get_doc("Repost Item Valuation", jobs[0]))
+        frappe.db.commit()
+        self.assertEqual(
+            frappe.db.get_value("Repost Item Valuation", jobs[0], "status"), "Completed"
+        )
+        accounting_pending = self.result("valuation.review", query, post=True)
+        self.assertEqual(accounting_pending["status"], "pending")
+        self.assertEqual(accounting_pending["rows"], [])
+        frappe.db.rollback()
+        self.assertTrue(
+            frappe.db.exists(
+                "Repost Item Valuation",
+                {
+                    "company": brand["company"],
+                    "docstatus": 1,
+                    "status": "Queued",
+                    "repost_only_accounting_ledgers": 1,
+                },
+            )
+        )
+        finish_reposts()
+        after = margin()
+        self.assertEqual(Decimal(after["sales"]), 2500)
+        self.assertEqual(Decimal(after["cost"]), 1100)
+        self.assertEqual(Decimal(after["margin"]), 1400)
+        frappe.db.rollback()
+        self.assertEqual(
+            Decimal(
+                str(
+                    frappe.db.get_value(
+                        "Stock Ledger Entry",
+                        {"voucher_no": invoice, "item_code": code, "is_cancelled": 0},
+                        "stock_value_difference",
+                    )
+                )
+            ),
+            -1100,
+        )
+        self.assertEqual(
+            frappe.db.sql(
+                "SELECT SUM(debit-credit) FROM `tabGL Entry` WHERE voucher_no=%s AND is_cancelled=0",
+                invoice,
+            )[0][0],
+            0,
+        )
+        expense = frappe.db.get_value("Company", brand["company"], "default_expense_account")
+        self.assertEqual(
+            frappe.db.sql(
+                "SELECT SUM(debit-credit) FROM `tabGL Entry` WHERE voucher_no=%s AND account=%s AND is_cancelled=0",
+                (invoice, expense),
+            )[0][0],
+            1100,
+        )
+
+    def test_14_margin_permissions_dates_and_warehouse_scope(self):
+        from frappe.utils import nowdate
+
+        query = {"brand": self.businesses[0]["brand"], "from_date": nowdate(), "to_date": nowdate()}
+        self.assertIn(
+            self.request("valuation.review", query, post=True, guest=True).status_code, (401, 403)
+        )
+        self.assertEqual(self.request("valuation.review", query).status_code, 403)
+        for bad in ("not-a-date", "2026-02-30", "2000-01-01"):
+            self.assertEqual(
+                self.request(
+                    "valuation.review", {**query, "from_date": bad}, post=True
+                ).status_code,
+                417,
+            )
+        roles = [r.role for r in frappe.get_doc("User", self.user).roles]
+        try:
+            user = frappe.get_doc("User", self.user)
+            user.set("roles", [{"role": role} for role in ("OMP Cashier", "Sales User")])
+            user.save()
+            frappe.db.commit()
+            self.assertEqual(self.request("valuation.review", query, post=True).status_code, 403)
+        finally:
+            frappe.db.rollback()
+            user = frappe.get_doc("User", self.user)
+            user.set("roles", [{"role": role} for role in roles])
+            user.save()
+            frappe.db.commit()
+        other = self.businesses[2]  # Same company, different business warehouse.
+        foreign = self.product(other)
+        self.result("checkout.checkout", {"data": self.sale(other, foreign)}, post=True)
+        result = self.result("valuation.review", query, post=True)
+        self.assertEqual(result["warehouse"], self.businesses[0]["warehouse"])
+        self.assertFalse(any(row["item_code"] == foreign for row in result["rows"]))
+
+    def test_15_snapshot_report_hides_amounts(self):
+        from frappe.utils import nowdate
+
+        query = {"brand": self.businesses[0]["brand"], "from_date": nowdate(), "to_date": nowdate()}
+        original = frappe.db.get_value("Report", "Gross Profit", "snapshot_report")
+        try:
+            frappe.db.set_value("Report", "Gross Profit", "snapshot_report", 1)
+            frappe.db.commit()
+            result = self.result("valuation.review", query, post=True)
+            self.assertEqual(result["status"], "snapshot")
+            self.assertEqual(result["rows"], [])
+        finally:
+            frappe.db.rollback()
+            frappe.db.set_value("Report", "Gross Profit", "snapshot_report", original)
+            frappe.db.commit()
+
+    def test_16_accounting_job_without_company_blocks_margin(self):
+        from frappe.utils import nowdate
+
+        brand = self.businesses[0]
+        code = self.product(brand)
+        invoice = self.result("checkout.checkout", {"data": self.sale(brand, code)}, post=True)[
+            "invoice"
+        ]
+        query = {"brand": brand["brand"], "from_date": nowdate(), "to_date": nowdate()}
+        frappe.db.rollback()
+        settings = frappe.get_single("Accounts Settings")
+        old_types = [row.as_dict() for row in settings.repost_allowed_types]
+        job = None
+        try:
+            if not any(
+                row.document_type == "Sales Invoice" for row in settings.repost_allowed_types
+            ):
+                settings.append("repost_allowed_types", {"document_type": "Sales Invoice"})
+                settings.save()
+            job = frappe.get_doc(
+                {
+                    "doctype": "Repost Accounting Ledger",
+                    "vouchers": [{"voucher_type": "Sales Invoice", "voucher_no": invoice}],
+                }
+            ).insert()
+            # Persist an interrupted-job fixture without enqueueing a racing worker.
+            frappe.db.set_value(
+                job.doctype, job.name, {"docstatus": 1, "status": "Partially Reposted"}
+            )
+            frappe.db.commit()
+            result = self.result("valuation.review", query, post=True)
+            self.assertEqual(result["status"], "pending")
+            self.assertEqual(result["rows"], [])
+            self.assertTrue(
+                any(
+                    row["name"] == job.name and row["status"] == "Partially Reposted"
+                    for row in result["jobs"]
+                )
+            )
+        finally:
+            frappe.db.rollback()
+            if job and frappe.db.exists(job.doctype, job.name):
+                job.reload()
+                if job.docstatus == 1:
+                    job.cancel()
+            settings = frappe.get_single("Accounts Settings")
+            settings.set("repost_allowed_types", old_types)
+            settings.save()
+            frappe.db.commit()
+        self.assertEqual(self.result("valuation.review", query, post=True)["status"], "current")
 
     def test_01_preview_submit_retry_stock_and_balanced_gl(self):
         doc = self.purchase()

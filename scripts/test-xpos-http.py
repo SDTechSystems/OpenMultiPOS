@@ -600,7 +600,24 @@ class XPOSHTTPTests(unittest.TestCase):
                 user=user,
             )
             self.assertEqual(response.status_code, 200)
-            return response.json()["message"]
+            rows = response.json()["message"]
+            for prefix in ("/api/resource/", "/api/v2/document/"):
+                native = requests.get(
+                    OPTIONS.base_url + prefix + quote(doctype, safe=""),
+                    headers=headers,
+                    params={
+                        "fields": json.dumps(fields),
+                        "filters": json.dumps(filters),
+                        "limit": 100,
+                    },
+                    timeout=30,
+                )
+                self.assertEqual(native.status_code, 200, native.text[-1000:])
+                self.assertEqual(
+                    {row["name"]: row for row in native.json()["data"]},
+                    {row["name"]: row for row in rows},
+                )
+            return rows
 
         rows = listing("Item", [["item_code", "like", f"OMP-HTTP-CAT-%-{suffix}"]], ["name"])
         self.assertEqual({row["name"] for row in rows}, {items["a"].name, items["free"].name})
@@ -633,6 +650,419 @@ class XPOSHTTPTests(unittest.TestCase):
                 self.assertEqual(response.status_code, 403)
                 # Proves the OpenMultiPOS gate denied it, not a native permission.
                 self.assertIn("no está habilitada", response.text)
+
+    def cashier_http_fixture(self, *, attachments=False):
+        marker = "OMP-HTTP-SURFACE-" + secrets.token_hex(6)
+        created = []
+
+        def restore():
+            frappe.set_user("Administrator")
+            frappe.db.rollback()
+            for doctype, name in reversed(created):
+                if frappe.db.exists(doctype, name):
+                    frappe.delete_doc(doctype, name, force=1)
+            for name in frappe.get_all(
+                "Comment", filters={"content": ["like", "%" + marker + "%"]}, pluck="name"
+            ):
+                frappe.delete_doc("Comment", name, force=1)
+            frappe.db.commit()
+            frappe.clear_cache()
+
+        self.addCleanup(restore)
+
+        def insert(doctype, **fields):
+            doc = frappe.get_doc({"doctype": doctype, **fields}).insert()
+            created.append((doctype, doc.name))
+            return doc
+
+        customer = insert(
+            "Customer",
+            customer_name=marker,
+            customer_type="Individual",
+            customer_group="Commercial",
+            territory="All Territories",
+        )
+        links = [{"link_doctype": "Customer", "link_name": customer.name}]
+        records = {
+            "Address": insert(
+                "Address",
+                address_title=marker,
+                address_type="Billing",
+                address_line1=marker,
+                city="Ciudad ficticia",
+                country="Colombia",
+                links=links,
+            ),
+            "Contact": insert("Contact", first_name=marker, links=links),
+            "Price List": insert(
+                "Price List", price_list_name=marker, currency="COP", selling=1, enabled=1
+            ),
+        }
+        parents = {"address": ("Address", records["Address"].name)}
+        if attachments:
+            for key, fixture in (("own_item", self.a), ("foreign_item", self.b)):
+                records[key] = insert(
+                    "Item",
+                    item_code=marker + "-" + key,
+                    item_name=marker + "-" + key,
+                    item_group="Services",
+                    stock_uom="Nos",
+                    is_stock_item=0,
+                    omp_business_brand=fixture["brand"],
+                )
+                parents[key] = ("Item", records[key].name)
+            parents.update(
+                own_invoice=("Sales Invoice", self.a["invoice"]),
+                own_pos_invoice=("POS Invoice", self.a["pos_invoice"]),
+                foreign_invoice=("Sales Invoice", self.b["invoice"]),
+                foreign_pos_invoice=("POS Invoice", self.b["pos_invoice"]),
+                contact=("Contact", records["Contact"].name),
+                price_list=("Price List", records["Price List"].name),
+                unlinked=(None, None),
+                missing=("Item", records["own_item"].name),
+            )
+        files, contents = {}, {}
+        for key, (doctype, name) in parents.items():
+            contents[key] = (marker + ":" + key).encode()
+            files[key] = insert(
+                "File",
+                file_name=marker + "-" + key + ".txt",
+                content=contents[key],
+                is_private=1,
+                attached_to_doctype=doctype,
+                attached_to_name=name,
+            )
+        if attachments:
+            frappe.db.set_value(
+                "File", files["missing"].name, "attached_to_name", marker + "-missing"
+            )
+            duplicate = files["own_item"].create_attachment_copy("Address", records["Address"].name)
+            created.append(("File", duplicate.name))
+            files["disallowed_duplicate"] = duplicate
+        records["File"] = files["address"]
+        frappe.db.commit()
+        frappe.clear_cache()
+        return marker, customer, records, files, contents
+
+    def test_cashier_native_metadata_surface_is_denied(self):
+        marker, customer, records, _, _ = self.cashier_http_fixture()
+        headers = {"Host": OPTIONS.site, "Authorization": self.tokens[self.a["user"]]}
+        manager_headers = {**headers, "Authorization": self.tokens[MANAGER]}
+
+        def denied(response):
+            self.assertEqual(response.status_code, 403)
+            self.assertNotIn(marker, response.text)
+
+        for doctype in ("File", "Address", "Contact", "Price List"):
+            name = records[doctype].name
+            filters = {"filters": json.dumps([["name", "=", name]]), "fields": '["name"]'}
+            for prefix in ("/api/resource/", "/api/v1/resource/", "/api/v2/document/"):
+                collection = OPTIONS.base_url + prefix + quote(doctype, safe="")
+                document = collection + "/" + quote(name, safe="")
+                with self.subTest(doctype=doctype, prefix=prefix):
+                    control = requests.get(document, headers=manager_headers, timeout=30)
+                    self.assertEqual(control.status_code, 200)
+                    self.assertIn(name, control.text)
+                    control = requests.get(
+                        collection, params=filters, headers=manager_headers, timeout=30
+                    )
+                    self.assertEqual(control.status_code, 200)
+                    self.assertIn(name, control.text)
+                    denied(requests.get(document, headers=headers, timeout=30))
+                    denied(requests.get(collection, params=filters, headers=headers, timeout=30))
+                    denied(
+                        requests.post(
+                            collection, json={"doctype": doctype}, headers=headers, timeout=30
+                        )
+                    )
+                    for verb in ("PUT", "PATCH") if "/v2/" in prefix else ("PUT",):
+                        denied(
+                            requests.request(
+                                verb,
+                                document,
+                                json={"name": name},
+                                headers=headers,
+                                timeout=30,
+                            )
+                        )
+                    denied(requests.delete(document, headers=headers, timeout=30))
+            for version in ("v1", "v2"):
+                denied(
+                    self.call(
+                        "frappe.client.get_list",
+                        {"doctype": doctype, **filters},
+                        user=self.a["user"],
+                        version=version,
+                    )
+                )
+            self.assertTrue(frappe.db.exists(doctype, name))
+        for method, payload in (
+            ("frappe.desk.search.search_link", {"doctype": "Address", "txt": marker}),
+            (
+                "frappe.contacts.doctype.contact.contact.get_contact_details",
+                {"contact": records["Contact"].name},
+            ),
+            (
+                "frappe.contacts.doctype.contact.contact.download_vcard",
+                {"contact": records["Contact"].name},
+            ),
+            (
+                "frappe.contacts.doctype.address.address.get_default_address",
+                {"doctype": "Customer", "name": customer.name},
+            ),
+            (
+                "frappe.contacts.doctype.address.address.get_address_display",
+                {"address_dict": records["Address"].name},
+            ),
+            ("frappe.core.api.file.get_files_by_search_text", {"text": marker}),
+            (
+                "frappe.core.api.file.get_attached_images",
+                {"doctype": "Address", "names": json.dumps([records["Address"].name])},
+            ),
+            (
+                "frappe.desk.query_report.get_data_for_custom_field",
+                {
+                    "doctype": "Price List",
+                    "field": "currency",
+                    "names": json.dumps([records["Price List"].name]),
+                },
+            ),
+            ("frappe.desk.query_report.run", {"report_name": "Item-wise Sales History"}),
+            (
+                "frappe.core.doctype.data_export.exporter.export_data",
+                {"doctype": "Price List", "with_data": 1},
+            ),
+        ):
+            for version in ("v1", "v2"):
+                with self.subTest(method=method, version=version):
+                    denied(self.call(method, payload, user=self.a["user"], version=version))
+        control = self.call(
+            "frappe.contacts.doctype.contact.contact.get_contact_details",
+            {"contact": records["Contact"].name},
+            user=MANAGER,
+        )
+        self.assertEqual(control.status_code, 200)
+        self.assertEqual(control.json()["message"]["contact_person"], records["Contact"].name)
+        control = self.call(
+            "frappe.contacts.doctype.address.address.get_default_address",
+            {"doctype": "Customer", "name": customer.name},
+            user=MANAGER,
+        )
+        self.assertEqual(control.status_code, 200)
+        self.assertEqual(control.json()["message"], records["Address"].name)
+
+    def test_cashier_private_attachments_require_current_allowed_parent(self):
+        marker, _, records, files, contents = self.cashier_http_fixture(attachments=True)
+        from frappe import share
+
+        for key in ("foreign_item", "address", "unlinked", "missing"):
+            frappe.db.set_value("File", files[key].name, "owner", self.a["user"])
+        for key in ("foreign_invoice", "contact", "price_list"):
+            share.add("File", files[key].name, user=self.a["user"], read=1, notify=0)
+        duplicate = files["disallowed_duplicate"]
+        frappe.db.commit()
+        frappe.clear_cache()
+
+        def downloads(file, *, user):
+            headers = {"Host": OPTIONS.site}
+            if user:
+                headers["Authorization"] = self.tokens[user]
+            for params in ({}, {"fid": file.name}):
+                yield requests.get(
+                    OPTIONS.base_url + file.file_url, params=params, headers=headers, timeout=30
+                )
+            yield self.call("download_file", {"file_url": file.file_url}, user=user)
+            for version, methods in (
+                (
+                    "v1",
+                    (
+                        "frappe.handler.download_file",
+                        "frappe.utils.file_manager.download_file",
+                        "frappe.core.doctype.file.file.download_file",
+                    ),
+                ),
+                ("v2", ("frappe.handler.download_file",)),
+            ):
+                for method in methods:
+                    yield self.call(method, {"file_url": file.file_url}, user=user, version=version)
+
+        for key in ("own_item", "own_invoice", "own_pos_invoice"):
+            for response in downloads(files[key], user=self.a["user"]):
+                with self.subTest(file=key, url=response.url):
+                    self.assertEqual(response.status_code, 200)
+                    self.assertEqual(response.content, contents[key])
+        for key in (
+            "foreign_item",
+            "foreign_invoice",
+            "foreign_pos_invoice",
+            "address",
+            "contact",
+            "price_list",
+            "unlinked",
+            "missing",
+        ):
+            for response in downloads(files[key], user=self.a["user"]):
+                with self.subTest(file=key, url=response.url):
+                    self.assertEqual(response.status_code, 403)
+                    self.assertNotIn(contents[key], response.content)
+                    self.assertNotIn(marker, response.text)
+        for key in ("foreign_item", "address", "contact", "price_list"):
+            control = self.call(
+                "frappe.handler.download_file", {"file_url": files[key].file_url}, user=MANAGER
+            )
+            self.assertEqual(control.status_code, 200)
+            self.assertEqual(control.content, contents[key])
+        headers = {"Host": OPTIONS.site, "Authorization": self.tokens[self.a["user"]]}
+        for fid in (duplicate.name, files["address"].name, marker + "-missing"):
+            response = requests.get(
+                OPTIONS.base_url + files["own_item"].file_url,
+                params={"fid": fid},
+                headers=headers,
+                timeout=30,
+            )
+            self.assertEqual(response.status_code, 403)
+            self.assertNotIn(contents["own_item"], response.content)
+        for response in downloads(files["own_item"], user=None):
+            self.assertEqual(response.status_code, 403)
+            self.assertNotIn(contents["own_item"], response.content)
+        try:
+            frappe.db.set_value("OMP Business Brand", self.a["brand"], "enabled", 0)
+            frappe.db.commit()
+            for response in downloads(files["own_item"], user=self.a["user"]):
+                self.assertEqual(response.status_code, 403)
+        finally:
+            frappe.db.set_value("OMP Business Brand", self.a["brand"], "enabled", 1)
+            frappe.db.commit()
+
+    def test_cashier_unknown_http_surface_is_closed(self):
+        headers = {"Host": OPTIONS.site, "Authorization": self.tokens[self.a["user"]]}
+        invoice = quote(self.a["invoice"], safe="")
+        marker = "OMP-HTTP-UNKNOWN-" + secrets.token_hex(6)
+
+        def denied(response):
+            self.assertEqual(response.status_code, 403)
+            self.assertNotIn(marker, response.text)
+
+        for version in ("v1", "v2"):
+            for method, payload in (
+                ("open_multi_pos.cashier.future_unreviewed", {"text": marker}),
+                ("frappe.client.get_count", {"doctype": "Item"}),
+                ("run_doc_method", {"dt": "Sales Invoice", "dn": self.a["invoice"]}),
+                (
+                    "frappe.handler.run_doc_method",
+                    {"dt": "Sales Invoice", "dn": self.a["invoice"]},
+                ),
+                (
+                    "frappe.client.get_list",
+                    {"doctype": "Item", "fields": '["name"]', "expand": '["item_group"]'},
+                ),
+                (
+                    "frappe.client.get_list",
+                    {"doctype": "Item", "fields": '["item_group.item_group_name"]'},
+                ),
+            ):
+                with self.subTest(method=method, version=version):
+                    denied(self.call(method, payload, user=self.a["user"], version=version))
+            control = self.call(
+                "frappe.client.get_count", {"doctype": "Item"}, user=MANAGER, version=version
+            )
+            self.assertEqual(control.status_code, 200)
+            self.assertIsInstance(control.json().get("message", control.json().get("data")), int)
+        for path, params in (
+            ("/api/v2/document/Sales%20Invoice/" + invoice + "/copy", {}),
+            ("/api/v2/document/Sales%20Invoice/" + invoice + "/method/get_doc_before_save", {}),
+            ("/api/v2/doctype/Sales%20Invoice/count", {}),
+            ("/api/v2/doctype/Sales%20Invoice/meta", {}),
+            ("/api/v2/method/Address/get_default_address", {"doctype": "Customer", "name": marker}),
+            ("/api/resource/User/" + quote(self.a["user"], safe=""), {}),
+            ("/api/v2/document/User/" + quote(self.a["user"], safe=""), {}),
+            ("/api/resource/DocType/Sales%20Invoice", {}),
+            ("/api/resource/Sales%20Invoice/" + invoice, {"run_method": ""}),
+            ("/api/v1/resource/Sales%20Invoice/" + invoice, {"run_method": "get_doc_before_save"}),
+            ("/api/resource/Sales%20Invoice/" + invoice, {"expand_links": 1}),
+            ("/api/resource/Item", {"fields": '["item_group.item_group_name"]'}),
+            ("/api/v2/document/Item", {"fields": '["item_group.item_group_name"]'}),
+            ("/api/resource/Item", {"limit_page_length": 0}),
+            ("/api/v2/document/Item", {"limit": 101}),
+            ("/api/resource/Item", {"fields": "false"}),
+            ("/api/v2/document/Item", {"fields": "{}"}),
+            ("/Sales%20Invoice", {}),
+            ("/api/resource/Item", {"fields": '["name"]', "expand": '["item_group"]'}),
+        ):
+            with self.subTest(path=path, params=params):
+                denied(
+                    requests.get(
+                        OPTIONS.base_url + path, params=params, headers=headers, timeout=30
+                    )
+                )
+        allowed = {"cmd": "frappe.client.get_list", "doctype": "Item", "fields": '["name"]'}
+        for path in (
+            "/api/method/frappe.client.get_count",
+            "/api/v2/document/Price%20List",
+            "/private/files/" + marker + ".txt",
+        ):
+            response = requests.post(
+                OPTIONS.base_url + path, json=allowed, headers=headers, timeout=30
+            )
+            self.assertEqual(response.status_code, 200)
+            self.assertIn("message", response.json())
+        for cmd in ("frappe.client.get_count", " "):
+            denied(
+                requests.post(
+                    OPTIONS.base_url + "/api/method/open_multi_pos.cashier.terminals",
+                    json={"cmd": cmd, "text": marker},
+                    headers=headers,
+                    timeout=30,
+                )
+            )
+        redirect = requests.get(
+            OPTIONS.base_url + "/omp", headers=headers, allow_redirects=False, timeout=30
+        )
+        self.assertIn(redirect.status_code, (301, 302, 303, 307, 308))
+        self.assertEqual(redirect.headers["Location"], "/omp_pos")
+
+    def test_native_dashboard_chart_routes_are_denied_to_cashiers(self):
+        method = "frappe.desk.doctype.dashboard_chart.dashboard_chart.get"
+        chart = {
+            "name": "OMP HTTP chart " + secrets.token_hex(6),
+            "document_type": "Sales Invoice",
+            "chart_type": "Count",
+            "type": "Line",
+            "based_on": "posting_date",
+            "timespan": "Last Year",
+            "time_interval": "Daily",
+            "filters_json": json.dumps([["name", "=", self.b["invoice"]]]),
+        }
+        cache_key = "chart-data:" + chart["name"]
+        cached = {"labels": [self.b["invoice"]], "datasets": [{"values": [1]}]}
+        frappe.cache.set_value(cache_key, json.dumps(cached))
+        self.addCleanup(frappe.cache.delete_value, cache_key)
+        payload = {"chart": json.dumps(chart)}
+        allowed = self.call(method, payload, user=MANAGER)
+        self.assertEqual(allowed.status_code, 200)
+        self.assertEqual(allowed.json()["message"], cached)
+        for user in (self.a["user"], self.b["user"]):
+            headers = {"Host": OPTIONS.site, "Authorization": self.tokens[user]}
+            for no_cache in (None, 1):
+                data = {**payload, **({"no_cache": no_cache} if no_cache else {})}
+                for path, args in (
+                    ("/api/method/" + method, data),
+                    ("/api/v2/method/" + method, data),
+                    ("/", {**data, "cmd": method}),
+                ):
+                    for verb in ("GET", "POST"):
+                        with self.subTest(user=user, no_cache=no_cache, path=path, verb=verb):
+                            options = {"params": args} if verb == "GET" else {"json": args}
+                            response = requests.request(
+                                verb,
+                                OPTIONS.base_url + path,
+                                headers=headers,
+                                timeout=30,
+                                **options,
+                            )
+                            self.assertEqual(response.status_code, 403)
+                            self.assertIn("no está habilitada", response.text)
+                            self.assertNotIn(self.b["invoice"], response.text)
 
     def test_unassigned_format_is_rejected(self):
         self.assertEqual(

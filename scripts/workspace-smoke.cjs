@@ -474,6 +474,11 @@ async function go(page, id) {
       nativePreview.click(),
     ]);
     await nativePage.locator("#preview-brand").waitFor();
+    await nativePage.waitForFunction(
+      () =>
+        document.getElementById("preview-brand").options.length > 0 &&
+        !document.getElementById("show-preview").disabled,
+    );
     assert.match(nativePage.url(), /omp_receipt_preview/);
     await nativePage.close();
     await printing.close();

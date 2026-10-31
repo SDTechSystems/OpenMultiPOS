@@ -1,0 +1,44 @@
+# Construcción del servidor WSL
+
+Hay un candidato completo del servidor para aceptación privada, con ZIP portable e instalador Windows por usuario. Incluye una imagen WSL sellada y auditada. Todavía no es una entrega final ni está aprobado para producción o para compartir.
+
+La base elegida es una distribución WSL2 Ubuntu 26.04 x64 nueva y exclusiva. Microsoft admite distribuir su filesystem como un archivo `.wsl` y ejecutar una configuración inicial mediante `wsl-distribution.conf`: [guía oficial](https://learn.microsoft.com/en-us/windows/wsl/build-custom-distro). El candidato requiere Windows x64, .NET Framework 4.8, WSL2 con WSL 2.4.4 o posterior, virtualización habilitada y 30 GB libres. Preparar WSL puede exigir administrador, descargas y reinicio. La aceptación en Windows limpio sigue pendiente.
+
+`build-image.sh` exige root, Ubuntu 26.04 x64, el marcador `/etc/openmultipos-build-environment`, una exportación pública del repositorio en `/opt/openmultipos/source` con metadatos Git y una distribución sin montajes Windows ni interoperabilidad. Instala herramientas del sistema y crea un usuario Linux bloqueado sin sudo. Ejecuta las dependencias y assets como ese usuario, con un entorno vacío salvo PATH, HOME e idioma. Los servicios no se inician durante la construcción.
+
+El constructor reutiliza `scripts/prepare-bench.py`, que verifica los tres commits de `upstream.lock.json`. Node 24.22.0 se obtiene de nodejs.org y se verifica contra su SHA256; Bench 5.29.1 y Yarn 1.22.22 están fijados. Los paquetes Ubuntu y dependencias transitivas deben registrarse en el manifiesto de la imagen final. Este procedimiento no promete igualdad binaria entre reconstrucciones.
+
+Nunca usar una distribución que contenga datos operativos ni exportar una instalación del propietario. La imagen compartida debe contener herramientas, código, assets y avisos de licencia, sin un sitio Frappe, base comercial ni credenciales. Los secretos y el sitio se crearán durante la primera ejecución privada.
+
+Antes de exportar, ejecutar el control `image_contract.py` con la raíz de la imagen. Rechaza directorios de sitio, esquemas MariaDB ajenos al sistema, credenciales en la configuración común y contraseñas Linux reutilizables. Es una comprobación necesaria, no una auditoría completa del filesystem. La revisión de contenido, sanitización, manifiesto y ensayos de instalación/actualización/recuperación siguen siendo obligatorios.
+
+La imagen privada sellada de 1,5 GB corresponde a la revisión `3f6e2da`. La auditoría del archivo exportado encontró cero sitios, cero esquemas de aplicación y ninguna identidad reutilizable. Esto permite ensayos privados; la aceptación de entrega y la revisión completa de fuentes y licencias siguen pendientes.
+
+## Inicialización privada y control
+
+`first_run.py` prepara un sitio nuevo dentro de la distribución dedicada. Recibe la contraseña inicial mediante una entrada oculta o stdin, genera las claves locales, registra el intento en un archivo root privado y retira la cuenta temporal de instalación de MariaDB. Un sitio previo sin registro de propiedad se conserva y se rechaza. Repetir una instalación completada conserva su contraseña y sus datos. La acción `recover` conserva el esquema anterior y mueve sus archivos fuera del directorio de sitios antes de generar otro intento. Exige la identidad y contraseña de base registradas y rechaza una instalación completada, cuentas personales, archivos subidos o registros comerciales. No borra bases de datos. Conserva hasta tres intentos; después exige revisión local. Un intento de recuperación interrumpido se puede retomar con `setup`. El controlador Windows incluye el botón de recuperación; su aceptación visual sigue pendiente.
+
+El servidor usa MariaDB sin TCP, dos Redis por sockets privados y una cola con AOF. Gunicorn, worker, scheduler y realtime se ejecutan sin root; Nginx escucha únicamente en `localhost:8089`. El proxy conserva el host del navegador y selecciona el sitio interno por un encabezado fijo. No se activa acceso remoto por este procedimiento.
+
+La acción `serve` mantiene abierta una sesión de control de WSL, necesaria porque los servicios systemd por sí solos no mantienen activa la distribución. Espera `stop` o el cierre de stdin y detiene los servicios de forma ordenada. El controlador Windows conserva esa conexión mientras el servidor está activo. `start` solo inicia y comprueba servicios; no sustituye una sesión persistente. `status` informa si existe una instalación completada, no certifica salud operativa.
+
+Una inicialización aprobada no marca como completado el asistente nativo de ERPNext. El primer acceso exige terminarlo antes de abrir `/omp`, y después revisar la preparación de negocios, usuarios, inventario, recibos y recuperación. La aceptación del recorrido completo de instalación sigue pendiente.
+
+## Controlador Windows
+
+`windows/Server.cs` añade una ventana WinForms para importar la imagen verificada, preparar o recuperar el acceso inicial y mantener la sesión del servidor. La ventana muestra el estado y la ubicación de datos; ofrece inicio, parada, aplicación y manual. Conserva stdin del proceso WSL hasta detenerlo y espera su salida sin terminar procesos a la fuerza. Al cerrar un servidor activo pide confirmar la desconexión de los demás equipos. Los secretos se envían por stdin UTF-8 y no se guardan en el registro del controlador.
+
+El protocolo local 1 expone únicamente estado de instalación, disponibilidad de recuperación y número de intentos conservados. `serve --events` anuncia disponibilidad mediante un evento sin datos privados. El controlador rechaza una versión incompatible. La imagen complementaria se llama `OpenMultiPOS-Server.wsl` y debe coincidir con el SHA256 de `server-image.json`, schema 1. La importación conserva cualquier carpeta de datos ya existente y nunca ejecuta unregister.
+
+`scripts/build-windows-server.py` reúne el controlador, la imagen auditada y su manifiesto, el manual sin conexión, `source.zip` y los hashes. Genera un ZIP portable y el instalador de `windows/ServerInstaller.cs`. El instalador necesita la imagen y el manifiesto junto al ejecutable, copia el programa para el usuario y crea el acceso de Inicio y la entrada de desinstalación. Los datos WSL quedan separados, por defecto en `%LOCALAPPDATA%\OpenMultiPOS\Servidor`, y se conservan al actualizar o desinstalar el programa. Esta actualización no migra el backend ni los sitios existentes.
+
+En Windows real, `--verify-import` importó la imagen sellada de 1,5 GB en `OpenMultiPOS-PackageQA`. En otra distribución recién importada, `ImageQA`, aprobaron `first_run.py setup` y la comprobación Windows `--verify-server`. Esta última comprobó estado, transporte de texto Unicode y comillas por stdin, inicio con evento ready y parada mediante EOF.
+
+También en Windows real, `--verify-installation` aprobó copia de archivos, acceso directo, registro HKCU, actualización, rechazo de una imagen alterada y desinstalación. Esa prueba usó una imagen sintética pequeña y conservó un archivo de datos ficticios separado; no importó la imagen real mediante la interfaz. Las pruebas propias rechazan nombres de distribución ajenos y manifiestos incompletos. Siguen pendientes la aceptación visual y de teclado, el recorrido completo en Windows limpio y la revisión completa de fuentes y licencias. El candidato privado está sin firma y no se puede publicar todavía.
+
+
+## Copias desde el controlador
+
+Con el servidor detenido, Crear copia ejecuta el motor existente de respaldo de base, archivos, claves y conciliación. Comprobar recuperación crea una copia nueva y un clon de restauración aislado. No reemplaza el sitio original. El control local exige el bloqueo de vida y servicios detenidos; inicia solo MariaDB y Redis durante la operación y los detiene al terminar, incluso ante error. El ensayo recibe un administrador de base temporal por stdin, con archivo privado transitorio y retirada de la cuenta al salir. Las copias quedan en recovery, junto al Bench, y alimentan los indicadores del asistente.
+
+Los servicios administrados se inician únicamente desde la sesión del controlador; no se habilitan para arrancar solos al consultar WSL. Tras la copia o el ensayo se debe iniciar el servidor de nuevo. Una copia local no sustituye la copia cifrada en otro dispositivo.

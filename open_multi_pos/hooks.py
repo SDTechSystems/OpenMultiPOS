@@ -7,6 +7,7 @@ app_description = "Marcas, caja nativa y contexto de impresión para ERPNext"
 app_email = ""
 app_license = "GPL-3.0-only"
 required_apps = ["erpnext"]
+setup_wizard_requires = "assets/open_multi_pos/setup-wizard-language.js"
 before_install = "open_multi_pos.setup.create_cashier_role"
 after_install = "open_multi_pos.setup.ensure_cashier_role"
 after_migrate = "open_multi_pos.setup.ensure_cashier_role"
@@ -61,6 +62,11 @@ doc_events = {
 
 # OMP estimates may be edited natively; guided submission preserves their reviewed snapshot.
 doc_events["Landed Cost Voucher"] = {"before_submit": "open_multi_pos.landed_costs.guard_submit"}
+
+doc_events["Warranty Claim"] = {
+    "validate": "open_multi_pos.warranties.guard_links",
+    "on_trash": "open_multi_pos.warranties.guard_delete",
+}
 
 # Administrators may operate one personal opening per workspace business.
 # Native closing queries already scope invoices by profile AND owner.

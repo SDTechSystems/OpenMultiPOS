@@ -2,6 +2,7 @@ name: Quality
 on:
   push:
   pull_request:
+  workflow_dispatch:
 permissions:
   contents: read
 jobs:
@@ -28,7 +29,7 @@ jobs:
       - run: python -m build
       - run: pip-audit --no-deps --disable-pip -r requirements-runtime.txt
   bench:
-    if: github.event_name == 'pull_request' || github.ref == 'refs/heads/main'
+    if: github.event_name == 'pull_request' || github.event_name == 'workflow_dispatch' || github.ref == 'refs/heads/main'
     needs: privacy
     runs-on: ubuntu-24.04
     timeout-minutes: 30
@@ -92,6 +93,8 @@ jobs:
       - name: Exercise secured X POS over HTTP v1 and v2
         working-directory: ${{ runner.temp }}/omp-bench
         run: |
+          mkdir -m 700 "$RUNNER_TEMP/omp-setup-recovery"
+          bench --site omp.localhost set-config omp_recovery_path "$RUNNER_TEMP/omp-setup-recovery"
           bench worker --queue short,default,long --quiet > "$RUNNER_TEMP/omp-worker.log" 2>&1 &
           omp_worker_pid=$!
           env/bin/gunicorn --chdir sites --bind 127.0.0.1:8000 --workers 2 --threads 2 --pid "$RUNNER_TEMP/omp-http.pid" --daemon 'frappe.app:application_with_statics()'
@@ -101,9 +104,13 @@ jobs:
           env/bin/python "$GITHUB_WORKSPACE/scripts/test-native-checkout-http.py" --bench "$RUNNER_TEMP/omp-bench"
           OMP_BROWSER_CHANNEL=chromium env/bin/python "$GITHUB_WORKSPACE/scripts/test-native-cashier.py" --bench "$RUNNER_TEMP/omp-bench"
           env/bin/python "$GITHUB_WORKSPACE/scripts/test-workspace-http.py" --bench "$RUNNER_TEMP/omp-bench"
+          env/bin/python "$GITHUB_WORKSPACE/scripts/test-onboarding-http.py" --bench "$RUNNER_TEMP/omp-bench"
+          OMP_BROWSER_CHANNEL=chromium env/bin/python "$GITHUB_WORKSPACE/scripts/test-onboarding-browser.py" --bench "$RUNNER_TEMP/omp-bench"
           env/bin/python "$GITHUB_WORKSPACE/scripts/test-returns-http.py" --bench "$RUNNER_TEMP/omp-bench"
           env/bin/python "$GITHUB_WORKSPACE/scripts/test-imports-http.py" --bench "$RUNNER_TEMP/omp-bench"
+          env/bin/python "$GITHUB_WORKSPACE/scripts/test-warranties-http.py" --bench "$RUNNER_TEMP/omp-bench"
           env/bin/python "$GITHUB_WORKSPACE/scripts/test-landed-costs-http.py" --bench "$RUNNER_TEMP/omp-bench"
+          OMP_BROWSER_CHANNEL=chromium env/bin/python "$GITHUB_WORKSPACE/scripts/test-warranties-browser.py" --bench "$RUNNER_TEMP/omp-bench"
           OMP_BROWSER_CHANNEL=chromium env/bin/python "$GITHUB_WORKSPACE/scripts/test-landed-costs-browser.py" --bench "$RUNNER_TEMP/omp-bench"
           OMP_BROWSER_CHANNEL=chromium env/bin/python "$GITHUB_WORKSPACE/scripts/test-workspace-browser.py" --bench "$RUNNER_TEMP/omp-bench"
       - name: Recover operations and restore a private isolated copy
@@ -129,6 +136,53 @@ jobs:
             test-results/native-cashier/
             test-results/workspace/
             test-results/landed-costs/
+            test-results/warranties/
+  windows-client:
+    needs: privacy
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.14"
+      - name: Install client build tools
+        run: |
+          sudo apt-get update -qq
+          sudo apt-get install -y mono-devel libmono-system-windows-forms4.0-cil libmono-system-web-extensions4.0-cil
+          python -m pip install markdown2==2.5.5
+      - name: Build clients and check URL contracts
+        run: python scripts/build-windows-client.py --output test-results/windows-client
+      - name: Build server controller and check process contracts
+        run: python scripts/build-windows-controller.py --output test-results/windows-server-control --manual test-results/windows-client/OpenMultiPOS-Client-0.1.0/Manual.html
+      - name: Build installer contract fixture without a server image
+        run: |
+          mkdir test-results/image-fixture
+          python - <<'PY'
+          import hashlib, json
+          from pathlib import Path
+          root = Path('test-results/image-fixture')
+          content = b'fictional image for installer tests; not a usable server'
+          (root / 'fixture.wsl').write_bytes(content)
+          info = {'schema': 1, 'sha256': hashlib.sha256(content).hexdigest(), 'source_revision': 'a' * 40}
+          (root / 'manifest.json').write_text(json.dumps(info))
+          (root / 'audit.json').write_text(json.dumps({**info, 'sites': 0, 'application_schemas': 0, 'reusable_identity': False}))
+          PY
+          python scripts/build-windows-server.py --output test-results/server-fixture --image test-results/image-fixture/fixture.wsl --manifest test-results/image-fixture/manifest.json --audit test-results/image-fixture/audit.json --no-archive
+      - uses: actions/upload-artifact@v4
+        with:
+          name: windows-server-installer-contract-fixture
+          path: test-results/server-fixture/OpenMultiPOS-Server-0.1.0/OpenMultiPOS-Server-Setup-0.1.0.exe
+      - uses: actions/upload-artifact@v4
+        with:
+          name: windows-server-controller-candidate
+          path: test-results/windows-server-control/
+      - uses: actions/upload-artifact@v4
+        with:
+          name: windows-client-candidates
+          path: |
+            test-results/windows-client/*.zip
+            test-results/windows-client/*.exe
+            test-results/windows-client/SHA256SUMS.txt
   browser:
     needs: privacy
     runs-on: ubuntu-latest
@@ -144,6 +198,7 @@ jobs:
       - run: python -m pip install . pypdf==6.15.0
       - run: npm ci --ignore-scripts
       - run: npm run format:check
+      - run: npm run test:setup-language
       - run: npx playwright install --with-deps chromium
       - name: Exercise demo
         env:
@@ -154,9 +209,33 @@ jobs:
           trap 'kill $!' EXIT
           for attempt in $(seq 1 30); do curl -fsS -o /dev/null http://127.0.0.1:8765/api/context && break || sleep 1; done
           npm run test:ui
+          npm run test:tooltips
           python scripts/check-receipt-pdfs.py
       - uses: actions/upload-artifact@v4
         if: always()
         with:
           name: demo-browser-results
           path: test-results/
+
+  windows-controller-contracts:
+    needs: windows-client
+    runs-on: windows-latest
+    steps:
+      - uses: actions/download-artifact@v4
+        with:
+          name: windows-server-controller-candidate
+          path: controller
+      - name: Run the delivered controller on Windows
+        shell: pwsh
+        run: |
+          $process = Start-Process -FilePath "$PWD/controller/OpenMultiPOS-Server-Control.exe" -ArgumentList '--self-test' -Wait -PassThru
+          if ($process.ExitCode -ne 0) { throw 'Fallaron los contratos del controlador Windows' }
+      - uses: actions/download-artifact@v4
+        with:
+          name: windows-server-installer-contract-fixture
+          path: installer
+      - name: Verify installation update and removal preserve data
+        shell: pwsh
+        run: |
+          $process = Start-Process -FilePath "$PWD/installer/OpenMultiPOS-Server-Setup-0.1.0.exe" -ArgumentList '--verify-installation' -Wait -PassThru
+          if ($process.ExitCode -ne 0) { throw 'Fallaron instalación, actualización o conservación de datos' }

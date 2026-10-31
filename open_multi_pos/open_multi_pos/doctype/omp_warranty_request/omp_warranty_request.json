@@ -1,0 +1,54 @@
+{
+  "doctype": "DocType",
+  "name": "OMP Warranty Request",
+  "module": "Open Multi POS",
+  "autoname": "prompt",
+  "engine": "InnoDB",
+  "field_order": [
+    "actor",
+    "brand",
+    "status",
+    "claim",
+    "payload_hash"
+  ],
+  "fields": [
+    {
+      "fieldname": "actor",
+      "fieldtype": "Link",
+      "options": "User",
+      "label": "Usuario",
+      "reqd": 1
+    },
+    {
+      "fieldname": "brand",
+      "fieldtype": "Link",
+      "options": "OMP Business Brand",
+      "label": "Negocio",
+      "reqd": 1
+    },
+    {
+      "fieldname": "status",
+      "fieldtype": "Select",
+      "options": "Completed\nAbandoned",
+      "label": "Estado",
+      "reqd": 1
+    },
+    {
+      "fieldname": "claim",
+      "fieldtype": "Link",
+      "options": "Warranty Claim",
+      "label": "Reclamaci\u00f3n"
+    },
+    {
+      "fieldname": "payload_hash",
+      "fieldtype": "Data",
+      "label": "Huella"
+    }
+  ],
+  "permissions": [
+    {
+      "role": "System Manager",
+      "read": 1
+    }
+  ]
+}
