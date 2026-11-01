@@ -7,6 +7,11 @@ def manager(user: str) -> bool:
     return user == "Administrator" or "System Manager" in frappe.get_roles(user)
 
 
+def can_open_app() -> bool:
+    user = frappe.session.user
+    return user != "Guest" and (manager(user) or "OMP Cashier" in frappe.get_roles(user))
+
+
 def brand_query(user=None):
     user = user or frappe.session.user
     if user == "Guest":

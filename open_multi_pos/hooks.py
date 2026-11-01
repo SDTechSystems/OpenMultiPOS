@@ -8,6 +8,18 @@ app_email = ""
 app_license = "GPL-3.0-only"
 required_apps = ["erpnext"]
 setup_wizard_requires = "assets/open_multi_pos/setup-wizard-language.js"
+# Native default-app routing sends login and the finished setup wizard to /omp.
+# Cashiers reaching /omp are redirected to /omp_pos by the cashier gate.
+add_to_apps_screen = [
+    {
+        "name": app_name,
+        "logo": "/assets/open_multi_pos/images/openmultipos.svg",
+        "title": app_title,
+        "route": "/omp",
+        "has_permission": "open_multi_pos.permissions.can_open_app",
+        "sequence_id": 0,
+    }
+]
 before_install = "open_multi_pos.setup.create_cashier_role"
 after_install = "open_multi_pos.setup.ensure_cashier_role"
 after_migrate = "open_multi_pos.setup.ensure_cashier_role"

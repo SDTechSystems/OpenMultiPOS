@@ -1,0 +1,7 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 64 64" role="img" aria-label="OpenMultiPOS">
+  <rect width="64" height="64" rx="14" fill="#19634f"/>
+  <rect x="14" y="16" width="36" height="22" rx="4" fill="#ffffff"/>
+  <rect x="19" y="21" width="26" height="6" rx="2" fill="#19634f"/>
+  <rect x="10" y="40" width="44" height="10" rx="3" fill="#cfe7de"/>
+  <rect x="26" y="43" width="12" height="4" rx="2" fill="#19634f"/>
+</svg>

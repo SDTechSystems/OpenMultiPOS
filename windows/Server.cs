@@ -197,6 +197,46 @@ internal sealed class ServerBackend
         if (exit != 0) throw new InvalidOperationException("El cierre necesita revisión en el registro local.");
     }
     internal void OpenLog() { Directory.CreateDirectory(logFolder); Process.Start(new ProcessStartInfo(logFolder) { UseShellExecute = true }); }
+    private string PreparedMarker { get { return Path.Combine(logFolder, Distro + ".prepared"); } }
+    internal void MarkPrepared() { Directory.CreateDirectory(logFolder); File.WriteAllText(PreparedMarker, DateTime.UtcNow.Ticks.ToString()); }
+    // wsl --status can succeed before the Virtual Machine Platform is active; only a restart completes it.
+    internal bool RestartPending()
+    {
+        using (RegistryKey key = Registry.LocalMachine.OpenSubKey(@"SOFTWARE\Microsoft\Windows\CurrentVersion\Component Based Servicing\RebootPending"))
+            if (key != null) return true;
+        long ticks;
+        if (!File.Exists(PreparedMarker) || !long.TryParse(File.ReadAllText(PreparedMarker).Trim(), out ticks)) return false;
+        DateTime boot = DateTime.UtcNow - TimeSpan.FromMilliseconds(unchecked((uint)Environment.TickCount));
+        return PreparedAfterBoot(new DateTime(ticks, DateTimeKind.Utc), boot);
+    }
+    internal static bool PreparedAfterBoot(DateTime prepared, DateTime boot) { return prepared > boot; }
+}
+
+// Per-user Windows startup entries; no service, scheduled task or elevation.
+internal static class Autostart
+{
+    private const string RunKey = @"Software\Microsoft\Windows\CurrentVersion\Run";
+    private const string ResumeKey = @"Software\Microsoft\Windows\CurrentVersion\RunOnce";
+    private const string Name = "OpenMultiPOS Servidor";
+    internal static string Command(string executable, string flag) { return ServerBackend.Quote(executable) + " " + flag; }
+    internal static bool Enabled
+    {
+        get { using (RegistryKey key = Registry.CurrentUser.OpenSubKey(RunKey)) return key != null && key.GetValue(Name) != null; }
+    }
+    internal static void Set(bool enabled, string executable)
+    {
+        using (RegistryKey key = Registry.CurrentUser.CreateSubKey(RunKey))
+            if (enabled) key.SetValue(Name, Command(executable, "--autostart")); else key.DeleteValue(Name, false);
+    }
+    internal static void ResumeAfterRestart(string executable)
+    {
+        using (RegistryKey key = Registry.CurrentUser.CreateSubKey(ResumeKey)) key.SetValue(Name, Command(executable, "--resume"));
+    }
+    internal static void Remove()
+    {
+        foreach (string path in new [] { RunKey, ResumeKey })
+            using (RegistryKey key = Registry.CurrentUser.OpenSubKey(path, true)) if (key != null) key.DeleteValue(Name, false);
+    }
 }
 
 internal sealed class ServerWindow : Form
@@ -215,11 +255,17 @@ internal sealed class ServerWindow : Form
     private readonly Button open = new Button { Text = "&Abrir aplicación", AutoSize = true };
     private readonly Button backup = new Button { Text = "Crear copia", AutoSize = true };
     private readonly Button drill = new Button { Text = "Comprobar recuperación", AutoSize = true };
+    private readonly Button next = new Button { Text = "Continuar", AutoSize = true, Font = new Font("Segoe UI", 12, FontStyle.Bold), Padding = new Padding(12, 4, 12, 4) };
+    private readonly CheckBox startWithWindows = new CheckBox { Text = "Iniciar el servidor al encender Windows", AutoSize = true, Margin = new Padding(0, 4, 0, 4) };
     private readonly ToolTip help = new ToolTip();
-    private bool busy, windowsReady, registered, installed, recoverable, allowClose, wasRunning;
+    private readonly string mode;
+    private bool busy, windowsReady, restartPending, registered, installed, recoverable, allowClose, wasRunning;
+    private static string Executable { get { return Application.ExecutablePath; } }
 
-    internal ServerWindow(string distro)
+    // mode: "" (normal), "--autostart" (Windows sign-in) or "--resume" (after the preparation restart).
+    internal ServerWindow(string distro, string mode)
     {
+        this.mode = mode;
         backend = new ServerBackend(distro);
         Text = "OpenMultiPOS · Servidor propio · " + distro;
         Font = new Font("Segoe UI", 10); BackColor = Color.FromArgb(243, 246, 250);
@@ -228,7 +274,8 @@ internal sealed class ServerWindow : Form
         panel.Controls.Add(new Label { Text = "Servidor propio: datos en este computador", Font = new Font("Segoe UI", 17, FontStyle.Bold), AutoSize = true });
         panel.Controls.Add(new Label { Text = "Crea una instalación independiente para tu negocio. Los datos quedan en este computador, separados del programa, y no se envían a los desarrolladores. Requiere WSL2, virtualización y 30 GB libres. Mantén esta ventana abierta mientras tus otros equipos usan este servidor.", AutoSize = true, MaximumSize = new Size(620, 0), Margin = new Padding(0, 12, 0, 16) });
         panel.Controls.Add(status);
-        panel.Controls.Add(new Label { Text = "Contraseña inicial de Administrator", AutoSize = true, Margin = new Padding(0, 16, 0, 4) }); panel.Controls.Add(password);
+        next.Margin = new Padding(0, 12, 0, 4); panel.Controls.Add(next); panel.Controls.Add(startWithWindows);
+        panel.Controls.Add(new Label { Text = "Contraseña inicial de Administrator (se pide en el paso 4)", AutoSize = true, Margin = new Padding(0, 16, 0, 4) }); panel.Controls.Add(password);
         panel.Controls.Add(new Label { Text = "Repite la contraseña inicial", AutoSize = true }); panel.Controls.Add(confirm);
         var actions = new FlowLayoutPanel { AutoSize = true, Dock = DockStyle.Fill, WrapContents = true, Margin = new Padding(0, 16, 0, 8) };
         foreach (Button button in new [] { prepareWindows, import, setup, recover, start, stop, open, backup, drill }) actions.Controls.Add(button);
@@ -237,9 +284,10 @@ internal sealed class ServerWindow : Form
         var refresh = new Button { Text = "Actualizar estado", AutoSize = true }; var log = new Button { Text = "Ver registros locales", AutoSize = true }; var manual = new Button { Text = "Leer manual", AutoSize = true };
         details.Controls.Add(refresh); details.Controls.Add(log); details.Controls.Add(manual); panel.Controls.Add(details);
         panel.Controls.Add(location);
-        start.BackColor = Color.FromArgb(36, 95, 164); start.ForeColor = Color.White; start.FlatStyle = FlatStyle.Flat;
+        next.BackColor = Color.FromArgb(36, 95, 164); next.ForeColor = Color.White; next.FlatStyle = FlatStyle.Flat;
+        next.FlatAppearance.BorderColor = Color.FromArgb(14, 40, 80); next.FlatAppearance.BorderSize = 2;
         Controls.Add(panel);
-        help.SetToolTip(prepareWindows, "Windows pide permiso de administrador para preparar WSL, sin instalar otra distribución. Puede descargar componentes y pedir reinicio. El programa no reinicia el equipo.");
+        help.SetToolTip(prepareWindows, "Windows pide permiso de administrador para preparar WSL, sin instalar otra distribución. Puede descargar componentes. Después hay que reiniciar; el programa pregunta antes.");
         help.SetToolTip(import, "Requiere WSL2 y la imagen del servidor junto al programa. Verifica su hash antes de importar. Los datos quedan en OpenMultiPOS\\Servidor dentro de tu perfil.");
         help.SetToolTip(setup, "Crea el sitio privado con una contraseña de 12 a 128 caracteres. Después debes completar el asistente de ERPNext en el navegador.");
         help.SetToolTip(recover, "Úsalo tras una preparación interrumpida. Conserva el intento anterior y rechaza sitios con datos comerciales o cuentas personales.");
@@ -249,20 +297,26 @@ internal sealed class ServerWindow : Form
         help.SetToolTip(drill, "Crea una copia nueva y la restaura en otro sitio aislado. Conserva el original y el ensayo. Puede tardar y necesita espacio libre.");
         backup.Click += async delegate { await Backup(false); };
         drill.Click += async delegate { await Backup(true); };
-        prepareWindows.Click += async delegate { await Work(async () => {
-            if (MessageBox.Show(this, "Windows solicitará permiso de administrador para preparar WSL. Puede necesitar internet y un reinicio posterior. Guarda tu trabajo; este programa no reinicia el computador.\n\n¿Preparar Windows?", "Preparar Windows", MessageBoxButtons.YesNo, MessageBoxIcon.Question) != DialogResult.Yes) return;
-            status.Text = "Sigue la preparación en la ventana de Windows. No cierres este controlador hasta que termine.";
-            await backend.PrepareWindows();
-            status.Text = "La preparación terminó. Si Windows pide reiniciar, guarda tu trabajo y hazlo cuando puedas. Después abre este controlador y pulsa Actualizar estado.";
-        }); };
-        import.Click += async delegate { await Work(async () => { status.Text = "Verificando e importando la imagen. Puede tardar varios minutos."; await Task.Run(() => backend.Import(AppDomain.CurrentDomain.BaseDirectory)); await RefreshState(); }); };
+        help.SetToolTip(next, "Hace el siguiente paso pendiente. Puedes pulsarlo hasta que el servidor quede activo; tras el reinicio de Windows continúa solo.");
+        help.SetToolTip(startWithWindows, "Al iniciar sesión en Windows abre este controlador minimizado e inicia el servidor. No crea servicios ni pide administrador.");
+        prepareWindows.Click += async delegate { await Work(PrepareWindowsStep); };
+        import.Click += async delegate { await Work(ImportStep); };
         setup.Click += async delegate { await Prepare(false); }; recover.Click += async delegate { await Prepare(true); };
-        start.Click += async delegate { await Work(async () => { status.Text = "Iniciando los servicios…"; await backend.Start(); status.Text = "Servidor activo en http://localhost:8089. Conserva esta ventana abierta."; }); };
+        start.Click += async delegate { await Work(StartStep); };
         stop.Click += async delegate { await Work(async () => { status.Text = "Deteniendo los servicios…"; await backend.Stop(); status.Text = "Servidor detenido."; }); };
-        open.Click += delegate { try { Process.Start(new ProcessStartInfo("http://localhost:8089/omp") { UseShellExecute = true }); } catch { status.Text = "No se pudo abrir el navegador. Usa http://localhost:8089/omp."; } };
+        open.Click += delegate { OpenApp(); };
+        next.Click += async delegate { await Next(); };
+        startWithWindows.Checked = Autostart.Enabled;
+        startWithWindows.CheckedChanged += delegate { try { Autostart.Set(startWithWindows.Checked, Executable); } catch { status.Text = "No se pudo cambiar el inicio con Windows en tu perfil."; } };
         refresh.Click += async delegate { await Work(RefreshState); }; log.Click += delegate { try { backend.OpenLog(); } catch { status.Text = "No se pudo abrir la carpeta de registros de tu perfil."; } };
         manual.Click += delegate { try { Process.Start(new ProcessStartInfo(Path.Combine(AppDomain.CurrentDomain.BaseDirectory, "Manual.html")) { UseShellExecute = true }); } catch { status.Text = "Conserva Manual.html junto al programa para abrir la ayuda."; } };
-        Shown += async delegate { await Work(RefreshState); };
+        if (mode == "--autostart") WindowState = FormWindowState.Minimized;
+        Shown += async delegate {
+            await Work(RefreshState);
+            // After sign-in start quietly; after the preparation restart continue the guided flow.
+            if (mode == "--autostart" && installed && !Running) await Work(StartStep);
+            else if (mode == "--resume" && windowsReady && !restartPending && !registered) await Next();
+        };
         var timer = new Timer { Interval = 1000 }; timer.Tick += delegate { if (wasRunning && !Running && !busy) status.Text = "El servidor se detuvo. Revisa los registros antes de volver a iniciar."; wasRunning = Running; ControlsState(); }; timer.Start();
         FormClosing += async delegate(object sender, FormClosingEventArgs e) {
             if (allowClose) return;
@@ -280,11 +334,70 @@ internal sealed class ServerWindow : Form
     private void ControlsState()
     {
         prepareWindows.Enabled = !busy && !windowsReady && !Running;
-        import.Enabled = !busy && windowsReady && !registered; setup.Enabled = !busy && registered && !installed && !Running;
+        import.Enabled = !busy && windowsReady && !restartPending && !registered; setup.Enabled = !busy && registered && !installed && !Running;
         recover.Enabled = setup.Enabled && recoverable; start.Enabled = !busy && installed && !Running;
         stop.Enabled = !busy && Running; open.Enabled = !busy && Running; password.Enabled = confirm.Enabled = setup.Enabled;
         backup.Enabled = drill.Enabled = !busy && installed && !Running;
-        AcceptButton = !windowsReady ? prepareWindows : !registered ? import : installed ? start : setup;
+        next.Enabled = !busy; next.Text = NextLabel(); AcceptButton = next;
+    }
+    private string NextLabel()
+    {
+        if (!windowsReady) return "Paso 1 de 5 · Preparar Windows";
+        if (restartPending) return "Paso 2 de 5 · Reiniciar Windows";
+        if (!registered) return "Paso 3 de 5 · Instalar servidor";
+        if (!installed) return "Paso 4 de 5 · Crear acceso";
+        return Running ? "Abrir OpenMultiPOS" : "Paso 5 de 5 · Iniciar y abrir";
+    }
+    private async Task Next()
+    {
+        if (busy) return;
+        if (!windowsReady) await Work(PrepareWindowsStep);
+        else if (restartPending) RestartStep();
+        else if (!registered) await Work(ImportStep);
+        else if (!installed) await Prepare(false);
+        else if (!Running) await Work(StartStep);
+        else OpenApp();
+    }
+    private async Task PrepareWindowsStep()
+    {
+        if (MessageBox.Show(this, "Windows solicitará permiso de administrador para preparar WSL. Puede necesitar internet. Al terminar hay que reiniciar Windows; te preguntaremos antes.\n\n¿Preparar Windows?", "Preparar Windows", MessageBoxButtons.YesNo, MessageBoxIcon.Question) != DialogResult.Yes) return;
+        status.Text = "Sigue la preparación en la ventana de Windows. No cierres este controlador hasta que termine.";
+        await backend.PrepareWindows();
+        backend.MarkPrepared();
+        await RefreshState();
+        if (restartPending) RestartStep();
+    }
+    private void RestartStep()
+    {
+        status.Text = "Reinicia Windows para terminar la preparación. Al volver, este programa se abrirá solo y continuará.";
+        try { Autostart.ResumeAfterRestart(Executable); } catch { status.Text = "Reinicia Windows y después abre de nuevo OpenMultiPOS Servidor para continuar."; }
+        if (MessageBox.Show(this, "Windows necesita reiniciarse para terminar la preparación. Guarda tu trabajo y cierra otros programas.\n\nAl volver a entrar, OpenMultiPOS Servidor se abrirá solo y continuará la instalación.\n\n¿Reiniciar ahora?", "Reiniciar Windows", MessageBoxButtons.YesNo, MessageBoxIcon.Question) != DialogResult.Yes) return;
+        try { Process.Start(new ProcessStartInfo("shutdown.exe", "/r /t 15 /c \"OpenMultiPOS: reinicio para terminar la preparación\"") { UseShellExecute = false, CreateNoWindow = true }); }
+        catch { status.Text = "No se pudo pedir el reinicio. Reinicia Windows desde el menú Inicio."; }
+    }
+    private async Task ImportStep()
+    {
+        status.Text = "Verificando e importando la imagen. Puede tardar varios minutos.";
+        await Task.Run(() => backend.Import(AppDomain.CurrentDomain.BaseDirectory));
+        await RefreshState();
+        if (registered && !installed)
+        {
+            status.Text = "Paso 4: crea una contraseña de 12 o más caracteres para la cuenta Administrator, repítela y pulsa Continuar. Anótala: la usarás para entrar.";
+            password.Focus();
+        }
+    }
+    private async Task StartStep()
+    {
+        status.Text = "Iniciando los servicios…";
+        await backend.Start();
+        status.Text = ActiveText();
+        if (mode != "--autostart") OpenApp();
+    }
+    private static string ActiveText() { return "Servidor activo en http://localhost:8089. Usuario inicial: Administrator. Conserva esta ventana abierta."; }
+    private void OpenApp()
+    {
+        try { Process.Start(new ProcessStartInfo("http://localhost:8089/omp") { UseShellExecute = true }); }
+        catch { status.Text = "No se pudo abrir el navegador. Usa http://localhost:8089/omp."; }
     }
     private async Task Work(Func<Task> action)
     {
@@ -294,19 +407,29 @@ internal sealed class ServerWindow : Form
     }
     private async Task RefreshState()
     {
-        windowsReady = await Task.Run(() => backend.WindowsReady()); registered = installed = recoverable = false;
+        windowsReady = await Task.Run(() => backend.WindowsReady()); registered = installed = recoverable = restartPending = false;
         location.Text = "Ubicación de datos: " + backend.DataFolder().Replace(Environment.GetFolderPath(Environment.SpecialFolder.LocalApplicationData), "%LOCALAPPDATA%");
-        if (!windowsReady) { status.Text = "Windows todavía no confirma WSL disponible. Pulsa Preparar Windows. Si ya lo preparaste, revisa el reinicio pendiente y la virtualización. Consulta el manual si continúa."; return; }
+        if (!windowsReady) { status.Text = "Paso 1: pulsa Continuar para preparar Windows. Si ya lo preparaste, reinicia y revisa la virtualización. Consulta el manual si continúa."; return; }
+        restartPending = await Task.Run(() => backend.RestartPending());
+        if (restartPending) { status.Text = "Paso 2: Windows necesita reiniciarse para terminar la preparación. Pulsa Continuar."; return; }
         registered = await Task.Run(() => backend.Registered());
-        if (!registered) { status.Text = "Servidor sin instalar. Requiere WSL2 y el paquete completo del servidor."; return; }
+        if (!registered) { status.Text = "Paso 3: pulsa Continuar para instalar el servidor. Requiere el paquete completo junto al programa."; return; }
         var state = await Task.Run(() => backend.Status()); installed = Convert.ToBoolean(state["installed"]); recoverable = Convert.ToBoolean(state["recoverable"]);
-        status.Text = Running ? "Servidor activo. Conserva esta ventana abierta." : installed ? "Sitio preparado. Inicia el servidor para abrir la aplicación." : recoverable ? "La preparación está incompleta. Puedes reintentar o recuperar el intento anterior." : "Crea una contraseña inicial para preparar este servidor privado.";
+        status.Text = Running ? ActiveText() : installed ? "Sitio preparado. Pulsa Continuar para iniciar el servidor y abrir OpenMultiPOS." : recoverable ? "La preparación está incompleta. Escribe la contraseña y pulsa Continuar, o recupera el intento anterior." : "Paso 4: crea una contraseña de 12 o más caracteres para la cuenta Administrator, repítela y pulsa Continuar.";
     }
     private async Task Prepare(bool recovery)
     {
-        if (password.Text.Length < 12 || password.Text != confirm.Text) { status.Text = "Introduce y confirma la misma contraseña de 12 a 128 caracteres."; password.Focus(); return; }
+        if (password.Text.Length < 12 || password.Text != confirm.Text) { status.Text = "Escribe la misma contraseña en los dos campos, con 12 a 128 caracteres."; password.Focus(); return; }
         string secret = password.Text; password.Clear(); confirm.Clear();
-        await Work(async () => { status.Text = "Preparando el sitio privado. La primera vez puede tardar varios minutos."; try { await Task.Run(() => backend.Setup(secret, recovery)); } finally { await RefreshState(); } });
+        await Work(async () => {
+            status.Text = "Preparando el sitio privado. La primera vez puede tardar varios minutos.";
+            try { await Task.Run(() => backend.Setup(secret, recovery)); } finally { await RefreshState(); }
+            if (!installed) return;
+            // A shop till must come back by itself after Windows restarts; the owner can untick it.
+            if (!startWithWindows.Checked) startWithWindows.Checked = true;
+            await StartStep();
+            MessageBox.Show(this, "OpenMultiPOS está listo y se abrió en el navegador.\n\nPara entrar la primera vez:\n• Usuario: Administrator\n• Contraseña: la que acabas de crear\n\nDespués el asistente te pedirá crear tu cuenta personal.", "Primer inicio de sesión", MessageBoxButtons.OK, MessageBoxIcon.Information);
+        });
     }
     private async Task Backup(bool check)
     {
@@ -327,6 +450,9 @@ internal static class ServerProgram
             try { ServerBackend.CheckFreeSpace(30L * 1024 * 1024 * 1024 - 1); return 1; } catch (IOException) { }
             if (ServerBackend.Quote("a b") != "\"a b\"" || ServerBackend.Quote("a b\\") != "\"a b\\\\\"" || ServerBackend.Quote("a\"b") != "\"a\\\"b\"") return 1;
             if (ServerBackend.Quote("--list") != "--list" || ServerBackend.Quote("") != "\"\"") return 1;
+            if (Autostart.Command(@"C:\Program Files\OMP\Control.exe", "--autostart") != "\"C:\\Program Files\\OMP\\Control.exe\" --autostart") return 1;
+            var boot = new DateTime(2026, 1, 1, 8, 0, 0, DateTimeKind.Utc);
+            if (!ServerBackend.PreparedAfterBoot(boot.AddMinutes(5), boot) || ServerBackend.PreparedAfterBoot(boot.AddMinutes(-5), boot)) return 1;
             foreach (string bad in new [] { "Ubuntu", "OpenMultiPOS;bad", "OpenMultiPOS bad", "../OpenMultiPOS" }) { try { new ServerBackend(bad); return 1; } catch (ArgumentException) { } }
             string folder = Path.Combine(Path.GetTempPath(), "omp-controller-test-" + Guid.NewGuid().ToString("N"));
             Directory.CreateDirectory(folder);
@@ -362,12 +488,13 @@ internal static class ServerProgram
             catch (Exception error) { File.WriteAllText(Path.Combine(AppDomain.CurrentDomain.BaseDirectory, "verification-error.txt"), error.ToString() + "\n" + Convert.ToString(error.Data["diagnostic"])); return 4; }
         }
         string distro = args.Length == 2 && args[0] == "--distro" ? args[1] : "OpenMultiPOS";
+        string mode = args.Length == 1 && (args[0] == "--autostart" || args[0] == "--resume") ? args[0] : "";
         try
         {
             using (var singleton = new System.Threading.Mutex(false, "Local\\OpenMultiPOS.Server." + new ServerBackend(distro).Distro))
             {
                 if (!singleton.WaitOne(0)) { MessageBox.Show("El controlador de este servidor ya está abierto.", "OpenMultiPOS"); return 0; }
-                try { Application.EnableVisualStyles(); Application.SetCompatibleTextRenderingDefault(false); Application.Run(new ServerWindow(distro)); }
+                try { Application.EnableVisualStyles(); Application.SetCompatibleTextRenderingDefault(false); Application.Run(new ServerWindow(distro, mode)); }
                 finally { singleton.ReleaseMutex(); }
             }
             return 0;

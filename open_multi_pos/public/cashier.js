@@ -565,6 +565,24 @@
       message(`Cierre guardado: ${summary.closing_entry}.`);
     });
   };
+  $("logout").onclick = () =>
+    run(async () => {
+      // The recovery journal is per user: the next cashier could not resolve it.
+      if (state.journal?.status === "pending")
+        throw new Error(
+          "Resuelva la venta pendiente con Consultar estado antes de cerrar sesión.",
+        );
+      const response = await fetch("/api/v2/method/logout", {
+        method: "POST",
+        credentials: "same-origin",
+        cache: "no-store",
+        headers: { "X-Frappe-CSRF-Token": csrf },
+        signal: AbortSignal.timeout(20000),
+      });
+      if (!response.ok)
+        throw new Error("No se pudo cerrar la sesión. Intente de nuevo.");
+      location.replace("/login?redirect-to=/omp_pos");
+    });
   window.addEventListener("storage", (event) => {
     if (event.key !== scope) return;
     state.journal = readJournal();

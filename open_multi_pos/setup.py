@@ -13,8 +13,22 @@ def create_cashier_role():
         ).insert()
 
 
+def ensure_first_use_defaults():
+    """Native login settings for a fresh shop server; never overrides an owner's choice."""
+    if not frappe.db.get_single_value("System Settings", "default_app"):
+        frappe.db.set_single_value("System Settings", "default_app", "open_multi_pos")
+    # "Correo / Usuario" tells the owner that the installation account `Administrator` is valid.
+    frappe.db.set_single_value("System Settings", "allow_login_using_user_name", 1)
+    # A fresh server cannot send mail; the email-link button would be a dead end.
+    if not frappe.db.exists("Email Account", {"enable_outgoing": 1}) and frappe.db.get_single_value(
+        "System Settings", "login_with_email_link"
+    ):
+        frappe.db.set_single_value("System Settings", "login_with_email_link", 0)
+
+
 def ensure_cashier_role():
     create_cashier_role()
+    ensure_first_use_defaults()
     ensure_landed_cost_fields()
     ensure_warranty_fields()
     if frappe.db.exists("DocType", "OMP Import Request"):
