@@ -391,6 +391,11 @@ class OnboardingHTTP(fixtures.WorkspaceHTTP):
                 frappe.db.set_single_value("System Settings", name, value)
             frappe.db.commit()
             frappe.clear_cache()
+        from open_multi_pos.workspace import require_inventory_account
+
+        require_inventory_account(self.businesses[0]["company"])
+        with self.assertRaisesRegex(ValueError, "cuenta de inventario"):
+            require_inventory_account("OMP entidad inexistente " + uuid4().hex)
         user = frappe.get_doc("User", self.user)
         roles = [row.role for row in user.roles]
         try:

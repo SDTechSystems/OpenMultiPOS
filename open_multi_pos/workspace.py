@@ -246,6 +246,18 @@ def account(company, kind, label):
     )
 
 
+def require_inventory_account(company):
+    """Stop before creating records; simplified charts have no inventory account."""
+    if frappe.db.get_value("Company", company, "default_inventory_account"):
+        return
+    if frappe.db.exists("Account", {"company": company, "account_type": "Stock", "is_group": 0}):
+        return
+    raise ValueError(
+        "Esta entidad no tiene cuenta de inventario y no puede vender productos. "
+        "Crea una entidad nueva o configura su cuenta de inventario en ERPNext."
+    )
+
+
 @frappe.whitelist(methods=["POST"])
 @sale.contract_errors
 def create_business(data):
@@ -270,6 +282,7 @@ def create_business(data):
             }
         ).insert()
     frappe.db.get_value("Company", company.name, "name", for_update=True)
+    require_inventory_account(company.name)
     if frappe.db.get_value(
         "OMP Business Brand",
         {"display_name": display, "company": company.name, "enabled": 1},

@@ -34,11 +34,43 @@
       const index = fields.findIndex(
         (field) => field.fieldname === "setup_demo",
       );
-      if (index < 0) return;
-      const start =
-        fields[index - 1]?.fieldtype === "Section Break" ? index - 1 : index;
-      fields.splice(start, index - start + 1);
+      if (index >= 0) {
+        const start =
+          fields[index - 1]?.fieldtype === "Section Break" ? index - 1 : index;
+        fields.splice(start, index - start + 1);
+      }
+      slide.load_chart_of_accounts = loadCharts;
     }
+  }
+
+  // ERPNext lists charts in disk order, so the preselected one varies by build.
+  // The simple Colombian chart has no inventory, income, cash or bank accounts.
+  function shopCharts(charts) {
+    if (!charts.includes("Colombia PUC")) return charts;
+    return [
+      "Colombia PUC",
+      ...charts.filter(
+        (chart) => chart !== "Colombia PUC" && chart !== "Colombia PUC Simple",
+      ),
+    ];
+  }
+
+  function loadCharts(slide) {
+    const country =
+      frappe.wizard.values.country || frappe.defaults.get_default("country");
+    if (!country) return;
+    frappe.call({
+      method:
+        "erpnext.accounts.doctype.account.chart_of_accounts.chart_of_accounts.get_charts_for_country",
+      args: { country, with_standard: true },
+      callback(response) {
+        if (response.message)
+          slide
+            .get_input("chart_of_accounts")
+            .empty()
+            .add_options(shopCharts(response.message));
+      },
+    });
   }
 
   // ERPNext registers its slides from its own before_load handler, which may

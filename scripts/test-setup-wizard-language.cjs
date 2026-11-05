@@ -98,4 +98,23 @@ assert.deepEqual(
 assert.equal(shop.frappe.setup.utils.setup_region_fields({}), "Colombia");
 assert.equal(regionCalls, 1);
 
+function charts(message) {
+  let options;
+  const input = {
+    empty: () => input,
+    add_options(values) {
+      options = values;
+    },
+  };
+  shop.frappe.wizard = { values: { country: "Colombia" } };
+  shop.frappe.call = ({ callback }) => callback({ message });
+  organization.load_chart_of_accounts({ get_input: () => input });
+  return Array.from(options);
+}
+assert.deepEqual(charts(["Colombia PUC Simple", "Colombia PUC", "Standard"]), [
+  "Colombia PUC",
+  "Standard",
+]);
+assert.deepEqual(charts(["Standard", "Otro"]), ["Standard", "Otro"]);
+
 console.log("Setup wizard defaults: logic checks passed.");
