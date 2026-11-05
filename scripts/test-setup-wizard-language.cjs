@@ -112,9 +112,10 @@ function charts(message) {
   return Array.from(options);
 }
 assert.deepEqual(charts(["Colombia PUC Simple", "Colombia PUC", "Standard"]), [
-  "Colombia PUC",
   "Standard",
+  "Colombia PUC",
 ]);
-assert.deepEqual(charts(["Standard", "Otro"]), ["Standard", "Otro"]);
+assert.deepEqual(charts(["Otro", "Standard"]), ["Standard", "Otro"]);
+assert.deepEqual(charts(["Otro"]), ["Otro"]);
 
 console.log("Setup wizard defaults: logic checks passed.");

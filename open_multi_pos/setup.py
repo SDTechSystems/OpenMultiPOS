@@ -146,14 +146,20 @@ def ensure_cashier_role():
     add_permission("POS Profile", "OMP Cashier", ptype="read")
     # Document hooks deny writes outside the service's private capability. Native
     # role and company permissions still run inside that capability; no Accounts role.
-    for doctype in ("Sales Invoice", "POS Opening Entry", "POS Closing Entry"):
+    rights = ("read", "create", "write", "submit")
+    for doctype, granted in (
+        # The receipt endpoints check native print permission on the invoice.
+        ("Sales Invoice", (*rights, "print")),
+        ("POS Opening Entry", rights),
+        ("POS Closing Entry", rights),
+    ):
         add_permission(doctype, "OMP Cashier", ptype="read")
         name = frappe.db.get_value(
             "Custom DocPerm", {"parent": doctype, "role": "OMP Cashier", "permlevel": 0}
         )
         rule = frappe.get_doc("Custom DocPerm", name)
-        if any(not rule.get(ptype) for ptype in ("read", "create", "write", "submit")):
-            rule.update(dict.fromkeys(("read", "create", "write", "submit"), 1))
+        if any(not rule.get(ptype) for ptype in granted):
+            rule.update(dict.fromkeys(granted, 1))
             rule.save()
             frappe.clear_cache(doctype=doctype)
 

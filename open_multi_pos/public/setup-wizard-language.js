@@ -44,13 +44,14 @@
   }
 
   // ERPNext lists charts in disk order, so the preselected one varies by build.
-  // The simple Colombian chart has no inventory, income, cash or bank accounts.
+  // Colombia PUC leaves stock adjustment and round-off accounts empty, and the
+  // simple variant has no inventory at all, so a shop starts on the standard chart.
   function shopCharts(charts) {
-    if (!charts.includes("Colombia PUC")) return charts;
+    if (!charts.includes("Standard")) return charts;
     return [
-      "Colombia PUC",
+      "Standard",
       ...charts.filter(
-        (chart) => chart !== "Colombia PUC" && chart !== "Colombia PUC Simple",
+        (chart) => chart !== "Standard" && chart !== "Colombia PUC Simple",
       ),
     ];
   }

@@ -391,11 +391,25 @@ class OnboardingHTTP(fixtures.WorkspaceHTTP):
                 frappe.db.set_single_value("System Settings", name, value)
             frappe.db.commit()
             frappe.clear_cache()
-        from open_multi_pos.workspace import require_inventory_account
+        from open_multi_pos.workspace import require_stock_accounts
 
-        require_inventory_account(self.businesses[0]["company"])
-        with self.assertRaisesRegex(ValueError, "cuenta de inventario"):
-            require_inventory_account("OMP entidad inexistente " + uuid4().hex)
+        company = self.businesses[0]["company"]
+        require_stock_accounts(company)
+        with self.assertRaisesRegex(ValueError, "cuentas de inventario"):
+            require_stock_accounts("OMP entidad inexistente " + uuid4().hex)
+        adjustment = frappe.db.get_value("Company", company, "stock_adjustment_account")
+        frappe.db.set_value("Company", company, "stock_adjustment_account", None)
+        with self.assertRaisesRegex(ValueError, "cuentas de inventario"):
+            require_stock_accounts(company)
+        frappe.db.set_value("Company", company, "stock_adjustment_account", adjustment)
+        self.assertEqual(
+            frappe.db.get_value(
+                "Custom DocPerm",
+                {"parent": "Sales Invoice", "role": "OMP Cashier", "permlevel": 0},
+                "print",
+            ),
+            1,
+        )
         user = frappe.get_doc("User", self.user)
         roles = [row.role for row in user.roles]
         try:

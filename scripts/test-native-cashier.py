@@ -41,7 +41,6 @@ class NativeCashierBrowser(native.NativeCheckoutHTTPTests):
         try:
             for config in (self.na, self.nb):
                 user = config["user"]
-                frappe.get_doc("User", user).add_roles(native.fixtures.PRINT_ROLE)
                 old = frappe.db.sql(
                     "SELECT password, encrypted FROM __Auth WHERE doctype='User' AND name=%s AND fieldname='password'",
                     user,
