@@ -376,6 +376,11 @@ async function open(page) {
       { params: { terminal: input.logins[0].terminal } },
     );
     assert.equal(denied.status(), 403);
+    const amounts = await other.page.locator("#balances").boundingBox();
+    const opening = await other.page
+      .locator("#opening-form button[type=submit]")
+      .boundingBox();
+    assert.ok(opening.y >= amounts.y + amounts.height + 8);
     await open(other.page);
     await scan(other.page, input.logins[1].item);
     await quote(other.page);
@@ -386,6 +391,17 @@ async function open(page) {
     console.log(
       "PASS native closing counts, second cashier, foreign terminal rejection, mobile sale",
     );
+    assert.equal(
+      await other.page.getByRole("link", { name: "Administración" }).count(),
+      0,
+    );
+    await other.page.locator("#logout").click();
+    await other.page.waitForURL(/\/login/);
+    const signedOut = await other.context.request.get(
+      `${input.base}/api/method/open_multi_pos.cashier.terminals`,
+    );
+    assert.equal(signedOut.status(), 403);
+    console.log("PASS cashier sign-out ends the session");
     await other.context.close();
     await context.close();
   } finally {

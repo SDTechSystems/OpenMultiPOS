@@ -85,6 +85,26 @@ const input = JSON.parse(fs.readFileSync(0, "utf8"));
         [],
       );
     }
+    await page.evaluate(
+      async ({ email, password }) => {
+        await window.OMPWorkspace.run(() =>
+          window.OMPOnboarding.create("user", {
+            email,
+            full_name: "Cuenta ficticia rechazada",
+            password,
+            role: "invalido",
+            brands: [],
+          }),
+        );
+      },
+      { email: input.new_user, password: input.new_password },
+    );
+    await ready();
+    assert.match(
+      await page.locator("#notice").textContent(),
+      /Perfil inválido/,
+    );
+    assert.equal(await page.locator("#setup-operation").isVisible(), false);
     await page.route(
       "**/api/method/open_multi_pos.onboarding.apply",
       async (route) => {
@@ -130,7 +150,7 @@ const input = JSON.parse(fs.readFileSync(0, "utf8"));
     assert.equal(await page.locator("#setup-operation").isVisible(), false);
     assert.deepEqual(errors, []);
     console.log(
-      "Setup: server resume, keyboard, lost response recovery, password exclusion, mobile and axe passed.",
+      "Setup: server resume, keyboard, rejected attempt release, lost response recovery, password exclusion, mobile and axe passed.",
     );
   } finally {
     await browser.close();

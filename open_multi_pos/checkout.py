@@ -32,7 +32,7 @@ def contract_errors(function):
         try:
             return function(*args, **kwargs)
         except ValueError as exc:
-            frappe.throw("Solicitud de caja inválida: " + str(exc))
+            frappe.throw("Solicitud inválida: " + str(exc))
         except frappe.QueryDeadlockError:
             conflict(
                 "Solicitud concurrente abortada. Consulte el estado y reintente con la misma clave; no repita el cobro externo."

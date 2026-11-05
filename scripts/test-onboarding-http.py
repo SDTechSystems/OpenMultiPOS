@@ -350,6 +350,81 @@ class OnboardingHTTP(fixtures.WorkspaceHTTP):
             frappe.db.commit()
             frappe.clear_cache(user=self.user)
 
+    def test_10_first_use_defaults_and_landing_pages(self):
+        from frappe.apps import get_default_path
+        from frappe.translate import get_all_translations
+
+        from open_multi_pos.permissions import home_page
+        from open_multi_pos.setup import ensure_first_use_defaults
+
+        frappe.db.rollback()
+        settings = ("default_app", "allow_login_using_user_name", "login_with_email_link")
+        previous = {name: frappe.db.get_single_value("System Settings", name) for name in settings}
+        try:
+            frappe.db.set_single_value("System Settings", "default_app", "")
+            frappe.db.set_single_value("System Settings", "login_with_email_link", 1)
+            ensure_first_use_defaults()
+            current = {n: frappe.db.get_single_value("System Settings", n) for n in settings}
+            self.assertEqual(current["default_app"], "open_multi_pos")
+            self.assertEqual(current["allow_login_using_user_name"], 1)
+            self.assertTrue(frappe.db.get_single_value("Navbar Settings", "app_logo"))
+            outgoing = frappe.db.exists("Email Account", {"enable_outgoing": 1})
+            self.assertEqual(current["login_with_email_link"], 1 if outgoing else 0)
+            frappe.db.set_single_value("System Settings", "default_app", "erpnext")
+            ensure_first_use_defaults()
+            self.assertEqual(
+                frappe.db.get_single_value("System Settings", "default_app"), "erpnext"
+            )
+            frappe.db.set_single_value("System Settings", "default_app", "open_multi_pos")
+            frappe.clear_cache()
+            frappe.set_user("Administrator")
+            self.assertEqual(get_default_path(), "/omp")
+            self.assertEqual(home_page("Administrator"), "omp")
+            self.assertIsNone(home_page("Guest"))
+            self.assertEqual(get_all_translations("es")["Sign In"], "Iniciar sesión")
+            self.assertEqual(
+                get_all_translations("es-CO")["Let's get the basics right"],
+                "Empecemos por lo básico",
+            )
+        finally:
+            for name, value in previous.items():
+                frappe.db.set_single_value("System Settings", name, value)
+            frappe.db.commit()
+            frappe.clear_cache()
+        from open_multi_pos.workspace import require_stock_accounts
+
+        company = self.businesses[0]["company"]
+        require_stock_accounts(company)
+        with self.assertRaisesRegex(ValueError, "cuentas de inventario"):
+            require_stock_accounts("OMP entidad inexistente " + uuid4().hex)
+        adjustment = frappe.db.get_value("Company", company, "stock_adjustment_account")
+        frappe.db.set_value("Company", company, "stock_adjustment_account", None)
+        with self.assertRaisesRegex(ValueError, "cuentas de inventario"):
+            require_stock_accounts(company)
+        frappe.db.set_value("Company", company, "stock_adjustment_account", adjustment)
+        self.assertEqual(
+            frappe.db.get_value(
+                "Custom DocPerm",
+                {"parent": "Sales Invoice", "role": "OMP Cashier", "permlevel": 0},
+                "print",
+            ),
+            1,
+        )
+        user = frappe.get_doc("User", self.user)
+        roles = [row.role for row in user.roles]
+        try:
+            user.set("roles", [{"role": "OMP Cashier"}, {"role": "Sales User"}])
+            user.save()
+            frappe.db.commit()
+            frappe.clear_cache(user=self.user)
+            self.assertEqual(home_page(self.user), "omp_pos")
+        finally:
+            user = frappe.get_doc("User", self.user)
+            user.set("roles", [{"role": role} for role in roles])
+            user.save()
+            frappe.db.commit()
+            frappe.clear_cache(user=self.user)
+
 
 if __name__ == "__main__":
     parser = argparse.ArgumentParser(description=__doc__)

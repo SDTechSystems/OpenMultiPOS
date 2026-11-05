@@ -1244,17 +1244,26 @@ class XPOSHTTPTests(unittest.TestCase):
             403,
         )
         frappe.get_doc("User", self.a["user"]).remove_roles(PRINT_ROLE)
-        frappe.db.commit()
-        frappe.clear_cache(user=self.a["user"])
-        self.assertEqual(
-            self.call(
-                "xpos.api.print_formats.mark_invoice_printed",
-                payload,
-                user=self.a["user"],
-                verb="POST",
-            ).status_code,
-            403,
+        rule = frappe.db.get_value(
+            "Custom DocPerm", {"parent": "Sales Invoice", "role": "OMP Cashier", "permlevel": 0}
         )
+        frappe.db.set_value("Custom DocPerm", rule, "print", 0)
+        frappe.db.commit()
+        frappe.clear_cache(doctype="Sales Invoice")
+        try:
+            self.assertEqual(
+                self.call(
+                    "xpos.api.print_formats.mark_invoice_printed",
+                    payload,
+                    user=self.a["user"],
+                    verb="POST",
+                ).status_code,
+                403,
+            )
+        finally:
+            frappe.db.set_value("Custom DocPerm", rule, "print", 1)
+            frappe.db.commit()
+            frappe.clear_cache(doctype="Sales Invoice")
         self.assertEqual(self.counter(), 0)
 
     def test_print_counter_rejects_foreign_invoice_without_mutation(self):

@@ -421,6 +421,14 @@
       },
       "Crear negocio",
     );
+    const toggleEntity = () => {
+      for (const id of ["new-legal-name", "new-abbr", "new-currency"])
+        $(id).closest(".field").style.display = value("new-business-company")
+          ? "none"
+          : "";
+    };
+    $("new-business-company").onchange = toggleEntity;
+    toggleEntity();
   }
   $("new-business").onclick = () => newBusiness();
   $("add-product").onclick = () => {
@@ -740,7 +748,8 @@
           id: "user-brand-" + i,
           label: "Dar acceso a " + b.display_name,
           type: "checkbox",
-          value: 1,
+          // Least access by default: a cashier starts on the active business only.
+          value: first || b.brand === state.brand?.brand ? 1 : 0,
           help: "Crea una terminal para esta persona y asigna los permisos del negocio. El servidor vuelve a comprobarlos en cada operación.",
         })),
       ],
@@ -770,6 +779,12 @@
       },
       "Crear perfil",
     );
+    $("user-role").onchange = () => {
+      if (value("user-role") !== "admin") return;
+      state.boot.businesses.forEach((_, i) => {
+        $("user-brand-" + i).checked = true;
+      });
+    };
   }
   $("add-user").onclick = () => newUser(false);
   async function settings() {
@@ -1144,16 +1159,28 @@
   document
     .querySelectorAll("[data-go]")
     .forEach((btn) => (btn.onclick = () => run(() => route(btn.dataset.go))));
-  $("tool-search").onchange = () => {
-    const query = $("tool-search").value.toLocaleLowerCase();
+  function openTool(exact) {
+    const query = $("tool-search").value.trim().toLocaleLowerCase();
+    if (!query) return;
+    const name = (k) => t(views[k][0]).toLocaleLowerCase();
     const key = Object.keys(views).find((k) =>
-      t(views[k][0]).toLocaleLowerCase().includes(query),
+      exact ? name(k) === query : name(k).includes(query),
     );
     if (key) {
       $("tool-search").value = "";
       run(() => route(key));
     }
+  }
+  // Picking a datalist option fires input; change waits until the field blurs.
+  $("tool-search").oninput = () => openTool(true);
+  $("tool-search").onchange = () => openTool(false);
+  $("tool-search").onkeydown = (event) => {
+    if (event.key === "Enter") openTool(false);
   };
+  window.addEventListener("hashchange", () => {
+    const view = location.hash.slice(1);
+    if (view && view !== state.view) run(() => route(view));
+  });
   $("business-picker").onchange = () =>
     run(async () => {
       W.active($("business-picker").value);

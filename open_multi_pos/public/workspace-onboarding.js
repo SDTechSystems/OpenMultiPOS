@@ -78,6 +78,24 @@ window.OMPOnboarding = (() => {
     );
     return true;
   }
+  // A 4xx is a rejection the server finished, so the user can fix the form and
+  // send again. A lost response or a 5xx leaves the outcome unknown: keep it.
+  async function release(request, error) {
+    if (!(error.status >= 400 && error.status < 500)) return;
+    let value;
+    try {
+      value = await api(
+        "onboarding.status",
+        { request_id: request.request_id },
+        true,
+      );
+    } catch {
+      return;
+    }
+    if (value.status !== "not_found") return;
+    localStorage.removeItem(scope);
+    pendingView();
+  }
   async function create(action, data, first = false) {
     return locked(async () => {
       if (read())
@@ -93,14 +111,20 @@ window.OMPOnboarding = (() => {
       };
       localStorage.setItem(scope, JSON.stringify(request));
       pendingView();
-      const value = await api(
-        "onboarding.apply",
-        {
-          ...request,
-          data: { ...saved, ...(password !== undefined ? { password } : {}) },
-        },
-        true,
-      );
+      let value;
+      try {
+        value = await api(
+          "onboarding.apply",
+          {
+            ...request,
+            data: { ...saved, ...(password !== undefined ? { password } : {}) },
+          },
+          true,
+        );
+      } catch (error) {
+        await release(request, error);
+        throw error;
+      }
       accept(value);
       if (value.restricted)
         throw new Error(

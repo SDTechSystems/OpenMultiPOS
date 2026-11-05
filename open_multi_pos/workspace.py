@@ -246,6 +246,24 @@ def account(company, kind, label):
     )
 
 
+def require_stock_accounts(company):
+    """Stop before creating records; charts without typed accounts leave these empty."""
+    accounts = frappe.db.get_value(
+        "Company",
+        company,
+        ("stock_adjustment_account", "stock_received_but_not_billed", "round_off_account"),
+    )
+    stock = frappe.db.exists(
+        "Account", {"company": company, "account_type": "Stock", "is_group": 0}
+    )
+    if stock and accounts and all(accounts):
+        return
+    raise ValueError(
+        "Esta entidad no tiene las cuentas de inventario que necesita para vender productos. "
+        "Crea una entidad nueva o configura sus cuentas predeterminadas en ERPNext."
+    )
+
+
 @frappe.whitelist(methods=["POST"])
 @sale.contract_errors
 def create_business(data):
@@ -270,6 +288,7 @@ def create_business(data):
             }
         ).insert()
     frappe.db.get_value("Company", company.name, "name", for_update=True)
+    require_stock_accounts(company.name)
     if frappe.db.get_value(
         "OMP Business Brand",
         {"display_name": display, "company": company.name, "enabled": 1},

@@ -7,6 +7,22 @@ def manager(user: str) -> bool:
     return user == "Administrator" or "System Manager" in frappe.get_roles(user)
 
 
+def can_open_app() -> bool:
+    user = frappe.session.user
+    return user != "Guest" and (manager(user) or "OMP Cashier" in frappe.get_roles(user))
+
+
+def home_page(user: str) -> str | None:
+    """Landing page after login; Frappe sends system users to /desk without it."""
+    if user == "Guest":
+        return None
+    if manager(user):
+        return "omp"
+    if "OMP Cashier" in frappe.get_roles(user):
+        return "omp_pos"
+    return None
+
+
 def brand_query(user=None):
     user = user or frappe.session.user
     if user == "Guest":

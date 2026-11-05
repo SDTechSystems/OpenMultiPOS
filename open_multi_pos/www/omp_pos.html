@@ -17,7 +17,11 @@
         <h1>Caja</h1>
       </div>
       <div>
-        <span>{{ cashier_user | e }}</span> · <a href="/app">Administración</a>
+        <span>{{ cashier_user | e }}</span>
+        {% if is_admin %}· <a href="/omp">Administración</a>{% endif %}
+        <button id="logout" type="button" class="secondary">
+          Cerrar sesión
+        </button>
       </div>
     </header>
     <main>

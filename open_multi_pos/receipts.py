@@ -20,6 +20,13 @@ def money(amount: int) -> str:
     return f"{sign}$ {grouped}" + (f",{fraction:02d}" if fraction else "")
 
 
+def payment_label(payment: dict) -> str:
+    """Mode of Payment names carry a per-business code that customers should not read."""
+    return {"Cash": "Efectivo", "Bank": "Transferencia"}.get(
+        payment.get("kind"), payment.get("mode_of_payment", "Pago")
+    )
+
+
 def qr_image(url: str) -> tuple[str, int]:
     qr = qrcode.QRCode(error_correction=qrcode.constants.ERROR_CORRECT_M, border=4, box_size=4)
     qr.add_data(safe_qr_url(url))
@@ -41,19 +48,20 @@ def render_receipt(receipt: dict, profile: PrinterProfile, *, native: bool = Fal
     brand = receipt["brand"]
     currency = escape(receipt.get("currency", "COP"))
     rows = "".join(
-        f"<tr><td>{escape(line['name'])}<br><small>{line['qty']} × {money(line['rate'])}</small>"
+        f"<tr><td>{escape(line['name'])}<br><small>{line['qty']:g} × {money(line['rate'])}</small>"
         f"</td><td>{money(line['amount'])}</td></tr>"
         for line in receipt["items"]
     )
     payments = "".join(
-        f"<p>{escape(p['mode_of_payment'] if native else p['label'].replace('(registro demo)', '').strip())}: {money(p['amount'])}</p>"
+        f"<p>{escape(payment_label(p) if native else p['label'].replace('(registro demo)', '').strip())}: {money(p['amount'])}</p>"
         for p in receipt["payments"]
         if p["amount"] > 0
     )
     local_time = datetime.fromisoformat(receipt["created_at"]).astimezone(
         ZoneInfo(receipt.get("time_zone", "America/Bogota"))
     )
-    qr, modules = qr_image(brand["qr_url"])
+    # A new business has neither until the owner fills them in Ajustes.
+    qr, modules = qr_image(brand["qr_url"]) if brand.get("qr_url") else ("", 1)
     module_dots = max(3, min(4, int(profile.content_mm / 25.4 * profile.dpi * 0.55 / modules)))
     qr_mm = modules * module_dots / profile.dpi * 25.4
     change = f"<p>Cambio: {money(receipt['change'])}</p>" if receipt["change"] else ""
@@ -61,6 +69,7 @@ def render_receipt(receipt: dict, profile: PrinterProfile, *, native: bool = Fal
     badge = "RECIBO INTERNO" if native else "DEMO · RECIBO INTERNO"
     label = "Recibo interno guardado" if native else "Recibo interno de demostración"
     qr_label = "QR comercial" if native else "QR comercial de demostración"
+    qr_tag = f'<img src="{qr}" alt="{qr_label}">' if qr else ""
     script = "/assets/open_multi_pos/receipt-print.js" if native else "/receipt-print.js"
     taxes = f"<p>Impuestos: {money(receipt['taxes'])}</p>" if native else ""
     return f'''<!doctype html><html lang="es-CO"><head><meta charset="utf-8">
@@ -89,7 +98,7 @@ tr, footer {{ break-inside:avoid; }}
 <p class="meta">{escape(receipt["id"])}<br>{local_time:%d/%m/%Y %H:%M} · {currency}</p>
 <table><thead><tr><th scope="col">Artículo</th><th scope="col">{currency}</th></tr></thead><tbody>{rows}</tbody></table>
 {taxes}<p class="total">Total {money(receipt["total"])}</p>{payments}{change}
-<footer><small>{escape(brand["footer"])}</small><img src="{qr}" alt="{qr_label}"></footer>
+<footer><small>{escape(brand.get("footer") or "")}</small>{qr_tag}</footer>
 </article></body></html>'''
 
 
@@ -122,12 +131,11 @@ def render_compact_receipt(receipt: dict) -> str:
         )
         payments = []
         for pay in part["payments"]:
-            label = {"Cash": "Efectivo", "Bank": "Transferencia"}.get(
-                pay.get("kind"), pay.get("mode_of_payment", "Pago")
-            )
             if pay["amount"]:
                 payments.append(
-                    escape(label) + " " + money(abs(pay["amount"]) if is_return else pay["amount"])
+                    escape(payment_label(pay))
+                    + " "
+                    + money(abs(pay["amount"]) if is_return else pay["amount"])
                 )
         qr = ""
         if details.get("receipt_show_qr", 1) and brand.get("qr_url"):

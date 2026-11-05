@@ -180,11 +180,15 @@ window.OMPSales = (() => {
     $("pay-form").hidden = true;
     controls();
   }
+  function basketCount() {
+    const count = state.cart.reduce((sum, r) => sum + r.qty, 0);
+    $("basket-count").textContent =
+      count + (count === 1 ? " producto" : " productos");
+  }
   function drawCart() {
     invalidate();
     $("basket").replaceChildren();
-    $("basket-count").textContent =
-      state.cart.reduce((sum, r) => sum + r.qty, 0) + " productos";
+    basketCount();
     if (!state.cart.length) {
       W.empty(
         $("basket"),
@@ -217,6 +221,7 @@ window.OMPSales = (() => {
           return;
         }
         row.qty = qty.valueAsNumber;
+        basketCount();
         invalidate();
       };
       const remove = el("button", "Quitar", "quiet");

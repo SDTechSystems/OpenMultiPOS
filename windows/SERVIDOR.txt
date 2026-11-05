@@ -25,30 +25,34 @@ Instalable
 Ejecuta OpenMultiPOS-Server-Setup-0.1.0.exe desde la carpeta completa extraída.
 El instalador necesita la imagen y su manifest al lado. Instala para tu usuario,
 sin pedir permisos de administrador. Preparar WSL sí puede necesitarlos.
-Después abre OpenMultiPOS Servidor desde Inicio.
+El instalador abre el controlador y crea accesos en el escritorio y en Inicio.
 
 Primera ejecución
-Si Windows no confirma WSL disponible, pulsa Preparar Windows. Sigue la ventana
-de Windows y su permiso de administrador. Puede descargar componentes y pedir
-reinicio. El programa no reinicia el computador. Después vuelve a abrir el
-controlador y pulsa Actualizar estado. No agrega otra distribución Linux.
+Pulsa Continuar. El botón muestra el paso actual y hace el siguiente:
 
-1. Importa la imagen. El controlador verifica su hash y conserva cualquier
+1. Preparar Windows. Sigue la ventana de Windows y su permiso de
+   administrador. Puede descargar componentes. No agrega otra distribución.
+2. Reiniciar Windows. El controlador pregunta antes de reiniciar. Al volver a
+   entrar se abre solo y continúa con el paso 3.
+3. Instalar servidor. Verifica el hash de la imagen y conserva cualquier
    servidor o carpeta previa. No borres esos datos si aparece un conflicto.
-2. Crea y confirma una contraseña inicial de 12 a 128 caracteres.
-3. Prepara el sitio. Espera a que termine. Si se interrumpe, vuelve a consultar
-   el estado y reintenta. Recuperar conserva el intento previo y solo permite
-   instalaciones sin datos comerciales ni cuentas personales.
-4. Inicia el servidor y abre http://localhost:8089/omp. Entra como Administrator
-   con la contraseña inicial. Completa el asistente nativo de ERPNext y después
-   el recorrido de preparación de OpenMultiPOS. Crea cuentas personales.
-5. Mantén el controlador abierto mientras otros computadores trabajen.
+4. Crear acceso. Escribe y repite una contraseña de 12 a 128 caracteres para
+   la cuenta Administrator. Si se interrumpe, Recuperar conserva el intento
+   previo y solo permite instalaciones sin datos comerciales ni cuentas.
+5. Iniciar y abrir. El navegador abre http://localhost:8089/omp. Entra con el
+   usuario Administrator y la contraseña inicial. Completa el asistente nativo
+   de ERPNext, el recorrido de OpenMultiPOS y crea cuentas personales.
+
+Al terminar, "Iniciar el servidor al encender Windows" queda marcado: tras
+cada reinicio el controlador se abre minimizado e inicia el servidor. Puedes
+desmarcarlo. Mantén el controlador abierto mientras otros computadores trabajen.
 
 Los datos se guardan en %LOCALAPPDATA%\OpenMultiPOS\Servidor. El controlador
 muestra la ubicación registrada. No muevas ni sincronices ext4.vhdx en vivo.
 Detener cierra los servicios ordenadamente; los demás equipos pierden acceso.
 
 Actualizar o desinstalar el programa conserva la distribución y sus datos.
+Desinstalar quita los accesos directos y el inicio con Windows.
 El instalador conserva archivos reemplazados como .previous. Esto actualiza
 el controlador y la imagen para instalaciones nuevas, no migra un sitio previo.
 Antes de actualizar el backend se requiere copia privada verificada, ensayo de

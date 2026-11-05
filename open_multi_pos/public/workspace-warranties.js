@@ -228,7 +228,19 @@ window.OMPWarranties = (() => {
       input = el("input");
     input.id = "warranty-invoice";
     label.htmlFor = input.id;
-    create.append(label, input, button("Consultar venta", inspect));
+    input.placeholder = "Elige una venta reciente o escribe su número";
+    input.setAttribute("list", "warranty-recent");
+    const recent = el("datalist");
+    recent.id = "warranty-recent";
+    const sales = await api("receipt_preview.documents", {
+      brand: W.state.brand.brand,
+    });
+    recent.append(
+      ...sales
+        .filter((row) => row.kind === "invoice")
+        .map((row) => new Option(row.label, row.document)),
+    );
+    create.append(label, input, recent, button("Consultar venta", inspect));
     const recovery = el("div");
     recovery.id = "warranty-recovery";
     const text = el("p");

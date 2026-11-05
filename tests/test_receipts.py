@@ -91,6 +91,27 @@ class ReceiptTests(unittest.TestCase):
         self.assertNotIn("DEMO ·", html)
         self.assertIn("/assets/open_multi_pos/receipt-print.js", html)
 
+    def test_new_business_receipt_needs_no_qr_or_footer(self):
+        receipt = {
+            "id": "NATIVE-2",
+            "created_at": "2026-10-19T17:00:00+00:00",
+            "brand": {"name": "Marca nueva", "footer": None, "qr_url": None},
+            "items": [{"name": "Artículo", "qty": 1.0, "rate": 1000, "amount": 1000}],
+            "payments": [
+                {"mode_of_payment": "Efectivo Marca a1b2", "kind": "Cash", "amount": 1000}
+            ],
+            "total": 1000,
+            "taxes": 0,
+            "change": 0,
+        }
+        html = render_receipt(receipt, printer_profiles()["generic-58"], native=True)
+        self.assertIn("Marca nueva", html)
+        self.assertIn("1 × $", html)
+        self.assertIn("<p>Efectivo: $", html)
+        self.assertNotIn("a1b2", html)
+        self.assertNotIn("<img", html)
+        self.assertNotIn("None", html)
+
     def test_fiscal_is_disabled(self):
         result = DisabledFiscalProvider().status()
         self.assertFalse(result.issued)
