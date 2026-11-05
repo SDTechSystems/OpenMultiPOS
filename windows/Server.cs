@@ -167,6 +167,8 @@ internal sealed class ServerBackend
         if (Directory.Exists(data)) throw new IOException("La carpeta de datos ya existe. Se conserva para revisión.");
         CheckFreeSpace(new DriveInfo(Path.GetPathRoot(data)).AvailableFreeSpace);
         VerifyImage(folder);
+        // Otherwise the first import opens Microsoft's WSL welcome window over the installer.
+        using (RegistryKey key = Registry.CurrentUser.CreateSubKey(@"Software\Microsoft\Windows\CurrentVersion\Lxss")) key.SetValue("OOBEComplete", 1, RegistryValueKind.DWord);
         Execute(new [] { "--import", Distro, data, Path.Combine(folder, "OpenMultiPOS-Server.wsl"), "--version", "2" }, null, true);
     }
     internal async Task Start()
