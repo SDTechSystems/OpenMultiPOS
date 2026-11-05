@@ -499,7 +499,7 @@
     "steps": [
       {
         "title": "Consulta la venta",
-        "body": "Selecciona el negocio y escribe el número de la venta original. Elige el artículo y registra fecha y motivo; no se crean cobros ni movimientos de inventario.",
+        "body": "Selecciona el negocio y elige una venta reciente o escribe su número. Elige el artículo y registra fecha y motivo; no se crean cobros ni movimientos de inventario.",
         "target": "#view-warranties"
       },
       {

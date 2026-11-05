@@ -1,5 +1,8 @@
 """Minimal additional role; preserve existing ERPNext permissions."""
 
+import json
+from pathlib import Path
+
 import frappe
 from frappe.permissions import add_permission
 
@@ -17,6 +20,11 @@ def ensure_first_use_defaults():
     """Native login settings for a fresh shop server; never overrides an owner's choice."""
     if not frappe.db.get_single_value("System Settings", "default_app"):
         frappe.db.set_single_value("System Settings", "default_app", "open_multi_pos")
+    # With three apps declaring app_logo_url Frappe shows its own; this is the owner's setting.
+    if not frappe.db.get_single_value("Navbar Settings", "app_logo"):
+        frappe.db.set_single_value(
+            "Navbar Settings", "app_logo", "/assets/open_multi_pos/images/openmultipos.svg"
+        )
     # "Correo / Usuario" tells the owner that the installation account `Administrator` is valid.
     frappe.db.set_single_value("System Settings", "allow_login_using_user_name", 1)
     # A fresh server cannot send mail; the email-link button would be a dead end.
@@ -26,9 +34,27 @@ def ensure_first_use_defaults():
         frappe.db.set_single_value("System Settings", "login_with_email_link", 0)
 
 
+def ensure_first_use_labels():
+    """Spanish for native login and wizard text; owner edits to these records are kept."""
+    if not frappe.db.exists("Language", "es"):
+        return
+    labels = json.loads((Path(__file__).parent / "first_use_es.json").read_text(encoding="utf-8"))
+    for source, text in labels.items():
+        if not frappe.db.exists("Translation", {"language": "es", "source_text": source}):
+            frappe.get_doc(
+                {
+                    "doctype": "Translation",
+                    "language": "es",
+                    "source_text": source,
+                    "translated_text": text,
+                }
+            ).insert(ignore_permissions=True)
+
+
 def ensure_cashier_role():
     create_cashier_role()
     ensure_first_use_defaults()
+    ensure_first_use_labels()
     ensure_landed_cost_fields()
     ensure_warranty_fields()
     if frappe.db.exists("DocType", "OMP Import Request"):

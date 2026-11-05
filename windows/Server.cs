@@ -257,9 +257,14 @@ internal sealed class ServerWindow : Form
     private readonly Button drill = new Button { Text = "Comprobar recuperación", AutoSize = true };
     private readonly Button next = new Button { Text = "Continuar", AutoSize = true, Font = new Font("Segoe UI", 12, FontStyle.Bold), Padding = new Padding(12, 4, 12, 4) };
     private readonly CheckBox startWithWindows = new CheckBox { Text = "Iniciar el servidor al encender Windows", AutoSize = true, Margin = new Padding(0, 4, 0, 4) };
+    private readonly ProgressBar progress = new ProgressBar { Style = ProgressBarStyle.Marquee, MarqueeAnimationSpeed = 30, Dock = DockStyle.Top, Height = 10, Visible = false, Margin = new Padding(0, 8, 0, 2), AccessibleName = "Trabajando" };
+    private readonly Label elapsed = new Label { AutoSize = true, MaximumSize = new Size(620, 0), Visible = false };
+    private readonly Label passwordHint = new Label { AutoSize = true, MaximumSize = new Size(620, 0), Margin = new Padding(0, 6, 0, 0), Font = new Font("Segoe UI", 10, FontStyle.Bold) };
     private readonly ToolTip help = new ToolTip();
     private readonly string mode;
+    private static readonly Color ErrorColor = Color.FromArgb(170, 20, 20), GoodColor = Color.FromArgb(20, 110, 60);
     private bool busy, windowsReady, restartPending, registered, installed, recoverable, allowClose, wasRunning;
+    private DateTime busySince;
     private static string Executable { get { return Application.ExecutablePath; } }
 
     // mode: "" (normal), "--autostart" (Windows sign-in) or "--resume" (after the preparation restart).
@@ -269,14 +274,14 @@ internal sealed class ServerWindow : Form
         backend = new ServerBackend(distro);
         Text = "OpenMultiPOS · Servidor propio · " + distro;
         Font = new Font("Segoe UI", 10); BackColor = Color.FromArgb(243, 246, 250);
-        AutoScaleMode = AutoScaleMode.Dpi; MinimumSize = new Size(700, 540); ClientSize = new Size(740, 540); StartPosition = FormStartPosition.CenterScreen;
+        AutoScaleMode = AutoScaleMode.Dpi; MinimumSize = new Size(700, 540); ClientSize = new Size(740, 620); StartPosition = FormStartPosition.CenterScreen;
         var panel = new TableLayoutPanel { Dock = DockStyle.Fill, AutoScroll = true, Padding = new Padding(24), ColumnCount = 1, RowCount = 10 };
-        panel.Controls.Add(new Label { Text = "Servidor propio: datos en este computador", Font = new Font("Segoe UI", 17, FontStyle.Bold), AutoSize = true });
-        panel.Controls.Add(new Label { Text = "Crea una instalación independiente para tu negocio. Los datos quedan en este computador, separados del programa, y no se envían a los desarrolladores. Requiere WSL2, virtualización y 30 GB libres. Mantén esta ventana abierta mientras tus otros equipos usan este servidor.", AutoSize = true, MaximumSize = new Size(620, 0), Margin = new Padding(0, 12, 0, 16) });
-        panel.Controls.Add(status);
+        panel.Controls.Add(new Label { Text = "OpenMultiPOS en este computador", Font = new Font("Segoe UI", 17, FontStyle.Bold), AutoSize = true });
+        panel.Controls.Add(new Label { Text = "Funciona en este computador: no necesitas otro equipo. Tus datos se quedan aquí, separados del programa, y no se envían a los desarrolladores. Necesita virtualización activa y 30 GB libres; el programa prepara lo demás. Si conectas otros computadores, deja esta ventana abierta.", AutoSize = true, MaximumSize = new Size(620, 0), Margin = new Padding(0, 12, 0, 16) });
+        panel.Controls.Add(status); panel.Controls.Add(progress); panel.Controls.Add(elapsed);
         next.Margin = new Padding(0, 12, 0, 4); panel.Controls.Add(next); panel.Controls.Add(startWithWindows);
         panel.Controls.Add(new Label { Text = "Contraseña inicial de Administrator (se pide en el paso 4)", AutoSize = true, Margin = new Padding(0, 16, 0, 4) }); panel.Controls.Add(password);
-        panel.Controls.Add(new Label { Text = "Repite la contraseña inicial", AutoSize = true }); panel.Controls.Add(confirm);
+        panel.Controls.Add(new Label { Text = "Repite la contraseña inicial", AutoSize = true }); panel.Controls.Add(confirm); panel.Controls.Add(passwordHint);
         var actions = new FlowLayoutPanel { AutoSize = true, Dock = DockStyle.Fill, WrapContents = true, Margin = new Padding(0, 16, 0, 8) };
         foreach (Button button in new [] { prepareWindows, import, setup, recover, start, stop, open, backup, drill }) actions.Controls.Add(button);
         panel.Controls.Add(actions);
@@ -286,6 +291,15 @@ internal sealed class ServerWindow : Form
         panel.Controls.Add(location);
         next.BackColor = Color.FromArgb(36, 95, 164); next.ForeColor = Color.White; next.FlatStyle = FlatStyle.Flat;
         next.FlatAppearance.BorderColor = Color.FromArgb(14, 40, 80); next.FlatAppearance.BorderSize = 2;
+        next.Enter += delegate { next.FlatAppearance.BorderColor = Color.Gold; next.FlatAppearance.BorderSize = 4; };
+        next.Leave += delegate { next.FlatAppearance.BorderColor = Color.FromArgb(14, 40, 80); next.FlatAppearance.BorderSize = 2; };
+        foreach (Button button in new [] { prepareWindows, import, setup, recover, start, stop, open, backup, drill, refresh, log, manual })
+        {
+            Button target = button;
+            target.Enter += delegate { target.BackColor = Color.FromArgb(255, 226, 120); };
+            target.Leave += delegate { target.UseVisualStyleBackColor = true; };
+        }
+        password.TextChanged += delegate { UpdatePasswordHint(false); }; confirm.TextChanged += delegate { UpdatePasswordHint(false); };
         Controls.Add(panel);
         help.SetToolTip(prepareWindows, "Windows pide permiso de administrador para preparar WSL, sin instalar otra distribución. Puede descargar componentes. Después hay que reiniciar; el programa pregunta antes.");
         help.SetToolTip(import, "Requiere WSL2 y la imagen del servidor junto al programa. Verifica su hash antes de importar. Los datos quedan en OpenMultiPOS\\Servidor dentro de tu perfil.");
@@ -317,7 +331,7 @@ internal sealed class ServerWindow : Form
             if (mode == "--autostart" && installed && !Running) await Work(StartStep);
             else if (mode == "--resume" && windowsReady && !restartPending && !registered) await Next();
         };
-        var timer = new Timer { Interval = 1000 }; timer.Tick += delegate { if (wasRunning && !Running && !busy) status.Text = "El servidor se detuvo. Revisa los registros antes de volver a iniciar."; wasRunning = Running; ControlsState(); }; timer.Start();
+        var timer = new Timer { Interval = 1000 }; timer.Tick += delegate { if (wasRunning && !Running && !busy) status.Text = "El servidor se detuvo. Revisa los registros antes de volver a iniciar."; wasRunning = Running; ControlsState(); ShowProgress(); }; timer.Start();
         FormClosing += async delegate(object sender, FormClosingEventArgs e) {
             if (allowClose) return;
             if (busy) { e.Cancel = true; status.Text = "Espera a que termine la operación antes de cerrar."; return; }
@@ -338,7 +352,8 @@ internal sealed class ServerWindow : Form
         recover.Enabled = setup.Enabled && recoverable; start.Enabled = !busy && installed && !Running;
         stop.Enabled = !busy && Running; open.Enabled = !busy && Running; password.Enabled = confirm.Enabled = setup.Enabled;
         backup.Enabled = drill.Enabled = !busy && installed && !Running;
-        next.Enabled = !busy; next.Text = NextLabel(); AcceptButton = next;
+        next.Enabled = !busy; next.Text = busy ? "Trabajando…" : NextLabel(); AcceptButton = next;
+        next.BackColor = busy ? Color.FromArgb(205, 215, 230) : Color.FromArgb(36, 95, 164);
     }
     private string NextLabel()
     {
@@ -377,7 +392,7 @@ internal sealed class ServerWindow : Form
     }
     private async Task ImportStep()
     {
-        status.Text = "Verificando e importando la imagen. Puede tardar varios minutos.";
+        status.Text = "Paso 3: verificando e instalando el servidor. Suele tardar unos 3 minutos.";
         await Task.Run(() => backend.Import(AppDomain.CurrentDomain.BaseDirectory));
         await RefreshState();
         if (registered && !installed)
@@ -386,11 +401,15 @@ internal sealed class ServerWindow : Form
             password.Focus();
         }
     }
-    private async Task StartStep()
+    private async Task StartServer()
     {
         status.Text = "Iniciando los servicios…";
         await backend.Start();
         status.Text = ActiveText();
+    }
+    private async Task StartStep()
+    {
+        await StartServer();
         if (mode != "--autostart") OpenApp();
     }
     private static string ActiveText() { return "Servidor activo en http://localhost:8089. Usuario inicial: Administrator. Conserva esta ventana abierta."; }
@@ -401,9 +420,40 @@ internal sealed class ServerWindow : Form
     }
     private async Task Work(Func<Task> action)
     {
-        if (busy) return; busy = true; ControlsState();
-        try { await action(); } catch (Exception error) { status.Text = error.Message; }
-        finally { busy = false; wasRunning = Running; ControlsState(); }
+        if (busy) return; busy = true; busySince = DateTime.UtcNow; status.ForeColor = SystemColors.ControlText; ControlsState();
+        try { await action(); }
+        catch (Exception error) { status.ForeColor = ErrorColor; status.Text = error.Message; System.Media.SystemSounds.Exclamation.Play(); }
+        finally { busy = false; wasRunning = Running; ControlsState(); ShowProgress(); }
+    }
+    // Quick refreshes stay quiet; anything longer shows that the program is still working.
+    private void ShowProgress()
+    {
+        TimeSpan time = DateTime.UtcNow - busySince;
+        bool visible = busy && time.TotalSeconds >= 3;
+        progress.Visible = elapsed.Visible = visible;
+        if (visible) elapsed.Text = ElapsedText(time);
+    }
+    internal static string ElapsedText(TimeSpan time)
+    {
+        return "Sigue trabajando… " + (int)time.TotalMinutes + ":" + time.Seconds.ToString("00") + ". No cierres esta ventana.";
+    }
+    // Returns what is still wrong, or null when the password can be used.
+    internal static string PasswordProblem(string value, string repeat)
+    {
+        if (value.Length < 12) return "Faltan " + (12 - value.Length) + " caracteres: usa 12 o más, con letras y números.";
+        bool letters = false, digits = false;
+        foreach (char c in value) { letters |= char.IsLetter(c); digits |= char.IsDigit(c); }
+        if (!letters || !digits) return "Combina letras y números: así es más difícil de adivinar.";
+        if (value != repeat) return repeat.Length == 0 ? "Repite la contraseña en el segundo campo." : "Las dos contraseñas no coinciden.";
+        return null;
+    }
+    private void UpdatePasswordHint(bool alert)
+    {
+        string problem = PasswordProblem(password.Text, confirm.Text);
+        bool untouched = !alert && password.TextLength == 0 && confirm.TextLength == 0;
+        passwordHint.Text = untouched ? "" : problem ?? "La contraseña es válida. Pulsa Continuar.";
+        passwordHint.ForeColor = problem == null ? GoodColor : ErrorColor;
+        if (alert && problem != null) System.Media.SystemSounds.Exclamation.Play();
     }
     private async Task RefreshState()
     {
@@ -419,16 +469,18 @@ internal sealed class ServerWindow : Form
     }
     private async Task Prepare(bool recovery)
     {
-        if (password.Text.Length < 12 || password.Text != confirm.Text) { status.Text = "Escribe la misma contraseña en los dos campos, con 12 a 128 caracteres."; password.Focus(); return; }
-        string secret = password.Text; password.Clear(); confirm.Clear();
+        if (PasswordProblem(password.Text, confirm.Text) != null) { UpdatePasswordHint(true); password.Focus(); return; }
+        string secret = password.Text; password.Clear(); confirm.Clear(); passwordHint.Text = "";
         await Work(async () => {
-            status.Text = "Preparando el sitio privado. La primera vez puede tardar varios minutos.";
+            status.Text = "Paso 4: preparando tu sitio. Suele tardar unos 5 minutos.";
             try { await Task.Run(() => backend.Setup(secret, recovery)); } finally { await RefreshState(); }
             if (!installed) return;
             // A shop till must come back by itself after Windows restarts; the owner can untick it.
             if (!startWithWindows.Checked) startWithWindows.Checked = true;
-            await StartStep();
-            MessageBox.Show(this, "OpenMultiPOS está listo y se abrió en el navegador.\n\nPara entrar la primera vez:\n• Usuario: Administrator\n• Contraseña: la que acabas de crear\n\nDespués el asistente te pedirá crear tu cuenta personal.", "Primer inicio de sesión", MessageBoxButtons.OK, MessageBoxIcon.Information);
+            await StartServer();
+            // Shown before the browser opens so it cannot end up hidden behind it.
+            MessageBox.Show(this, "OpenMultiPOS está listo. Al pulsar Aceptar se abrirá en el navegador.\n\nPara entrar la primera vez:\n• Usuario: Administrator\n• Contraseña: la que acabas de crear\n\nSi el navegador muestra pantallas de bienvenida, ciérralas primero. Después el asistente te pedirá crear tu cuenta personal.", "Primer inicio de sesión", MessageBoxButtons.OK, MessageBoxIcon.Information);
+            OpenApp();
         });
     }
     private async Task Backup(bool check)
@@ -451,6 +503,9 @@ internal static class ServerProgram
             if (ServerBackend.Quote("a b") != "\"a b\"" || ServerBackend.Quote("a b\\") != "\"a b\\\\\"" || ServerBackend.Quote("a\"b") != "\"a\\\"b\"") return 1;
             if (ServerBackend.Quote("--list") != "--list" || ServerBackend.Quote("") != "\"\"") return 1;
             if (Autostart.Command(@"C:\Program Files\OMP\Control.exe", "--autostart") != "\"C:\\Program Files\\OMP\\Control.exe\" --autostart") return 1;
+            foreach (string weak in new [] { "", "abc1", "123456789012", "abcdefghijkl" }) if (ServerWindow.PasswordProblem(weak, weak) == null) return 1;
+            if (ServerWindow.PasswordProblem("prueba-fictic1a", "prueba-fictic1a") != null || ServerWindow.PasswordProblem("prueba-fictic1a", "otra") == null) return 1;
+            if (!ServerWindow.ElapsedText(TimeSpan.FromSeconds(65)).Contains("1:05")) return 1;
             var boot = new DateTime(2026, 1, 1, 8, 0, 0, DateTimeKind.Utc);
             if (!ServerBackend.PreparedAfterBoot(boot.AddMinutes(5), boot) || ServerBackend.PreparedAfterBoot(boot.AddMinutes(-5), boot)) return 1;
             foreach (string bad in new [] { "Ubuntu", "OpenMultiPOS;bad", "OpenMultiPOS bad", "../OpenMultiPOS" }) { try { new ServerBackend(bad); return 1; } catch (ArgumentException) { } }
@@ -487,8 +542,9 @@ internal static class ServerProgram
             try { backend.Import(args[2]); return !Convert.ToBoolean(backend.Status()["installed"]) && Directory.Exists(backend.DataFolder()) ? 0 : 3; }
             catch (Exception error) { File.WriteAllText(Path.Combine(AppDomain.CurrentDomain.BaseDirectory, "verification-error.txt"), error.ToString() + "\n" + Convert.ToString(error.Data["diagnostic"])); return 4; }
         }
-        string distro = args.Length == 2 && args[0] == "--distro" ? args[1] : "OpenMultiPOS";
-        string mode = args.Length == 1 && (args[0] == "--autostart" || args[0] == "--resume") ? args[0] : "";
+        string distro = args.Length >= 2 && args[0] == "--distro" ? args[1] : "OpenMultiPOS";
+        string last = args.Length > 0 ? args[args.Length - 1] : "";
+        string mode = last == "--autostart" || last == "--resume" ? last : "";
         try
         {
             using (var singleton = new System.Threading.Mutex(false, "Local\\OpenMultiPOS.Server." + new ServerBackend(distro).Distro))

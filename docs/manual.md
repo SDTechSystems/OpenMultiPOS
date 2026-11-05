@@ -16,17 +16,21 @@ Hay dos ediciones con el mismo código de aplicación: **Servidor propio** crea 
 
 La edición completa del servidor está en aceptación privada. Todavía no está aprobada para producción ni para compartir. El cliente Windows separado solo abre un servidor existente.
 
-Prepara Windows x64, .NET Framework 4.8, WSL2, virtualización y 30 GB libres. La preparación de WSL puede pedir administrador, descargas y reinicio. Extrae todo el ZIP en una carpeta local. Para usarlo como portable, abre `OpenMultiPOS-Server-Control.exe`. Para instalar el programa en tu perfil, ejecuta `OpenMultiPOS-Server-Setup-0.1.0.exe` desde esa misma carpeta completa y después abre OpenMultiPOS Servidor desde Inicio. Conserva la imagen `.wsl` y `server-image.json` junto al instalador.
+Prepara Windows x64, .NET Framework 4.8, WSL2, virtualización y 30 GB libres. La preparación de WSL puede pedir administrador, descargas y reinicio. Extrae todo el ZIP en una carpeta local. Para usarlo como portable, abre `OpenMultiPOS-Server-Control.exe`. Para instalar el programa en tu perfil, ejecuta `OpenMultiPOS-Server-Setup-0.1.0.exe` desde esa misma carpeta completa. El instalador abre el controlador y crea accesos en el escritorio y en Inicio. Conserva la imagen `.wsl` y `server-image.json` junto al instalador.
 
-Si el controlador indica que falta preparar Windows, pulsa Preparar Windows y acepta la solicitud de administrador cuando estés listo. Sigue la ventana de Windows y espera a que termine. Instala el componente WSL sin agregar otra distribución Linux; OpenMultiPOS ya incluye su propia imagen. Si Windows pide reiniciar, guarda tu trabajo y reinicia cuando puedas. El programa no reinicia el computador. Después vuelve a abrir el controlador y pulsa Actualizar estado. Instalar servidor comprueba que haya al menos 30 GB libres en la unidad de datos antes de importar la imagen.
+Pulsa **Continuar**. El botón muestra el paso actual y hace el siguiente; una barra y un contador indican que sigue trabajando.
+
+1. **Preparar Windows.** Acepta la solicitud de administrador y sigue la ventana de Windows. Instala el componente WSL sin agregar otra distribución Linux; OpenMultiPOS ya incluye su propia imagen.
+2. **Reiniciar Windows.** El controlador pregunta antes de reiniciar. Guarda tu trabajo. Al volver a entrar se abre solo y continúa.
+3. **Instalar servidor.** Comprueba que haya al menos 30 GB libres y verifica la imagen. Si ya hay un servidor o una carpeta de datos, el programa los conserva.
+4. **Crear acceso.** Escribe y repite una contraseña de 12 a 128 caracteres con letras y números. El mensaje bajo los campos indica qué falta. Si se interrumpe, Recuperar preparación conserva el intento anterior y solo permite preparaciones sin cuentas personales ni datos comerciales.
+5. **Iniciar y abrir.** El navegador abre OpenMultiPOS. Entra con el usuario `Administrator` y la contraseña inicial. El asistente nativo propone español, Colombia, COP y America/Bogota; cámbialos si necesitas otras preferencias. Crea tu cuenta personal y completa la entidad legal antes de operar.
+
+Después continúa con la preparación de Inicio en OpenMultiPOS. El progreso se guarda en el servidor. Revisa tus usuarios, negocios, existencias, recibos y recuperación.
+
+Iniciar el servidor al encender Windows queda marcado al terminar: tras cada reinicio el controlador se abre minimizado e inicia el servidor. Puedes desmarcarlo. Si conectas otros computadores, deja abierta esa ventana. Detener cierra los servicios ordenadamente y los desconecta hasta volver a iniciar.
 
 Si la preparación no termina, comprueba Windows Update y que la virtualización esté habilitada en el equipo. El [manual oficial de instalación de WSL](https://learn.microsoft.com/windows/wsl/install) explica los requisitos de Windows y la solución de errores. No borres ninguna distribución ni carpeta existente para resolver un error de preparación.
-
-1. Pulsa Instalar servidor. Espera la verificación y la importación. Si ya hay un servidor o una carpeta de datos, el programa los conserva; revisa el estado antes de continuar.
-2. Escribe y confirma una contraseña inicial de 12 a 128 caracteres. Pulsa Preparar acceso y espera. Si se interrumpe, vuelve a consultar el estado y reintenta. Recuperar preparación conserva el intento anterior y solo permite preparaciones sin cuentas personales ni datos comerciales.
-3. Pulsa Iniciar servidor y Abrir aplicación. Entra como Administrator con la contraseña inicial. En el asistente nativo de ERPNext selecciona español, Colombia, COP y America/Bogota, o las preferencias que realmente necesites. Crea tu cuenta personal y completa la entidad legal y su configuración contable antes de operar.
-4. Continúa con la preparación de Inicio en OpenMultiPOS. El progreso se guarda en el servidor. Revisa tus usuarios, negocios, existencias, recibos y recuperación.
-5. Conserva abierta la ventana del servidor mientras trabajan los demás computadores. Detener cierra los servicios ordenadamente y los desconecta hasta volver a iniciar.
 
 La ventana muestra dónde están los datos. Por defecto, WSL los conserva en `%LOCALAPPDATA%\OpenMultiPOS\Servidor`, separados del programa. Puedes mover la carpeta portable con el controlador cerrado; eso no traslada la base de datos. No muevas ni sincronices el disco WSL en vivo.
 
@@ -288,7 +292,7 @@ Una cuenta administrativa conserva acceso amplio a los documentos del sitio. Rev
 
 ## Garantías
 
-1. Selecciona el negocio y abre Garantías. Escribe el número de la venta original y usa Consultar venta.
+1. Selecciona el negocio y abre Garantías. Elige una venta reciente o escribe el número de la venta original y usa Consultar venta.
 2. Selecciona el artículo, la fecha de recepción y el motivo. Registrar reclamación crea el documento nativo sin cobrar ni mover inventario.
 3. Si se pierde la respuesta, consulta o reintenta el mismo intento. Abandonar confirma el resultado o bloquea una solicitud tardía antes de permitir otra reclamación.
 4. Abre una reclamación reciente o búscala por número. Actualizar seguimiento permite revisar estado y notas; si alguien la cambió, vuelve a consultarla antes de guardar.
