@@ -221,7 +221,7 @@ jobs:
     needs: windows-client
     runs-on: windows-latest
     steps:
-      - uses: actions/download-artifact@v4
+      - uses: actions/download-artifact@v8
         with:
           name: windows-server-controller-candidate
           path: controller
@@ -230,7 +230,7 @@ jobs:
         run: |
           $process = Start-Process -FilePath "$PWD/controller/OpenMultiPOS-Server-Control.exe" -ArgumentList '--self-test' -Wait -PassThru
           if ($process.ExitCode -ne 0) { throw 'Fallaron los contratos del controlador Windows' }
-      - uses: actions/download-artifact@v4
+      - uses: actions/download-artifact@v8
         with:
           name: windows-server-installer-contract-fixture
           path: installer
