@@ -8,7 +8,7 @@
     "format:check": "prettier --check open_multi_pos/demo/static open_multi_pos/public open_multi_pos/www/*.html scripts/*.cjs package.json .github/workflows/quality.yml"
   },
   "devDependencies": {
-    "@axe-core/playwright": "4.10.2",
+    "@axe-core/playwright": "4.14.0",
     "playwright": "1.62.1",
     "prettier": "3.6.2"
   }
